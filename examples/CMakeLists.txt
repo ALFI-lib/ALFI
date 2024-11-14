@@ -1,0 +1,2 @@
+add_subdirectory(dist_gnuplot)
+add_subdirectory(dist_QCustomPlot)

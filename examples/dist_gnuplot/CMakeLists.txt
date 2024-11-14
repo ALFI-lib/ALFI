@@ -1,0 +1,8 @@
+set(CMAKE_CXX_STANDARD 23)
+
+find_package(Boost COMPONENTS iostreams)
+find_package(Gnuplot)
+
+add_executable(dist_gnuplot dist_gnuplot.cpp)
+target_include_directories(dist_gnuplot PRIVATE ${Boost_INCLUDE_DIRS} ${Gnuplot_INCLUDE_DIRS})
+target_link_libraries(dist_gnuplot PRIVATE ALFI ${Boost_LIBRARIES} ${Gnuplot_LIBRARIES})
