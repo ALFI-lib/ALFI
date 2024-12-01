@@ -179,18 +179,18 @@ private:
 		const double B = _ratio_spin_box->value();
 		const double steepness = _steepness_spin_box->value();
 
-		const std::vector<std::pair<QString, alfi::dist::Base<double>>> distributions = {
-			{"Uniform", alfi::dist::Uniform<>(n, a, b)},
-			{"Chebyshev", alfi::dist::Chebyshev<>(n, a, b)},
-			{"Stretched Chebyshev", alfi::dist::ChebyshevStretched<>(n, a, b)},
-			{"Chebyshev Ellipse", alfi::dist::ChebyshevEllipse<>(n, a, b, B)},
-			{"Stretched Chebyshev Ellipse", alfi::dist::ChebyshevEllipseStretched<>(n, a, b, B)},
-			{"Circle Projection", alfi::dist::CircleProj<>(n, a, b)},
-			{"Ellipse Projection", alfi::dist::EllipseProj<>(n, a, b, B)},
-			{"Sigmoid", alfi::dist::Sigmoid<>(n, a, b, steepness)},
-			{"Stretched Sigmoid", alfi::dist::SigmoidStretched<>(n, a, b, steepness)},
-			{"Error function", alfi::dist::Erf<>(n, a, b, steepness)},
-			{"Stretched Error function", alfi::dist::ErfStretched<>(n, a, b, steepness)},
+		const std::vector<std::pair<QString, std::vector<double>>> distributions = {
+			{"Uniform", alfi::dist::uniform(n, a, b)},
+			{"Chebyshev", alfi::dist::chebyshev(n, a, b)},
+			{"Stretched Chebyshev", alfi::dist::chebyshev_stretched(n, a, b)},
+			{"Chebyshev Ellipse", alfi::dist::chebyshev_ellipse(n, a, b, B)},
+			{"Stretched Chebyshev Ellipse", alfi::dist::chebyshev_ellipse_stretched(n, a, b, B)},
+			{"Circle Projection", alfi::dist::circle_proj(n, a, b)},
+			{"Ellipse Projection", alfi::dist::ellipse_proj(n, a, b, B)},
+			{"Sigmoid", alfi::dist::sigmoid(n, a, b, steepness)},
+			{"Stretched Sigmoid", alfi::dist::sigmoid_stretched(n, a, b, steepness)},
+			{"Error function", alfi::dist::erf(n, a, b, steepness)},
+			{"Stretched Error function", alfi::dist::erf_stretched(n, a, b, steepness)},
 		};
 
 		const QCPRange current_x_range = _plot->xAxis->range();

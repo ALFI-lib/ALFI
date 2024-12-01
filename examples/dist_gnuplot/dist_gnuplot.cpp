@@ -4,7 +4,7 @@
 
 struct PointLine {
 	std::string title;
-	alfi::dist::Base<double> x_points;
+	std::vector<double> x_points;
 };
 
 void plot_data(const std::vector<PointLine>& lines) {
@@ -65,19 +65,18 @@ int main() {
 	const double sigmoid_steepness = 8;
 	const double erf_steepness = 3;
 
-	// ReSharper disable CppPossiblyUnintendedObjectSlicing
 	plot_data({
-		{"Uniform", alfi::dist::Uniform<>(n, a, b)},
-		{"Chebyshev", alfi::dist::Chebyshev<>(n, a, b)},
-		{"Stretched Chebyshev", alfi::dist::ChebyshevStretched<>(n, a, b)},
-		{"Chebyshev Ellipse", alfi::dist::ChebyshevEllipse<>(n, a, b, ratio)},
-		{"Stretched Chebyshev Ellipse", alfi::dist::ChebyshevEllipseStretched<>(n, a, b, ratio)},
-		{"Circle Projection", alfi::dist::CircleProj<>(n, a, b)},
-		{"Ellipse Projection", alfi::dist::EllipseProj<>(n, a, b, ratio)},
-		{"Sigmoid", alfi::dist::Sigmoid<>(n, a, b, sigmoid_steepness)},
-		{"Stretched Sigmoid", alfi::dist::SigmoidStretched<>(n, a, b, sigmoid_steepness)},
-		{"Error function", alfi::dist::Erf<>(n, a, b, erf_steepness)},
-		{"Stretched Error function", alfi::dist::ErfStretched<>(n, a, b, erf_steepness)},
+		{"Uniform", alfi::dist::uniform(n, a, b)},
+		{"Chebyshev", alfi::dist::chebyshev(n, a, b)},
+		{"Stretched Chebyshev", alfi::dist::chebyshev_stretched(n, a, b)},
+		{"Chebyshev Ellipse", alfi::dist::chebyshev_ellipse(n, a, b, ratio)},
+		{"Stretched Chebyshev Ellipse", alfi::dist::chebyshev_ellipse_stretched(n, a, b, ratio)},
+		{"Circle Projection", alfi::dist::circle_proj(n, a, b)},
+		{"Ellipse Projection", alfi::dist::ellipse_proj(n, a, b, ratio)},
+		{"Sigmoid", alfi::dist::sigmoid(n, a, b, sigmoid_steepness)},
+		{"Stretched Sigmoid", alfi::dist::sigmoid_stretched(n, a, b, sigmoid_steepness)},
+		{"Error function", alfi::dist::erf(n, a, b, erf_steepness)},
+		{"Stretched Error function", alfi::dist::erf_stretched(n, a, b, erf_steepness)},
 	});
 
 	return 0;
