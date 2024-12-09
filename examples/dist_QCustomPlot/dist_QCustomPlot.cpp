@@ -200,7 +200,7 @@ private:
 
 		double current_layer = -1;
 
-		for (int i = 0; i < distributions.size(); ++i) {
+		for (size_t i = 0; i < distributions.size(); ++i) {
 			const auto& [name, x_data] = distributions[i];
 			QVector<double> x, y;
 			for (const double& value : x_data) {

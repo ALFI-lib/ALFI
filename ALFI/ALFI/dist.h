@@ -1,5 +1,7 @@
 #pragma once
 
+#include "config.h"
+
 #include <cmath>
 
 namespace alfi::dist {
@@ -18,8 +20,8 @@ namespace alfi::dist {
 		ERF_STRETCHED,
 	};
 
-	template <typename Number = double>
-	void stretch(std::vector<Number>& points, Number a, Number b) {
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	void stretch(Container& points, Number a, Number b) {
 		if (points.empty()) {
 			return;
 		}
@@ -42,22 +44,22 @@ namespace alfi::dist {
 		points.back() = b;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> uniform(size_t n, Number a, Number b) {
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container uniform(size_t n, Number a, Number b) {
 		if (n == 1)
 			return {(a+b)/2};
-		std::vector<Number> points(n);
+		Container points(n);
 		for (size_t i = 0; i < n; ++i) {
 			points[i] = a + (b - a) * static_cast<Number>(i) / static_cast<Number>(n - 1);	
 		}
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> chebyshev(size_t n, Number a, Number b) {
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container chebyshev(size_t n, Number a, Number b) {
 		if (n == 1)
 			return {(a+b)/2};
-		std::vector<Number> points(n);
+		Container points(n);
 		for (size_t i = 0; i < n; ++i) {
 			const Number x = std::cos(M_PI * (2 * (static_cast<Number>(n) - static_cast<Number>(i)) - 1) / (2 * static_cast<Number>(n)));
 			points[i] = a + (x + 1) * (b - a) / 2;
@@ -65,16 +67,16 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> chebyshev_stretched(size_t n, Number a, Number b) {
-		std::vector<Number> points = chebyshev(n, a, b);
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container chebyshev_stretched(size_t n, Number a, Number b) {
+		Container points = chebyshev(n, a, b);
 		stretch(points, a, b);
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> chebyshev_ellipse(size_t n, Number a, Number b, Number ratio) {
-		std::vector<Number> points(n);
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container chebyshev_ellipse(size_t n, Number a, Number b, Number ratio) {
+		Container points(n);
 		for (size_t i = 0; i < n / 2; ++i) {
 			const Number theta = M_PI * (2 * static_cast<Number>(i) + 1) / (2 * static_cast<Number>(n));
 			const Number x = 1 / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
@@ -86,18 +88,18 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> chebyshev_ellipse_stretched(size_t n, Number a, Number b, Number ratio) {
-		std::vector<Number> points = chebyshev_ellipse(n, a, b, ratio);
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container chebyshev_ellipse_stretched(size_t n, Number a, Number b, Number ratio) {
+		Container points = chebyshev_ellipse(n, a, b, ratio);
 		stretch(points, a, b);
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> circle_proj(size_t n, Number a, Number b) {
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container circle_proj(size_t n, Number a, Number b) {
 		if (n == 1)
 			return {(a+b)/2};
-		std::vector<Number> points(n);
+		Container points(n);
 		for (size_t i = 0; i < n; ++i) {
 			const Number x = 1 - std::cos(M_PI * static_cast<Number>(i) / (static_cast<Number>(n) - 1));
 			points[i] = a + (b - a) * x / 2;
@@ -105,9 +107,9 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> ellipse_proj(size_t n, Number a, Number b, Number ratio) {
-		std::vector<Number> points(n);
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container ellipse_proj(size_t n, Number a, Number b, Number ratio) {
+		Container points(n);
 		for (size_t i = 0; i < n / 2; ++i) {
 			const Number theta = M_PI * static_cast<Number>(i) / (static_cast<Number>(n) - 1);
 			const Number x = 1 / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
@@ -119,11 +121,11 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> sigmoid(size_t n, Number a, Number b, Number steepness) {
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container sigmoid(size_t n, Number a, Number b, Number steepness) {
 		if (n == 1)
 			return {(a+b)/2};
-		std::vector<Number> points(n);
+		Container points(n);
 		for (size_t i = 0; i < n; ++i) {
 			const Number x = static_cast<Number>(i) / (static_cast<Number>(n) - 1);
 			const Number sigmoidValue = 1.0 / (1.0 + exp(-steepness * (x - 0.5)));
@@ -132,13 +134,13 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> sigmoid_stretched(size_t n, Number a, Number b, Number steepness) {
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container sigmoid_stretched(size_t n, Number a, Number b, Number steepness) {
 		if (n == 0)
 			return {};
 		if (n == 1)
 			return {(a+b)/2};
-		std::vector<Number> points(n);
+		Container points(n);
 		const Number stretch_factor = 1 - 2 / (1 + std::exp(0.5 * steepness));
 		for (size_t i = 1; i < n - 1; ++i) {
 			const Number x = static_cast<double>(i) / (static_cast<Number>(n) - 1);
@@ -151,13 +153,13 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> erf(size_t n, Number a, Number b, Number steepness) {
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container erf(size_t n, Number a, Number b, Number steepness) {
 		if (n == 0)
 			return {};
 		if (n == 1)
 			return {(a+b)/2};
-		std::vector<Number> points(n);
+		Container points(n);
 		for (size_t i = 0; i < n; ++i) {
 			const Number x = static_cast<Number>(i) / (static_cast<Number>(n) - 1);
 			const Number erf_value = std::erf(steepness * (x - 0.5));
@@ -166,15 +168,15 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> erf_stretched(size_t n, Number a, Number b, Number steepness) {
-		std::vector<Number> points = erf(n, a, b, steepness);
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container erf_stretched(size_t n, Number a, Number b, Number steepness) {
+		Container points = erf(n, a, b, steepness);
 		stretch(points, a, b);
 		return points;
 	}
 
-	template <typename Number = double>
-	std::vector<Number> of_type(Type type, size_t n, Number a, Number b, Number parameter = 0) {
+	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	Container of_type(Type type, size_t n, Number a, Number b, Number parameter = 0) {
 		switch (type) {
 		case Type::CHEBYSHEV:
 			return chebyshev(n, a, b);
