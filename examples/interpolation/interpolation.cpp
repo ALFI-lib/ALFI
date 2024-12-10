@@ -152,7 +152,7 @@ private:
 	static SpinBoxType* create_spin_box(Number initial, Number step) {
 		SpinBoxType* spin_box = new SpinBoxType();
 		spin_box->setRange(std::min(std::numeric_limits<Number>::min(), -std::numeric_limits<Number>::infinity()),
-			std::max(std::numeric_limits<Number>::max(), std::numeric_limits<Number>::infinity()));
+						   std::max(std::numeric_limits<Number>::max(), std::numeric_limits<Number>::infinity()));
 		spin_box->setValue(initial);
 		spin_box->setSingleStep(step);
 		return spin_box;
