@@ -5,4 +5,4 @@ find_package(QCustomPlot REQUIRED)
 
 add_executable(dist_QCustomPlot dist_QCustomPlot.cpp)
 target_link_libraries(dist_QCustomPlot PRIVATE ALFI Qt5::Widgets QCustomPlot)
-target_compile_options(dist_QCustomPlot PRIVATE -Wall -Wextra -pedantic -O3 -flto -march=native)
+target_compile_options(dist_QCustomPlot PRIVATE -Wall -Wextra -pedantic -O3 -flto=auto -march=native)

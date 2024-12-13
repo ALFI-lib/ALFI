@@ -24,6 +24,8 @@ public:
 		_plot = new QCustomPlot();
 		_plot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+		_plot->legend->setVisible(true);
+		_plot->legend->setBrush(QBrush(QColor(255, 255, 255, 0)));
 
 		_control_panel = new QWidget();
 		// ReSharper disable once CppDFAMemoryLeak
@@ -228,9 +230,6 @@ private:
 			_plot->xAxis->setRange(current_x_range);
 			_plot->yAxis->setRange(current_y_range);
 		}
-
-		_plot->legend->setVisible(true);
-		_plot->legend->setBrush(QBrush(QColor(255, 255, 255, 0)));
 
 		_plot->replot();
 	}

@@ -25,75 +25,75 @@ Container f(const Container& X) {
 class PlotWindow final : public QWidget {
 public:
 	PlotWindow() {
+		static const QStringList distribution_types {
+			"Uniform", "Chebyshev", "Chebyshev Stretched", "Chebyshev Ellipse", "Chebyshev Ellipse Stretched",
+			"Circle Projection", "Ellipse Projection", "Sigmoid", "Stretched Sigmoid",
+			"Error Function", "Stretched Error Function"
+		};
+
 		_plot = new QCustomPlot();
 		_plot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+		_plot->setPlottingHints(QCP::phFastPolylines | QCP::phCacheLabels);
+		_plot->setAntialiasedElements(QCP::aeAll);
+		_plot->legend->setVisible(true);
+		_plot->legend->setBrush(QBrush(QColor(255, 255, 255, 0)));
 
 		_control_panel = new QWidget();
 		// ReSharper disable once CppDFAMemoryLeak
 		QVBoxLayout* control_layout = new QVBoxLayout(_control_panel);
 
-		_n_spin_box = create_spin_box<int, QSpinBox>(11, 1);
+		_n_spin_box = create_spin_box<int, QSpinBox>(11, 1, 1);
 
-		_nn_spin_box = create_spin_box<int, QSpinBox>(10000, 1);
+		_nn_spin_box = create_spin_box<int, QSpinBox>(10000, 1, 1);
 
 		_a_spin_box = create_spin_box<double, QDoubleSpinBox>(-10, -0.1);
 		_b_spin_box = create_spin_box<double, QDoubleSpinBox>(10, 0.1);
 
 		_distribution_combo = new QComboBox();
-		_distribution_combo->addItem("Uniform");
-		_distribution_combo->addItem("Chebyshev");
-		_distribution_combo->addItem("Chebyshev Stretched");
-		_distribution_combo->addItem("Chebyshev Ellipse");
-		_distribution_combo->addItem("Chebyshev Ellipse Stretched");
-		_distribution_combo->addItem("Circle Projection");
-		_distribution_combo->addItem("Ellipse Projection");
-		_distribution_combo->addItem("Sigmoid");
-		_distribution_combo->addItem("Stretched Sigmoid");
-		_distribution_combo->addItem("Error Function");
-		_distribution_combo->addItem("Stretched Error Function");
+		_distribution_combo->addItems(distribution_types);
 
 		_function_checkbox = new QCheckBox("Function");
 		_points_checkbox = new QCheckBox("Points");
 		_lagrange_checkbox = new QCheckBox("Lagrange Polynomial");
 		_newton_checkbox = new QCheckBox("Newton Polynomial");
 		_barycentric_checkbox = new QCheckBox("Barycentric Formula");
+		_step_spline_checkbox = new QCheckBox("Step Spline");
+		_linear_spline_checkbox = new QCheckBox("Linear Spline");
+		_quadratic_spline_checkbox = new QCheckBox("Quadratic Spline");
 
 		_function_checkbox->setChecked(true);
 		_points_checkbox->setChecked(true);
 		_barycentric_checkbox->setChecked(true);
 
-		_distribution_barycentric_combo = new QComboBox();
-		_distribution_barycentric_combo->addItem("Auto");
-		_distribution_barycentric_combo->addItem("Uniform");
-		_distribution_barycentric_combo->addItem("Chebyshev");
-		_distribution_barycentric_combo->addItem("Chebyshev Stretched");
-		_distribution_barycentric_combo->addItem("Chebyshev Ellipse");
-		_distribution_barycentric_combo->addItem("Chebyshev Ellipse Stretched");
-		_distribution_barycentric_combo->addItem("Circle Projection");
-		_distribution_barycentric_combo->addItem("Ellipse Projection");
-		_distribution_barycentric_combo->addItem("Sigmoid");
-		_distribution_barycentric_combo->addItem("Stretched Sigmoid");
-		_distribution_barycentric_combo->addItem("Error Function");
-		_distribution_barycentric_combo->addItem("Stretched Error Function");
+		_barycentric_combo = new QComboBox();
+		_barycentric_combo->addItem("Auto");
+		_barycentric_combo->addItems(distribution_types);
+
+		_step_spline_combo = new QComboBox();
+		_step_spline_combo->addItems({"Left", "Right", "Middle"});
+
+		_quadratic_spline_combo = new QComboBox();
+		_quadratic_spline_combo->addItems({"Natural start", "Natural end", "Not-a-knot start", "Not-a-knot end"});
 
 		_view_reset_button = new QPushButton("Reset View");
 
 		connect(_n_spin_box, QOverload<int>::of(&QSpinBox::valueChanged), this, &PlotWindow::update_plot);
-
 		connect(_nn_spin_box, QOverload<int>::of(&QSpinBox::valueChanged), this, &PlotWindow::update_plot);
 
 		connect(_a_spin_box, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &PlotWindow::update_plot);
 		connect(_b_spin_box, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &PlotWindow::update_plot);
 
-		connect(_function_checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
-		connect(_points_checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
-		connect(_lagrange_checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
-		connect(_newton_checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
-		connect(_barycentric_checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
+		for (const auto checkbox : {
+			_function_checkbox, _points_checkbox, _lagrange_checkbox,
+			_newton_checkbox, _barycentric_checkbox, _step_spline_checkbox,
+			_linear_spline_checkbox, _quadratic_spline_checkbox}) {
+			connect(checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
+		}
 
-		connect(_distribution_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PlotWindow::update_plot);
-		connect(_distribution_barycentric_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PlotWindow::update_plot);
+		for (const auto combo : {_distribution_combo, _barycentric_combo, _step_spline_combo, _quadratic_spline_combo}) {
+			connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PlotWindow::update_plot);
+		}
 
 		connect(_view_reset_button, &QPushButton::clicked, this, [this]() {
 			_default_axis_ranges = true;
@@ -115,9 +115,17 @@ public:
 
 		// ReSharper disable once CppDFAMemoryLeak
 		QHBoxLayout* a_b_layout = new QHBoxLayout();
-		a_b_layout->addWidget(new QLabel("a:"));
+		// ReSharper disable once CppDFAMemoryLeak
+		QLabel* a_label = new QLabel("a:");
+		a_label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+		_a_spin_box->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+		// ReSharper disable once CppDFAMemoryLeak
+		QLabel* b_label = new QLabel("b:");
+		b_label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+		_b_spin_box->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+		a_b_layout->addWidget(a_label);
 		a_b_layout->addWidget(_a_spin_box);
-		a_b_layout->addWidget(new QLabel("b:"));
+		a_b_layout->addWidget(b_label);
 		a_b_layout->addWidget(_b_spin_box);
 
 		// ReSharper disable once CppDFAMemoryLeak
@@ -127,7 +135,12 @@ public:
 		interpolation_layout->addWidget(_lagrange_checkbox);
 		interpolation_layout->addWidget(_newton_checkbox);
 		interpolation_layout->addWidget(_barycentric_checkbox);
-		interpolation_layout->addWidget(_distribution_barycentric_combo);
+		interpolation_layout->addWidget(_barycentric_combo);
+		interpolation_layout->addWidget(_step_spline_checkbox);
+		interpolation_layout->addWidget(_step_spline_combo);
+		interpolation_layout->addWidget(_linear_spline_checkbox);
+		interpolation_layout->addWidget(_quadratic_spline_checkbox);
+		interpolation_layout->addWidget(_quadratic_spline_combo);
 
 		control_layout->addLayout(n_layout);
 		control_layout->addLayout(a_b_layout);
@@ -149,16 +162,31 @@ public:
 
 private:
 	template <typename Number, typename SpinBoxType>
-	static SpinBoxType* create_spin_box(Number initial, Number step) {
+	static SpinBoxType* create_spin_box(
+			Number initial,
+			Number step,
+			Number min = std::min(std::numeric_limits<Number>::lowest(), -std::numeric_limits<Number>::infinity()),
+			Number max = std::max(std::numeric_limits<Number>::max(), std::numeric_limits<Number>::infinity())) {
 		SpinBoxType* spin_box = new SpinBoxType();
-		spin_box->setRange(std::min(std::numeric_limits<Number>::min(), -std::numeric_limits<Number>::infinity()),
-						   std::max(std::numeric_limits<Number>::max(), std::numeric_limits<Number>::infinity()));
+		spin_box->setRange(min, max);
 		spin_box->setValue(initial);
 		spin_box->setSingleStep(step);
 		return spin_box;
 	}
 
 	void update_plot() {
+		static const std::vector<QColor> colors = {
+			QColor(  0, 102, 204), // deep bue
+			QColor(204,   0,   0), // red
+			QColor(  0, 153,   0), // green
+			QColor(204, 102,   0), // muted orange
+			QColor(102,   0, 153), // purple
+			QColor( 30,  30,  30), // darker gray
+			QColor(  0, 128, 128), // dark turquoise
+			QColor(204,   0, 102), // pink
+		};
+		static const qreal line_width = 1.75;
+
 		const size_t N = _n_spin_box->value();
 		const size_t nn = _nn_spin_box->value();
 		const double a = _a_spin_box->value();
@@ -167,7 +195,7 @@ private:
 
 		std::vector<double> X;
 		switch (static_cast<alfi::dist::Type>(dist_type)) {
-		case alfi::dist::Type::UNIFORM: X = alfi::dist::uniform(N, a, b); break;
+			case alfi::dist::Type::UNIFORM: X = alfi::dist::uniform(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV: X = alfi::dist::chebyshev(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_STRETCHED: X = alfi::dist::chebyshev_stretched(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE: X = alfi::dist::chebyshev_ellipse(N, a, b, 2.0); break;
@@ -181,7 +209,7 @@ private:
 			default: return;
 		}
 
-		const std::vector<double> Y = f(X);
+		const auto Y = f(X);
 
 		const std::vector<double> xx = alfi::dist::uniform(nn, a, b);
 
@@ -191,71 +219,65 @@ private:
 		_plot->clearGraphs();
 		int graph_index = -1;
 
-		if (_function_checkbox->isChecked()) {
+		const auto add_graph = [&](
+				const auto& name,
+				const std::vector<double>& x_data,
+				const std::vector<double>& y_data,
+				QCPGraph::LineStyle line_style = QCPGraph::lsLine,
+				const QCPScatterStyle& scatter_style = QCPScatterStyle::ssNone,
+				bool over = false) {
 			_plot->addGraph();
 			++graph_index;
+			_plot->graph(graph_index)->setName(name);
+			_plot->graph(graph_index)->setData(to_qvector(x_data), to_qvector(y_data));
+			_plot->graph(graph_index)->setLineStyle(line_style);
+			_plot->graph(graph_index)->setScatterStyle(scatter_style);
+			_plot->graph(graph_index)->setPen(QPen(colors[graph_index % colors.size()], line_width));
+			if (over) _plot->graph(graph_index)->setLayer("axes");
+		};
+
+		if (_function_checkbox->isChecked()) {
 			const auto yy = f(xx);
 			y_min = std::min(y_min, *std::ranges::min_element(yy));
 			y_max = std::max(y_max, *std::ranges::max_element(yy));
-			_plot->graph(graph_index)->setData(to_qvector(xx), to_qvector(yy));
-			_plot->graph(graph_index)->setPen(QPen(Qt::blue));
+			add_graph("Function", xx, yy);
 		}
-
 		if (_points_checkbox->isChecked()) {
-			_plot->addGraph();
-			++graph_index;
-			_plot->graph(graph_index)->setData(to_qvector(X), to_qvector(Y));
-			_plot->graph(graph_index)->setLineStyle(QCPGraph::lsNone);
-			_plot->graph(graph_index)->setScatterStyle(QCPScatterStyle::ssCircle);
-			_plot->graph(graph_index)->setPen(QPen(Qt::red));
+			add_graph("Points", X, Y, QCPGraph::lsNone, QCPScatterStyle::ssCircle, true);
 		}
-
 		if (_lagrange_checkbox->isChecked()) {
-			_plot->addGraph();
-			graph_index++;
-			const auto coeffs = alfi::poly::lagrange(X, Y);
-			const auto yy = alfi::poly::val(coeffs, xx);
-			_plot->graph(graph_index)->setData(to_qvector(xx), to_qvector(yy));
-			_plot->graph(graph_index)->setPen(QPen(Qt::green));
+			add_graph("Lagrange", xx, alfi::poly::val(alfi::poly::lagrange(X, Y), xx));
 		}
-
 		if (_newton_checkbox->isChecked()) {
-			_plot->addGraph();
-			graph_index++;
-			const auto coeffs = alfi::poly::newton(X, Y);
-			const auto yy = alfi::poly::val(coeffs, xx);
-			_plot->graph(graph_index)->setData(to_qvector(xx), to_qvector(yy));
-			_plot->graph(graph_index)->setPen(QPen(Qt::red));
+			add_graph("Newton", xx, alfi::poly::val(alfi::poly::newton(X, Y), xx));
 		}
-
 		if (_barycentric_checkbox->isChecked()) {
-			_plot->addGraph();
-			graph_index++;
-			int barycentric_dist_type = _distribution_barycentric_combo->currentIndex();
+			int barycentric_dist_type = _barycentric_combo->currentIndex();
 			if (barycentric_dist_type == 0) {
 				barycentric_dist_type = dist_type;
 			}
-			const auto yy = alfi::misc::barycentric(X, Y, xx, static_cast<alfi::dist::Type>(barycentric_dist_type));
-			_plot->graph(graph_index)->setData(to_qvector(xx), to_qvector(yy));
-			_plot->graph(graph_index)->setPen(QPen(Qt::magenta));
+			add_graph("Barycentric", xx, alfi::misc::barycentric(X, Y, xx, static_cast<alfi::dist::Type>(barycentric_dist_type)));
+		}
+		if (_step_spline_checkbox->isChecked()) {
+			const auto step_spline_type = static_cast<alfi::spline::StepSpline<>::Type>(_step_spline_combo->currentIndex());
+			add_graph("Step Spline", xx, alfi::spline::StepSpline(X, Y, step_spline_type)(xx));
+		}
+		if (_linear_spline_checkbox->isChecked()) {
+			add_graph("Linear Spline", xx, alfi::spline::LinearSpline(X, Y)(xx));
+		}
+		if (_quadratic_spline_checkbox->isChecked()) {
+			const auto step_spline_type = static_cast<alfi::spline::QuadraticSpline<>::Type>(_quadratic_spline_combo->currentIndex());
+			add_graph("Quadratic Spline", xx, alfi::spline::QuadraticSpline(X, Y, step_spline_type)(xx));
 		}
 
 		if (_default_axis_ranges) {
-			const double RESERVE = 0.1;
-			const double FACTOR = 1 + RESERVE;
-
-			const double x_center = (a + b) / 2;
-			const double x_radius = (b - a) / 2;
-			const double x_min = x_center - FACTOR * x_radius;
-			const double x_max = x_center + FACTOR * x_radius;
-			_plot->xAxis->setRange(x_min, x_max);
-
-			const double y_center = (y_min + y_max) / 2;
-			const double y_radius = (y_max - y_min) / 2;
-			const double y_min_with_padding = y_center - FACTOR * y_radius;
-			const double y_max_with_padding = y_center + FACTOR * y_radius;
-			_plot->yAxis->setRange(y_min_with_padding, y_max_with_padding);
 			_default_axis_ranges = false;
+			static const double RESERVE = 0.1;
+			static const double FACTOR = 1 + RESERVE;
+			const double x_center = (a + b) / 2, x_radius = (b - a) / 2;
+			_plot->xAxis->setRange(x_center - FACTOR * x_radius, x_center + FACTOR * x_radius);
+			const double y_center = (y_min + y_max) / 2, y_radius = (y_max - y_min) / 2;
+			_plot->yAxis->setRange(y_center - FACTOR * y_radius, y_center + FACTOR * y_radius);
 		}
 
 		_plot->replot();
@@ -274,8 +296,13 @@ private:
 	QCheckBox* _lagrange_checkbox;
 	QCheckBox* _newton_checkbox;
 	QCheckBox* _barycentric_checkbox;
-	QComboBox* _distribution_barycentric_combo;
+	QCheckBox* _step_spline_checkbox;
+	QCheckBox* _linear_spline_checkbox;
+	QCheckBox* _quadratic_spline_checkbox;
 	QComboBox* _distribution_combo;
+	QComboBox* _barycentric_combo;
+	QComboBox* _step_spline_combo;
+	QComboBox* _quadratic_spline_combo;
 	QPushButton* _view_reset_button;
 };
 
@@ -284,7 +311,7 @@ int main(int argc, char* argv[]) {
 
 	PlotWindow window;
 	window.setWindowTitle("Interpolation");
-	window.resize(1200, 600);
+	window.resize(1280, 720);
 	window.show();
 
 	return QApplication::exec();
