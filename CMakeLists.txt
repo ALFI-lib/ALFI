@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g0 -s -O3 -flto=auto -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g3 -O2 -flto=auto -DNDEBUG")
 set(CMAKE_CXX_FLAGS_MINSIZEREL "-g0 -s -Oz -flto=auto -DNDEBUG")
 set(CMAKE_CXX_FLAGS_FAST "-g0 -s -Ofast -flto=auto -DNDEBUG")
+set(CMAKE_CXX_FLAGS_SANITIZE "-g3 -fsanitize=address,leak,undefined")
 
 project(ALFI VERSION 0.0.0.0)
 

@@ -204,7 +204,7 @@ namespace alfi::spline {
 			if (sorted) {
 				for (SizeT i = 0, i_x = 0; i < xx.size(); ++i) {
 					const Number evalx = xx[i];
-					while (i_x < _X.size() && evalx >= _X[i_x + 1])
+					while (i_x + 1 < _X.size() && evalx >= _X[i_x + 1])
 						++i_x;
 					result[i] = eval(evalx, i_x);
 				}
