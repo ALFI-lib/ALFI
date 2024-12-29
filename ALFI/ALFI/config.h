@@ -6,12 +6,25 @@
 
 #ifndef ALFI_DEFAULT_CONTAINER
 #include <vector>
-#define ALFI_DEFAULT_CONTAINER std::vector<Number>
+#define ALFI_DEFAULT_CONTAINER std::vector
+#endif
+
+#ifndef ALFI_SIZE_TYPE
+#define ALFI_SIZE_TYPE size_t
 #endif
 
 namespace alfi {
 	using DefaultNumber = ALFI_DEFAULT_NUMBER;
 
 	template <typename Number = DefaultNumber>
-	using DefaultContainer = ALFI_DEFAULT_CONTAINER;
+	using DefaultContainer = ALFI_DEFAULT_CONTAINER<Number>;
+
+	using SizeT = ALFI_SIZE_TYPE;
+
+	namespace traits {
+		template <typename T, typename = void>
+		struct has_size : std::false_type {};
+		template <typename T>
+		struct has_size<T, std::void_t<decltype(std::declval<T>().size())>> : std::true_type {};
+	}
 }

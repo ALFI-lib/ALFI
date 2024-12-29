@@ -2,7 +2,7 @@
 
 #include <functional>
 
-namespace alfi::util {
+namespace alfi::util::misc {
 	class SimpleScopeGuard {
 	public:
 		// ReSharper disable once CppNonExplicitConvertingConstructor

@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 
-#include <ALFI.h>
+#include <ALFI/poly.h>
 
 template <typename Number>
 void test_case(const std::vector<Number>& X, const std::vector<Number>& Y, Number x0,

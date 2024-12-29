@@ -9,7 +9,8 @@ QVector<T> to_qvector(const std::vector<T>& v) {
 
 double f(double x) {
 	// return -3 * std::sin(10 * x) + std::abs(x) + 0.5 * x - x * x;
-	return -3 * std::sin(10 * x) + 10 * sin(std::abs(x) + 0.5 * x);
+	// return -3 * std::sin(10 * x) + 10 * sin(std::abs(x) + 0.5 * x);
+	return std::sin(3 * M_PI * x) + std::cos(M_PI * x / 5);
 }
 
 template <typename Container>
@@ -61,6 +62,7 @@ public:
 		_step_spline_checkbox = new QCheckBox("Step Spline");
 		_linear_spline_checkbox = new QCheckBox("Linear Spline");
 		_quadratic_spline_checkbox = new QCheckBox("Quadratic Spline");
+		_cubic_spline_checkbox = new QCheckBox("Cubic Spline");
 
 		_function_checkbox->setChecked(true);
 		_points_checkbox->setChecked(true);
@@ -74,7 +76,12 @@ public:
 		_step_spline_combo->addItems({"Left", "Right", "Middle"});
 
 		_quadratic_spline_combo = new QComboBox();
-		_quadratic_spline_combo->addItems({"Natural start", "Natural end", "Not-a-knot start", "Not-a-knot end"});
+		_quadratic_spline_combo->addItems({"Natural start", "Natural end", "Semi-natural",
+			"Not-a-knot start", "Not-a-knot end", "Semi-not-a-knot", "Semi-semi"});
+
+		_cubic_spline_combo = new QComboBox();
+		_cubic_spline_combo->addItems({"Natural", "Not-a-knot", "Periodic",
+			"Not-a-knot start", "Not-a-knot end", "Semi-not-a-knot"});
 
 		_view_reset_button = new QPushButton("Reset View");
 
@@ -87,11 +94,11 @@ public:
 		for (const auto checkbox : {
 			_function_checkbox, _points_checkbox, _lagrange_checkbox,
 			_newton_checkbox, _barycentric_checkbox, _step_spline_checkbox,
-			_linear_spline_checkbox, _quadratic_spline_checkbox}) {
+			_linear_spline_checkbox, _quadratic_spline_checkbox, _cubic_spline_checkbox}) {
 			connect(checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
 		}
 
-		for (const auto combo : {_distribution_combo, _barycentric_combo, _step_spline_combo, _quadratic_spline_combo}) {
+		for (const auto combo : {_distribution_combo, _barycentric_combo, _step_spline_combo, _quadratic_spline_combo, _cubic_spline_combo}) {
 			connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PlotWindow::update_plot);
 		}
 
@@ -141,6 +148,8 @@ public:
 		interpolation_layout->addWidget(_linear_spline_checkbox);
 		interpolation_layout->addWidget(_quadratic_spline_checkbox);
 		interpolation_layout->addWidget(_quadratic_spline_combo);
+		interpolation_layout->addWidget(_cubic_spline_checkbox);
+		interpolation_layout->addWidget(_cubic_spline_combo);
 
 		control_layout->addLayout(n_layout);
 		control_layout->addLayout(a_b_layout);
@@ -266,8 +275,12 @@ private:
 			add_graph("Linear Spline", xx, alfi::spline::LinearSpline(X, Y)(xx));
 		}
 		if (_quadratic_spline_checkbox->isChecked()) {
-			const auto step_spline_type = static_cast<alfi::spline::QuadraticSpline<>::Type>(_quadratic_spline_combo->currentIndex());
-			add_graph("Quadratic Spline", xx, alfi::spline::QuadraticSpline(X, Y, step_spline_type)(xx));
+			const auto quadratic_spline_type = static_cast<alfi::spline::QuadraticSpline<>::Type>(_quadratic_spline_combo->currentIndex());
+			add_graph("Quadratic Spline", xx, alfi::spline::QuadraticSpline(X, Y, quadratic_spline_type)(xx));
+		}
+		if (_cubic_spline_checkbox->isChecked()) {
+			const auto cubic_spline_type = static_cast<alfi::spline::CubicSpline<>::Type>(_cubic_spline_combo->currentIndex());
+			add_graph("Cubic Spline", xx, alfi::spline::CubicSpline(X, Y, cubic_spline_type)(xx));
 		}
 
 		if (_default_axis_ranges) {
@@ -299,10 +312,12 @@ private:
 	QCheckBox* _step_spline_checkbox;
 	QCheckBox* _linear_spline_checkbox;
 	QCheckBox* _quadratic_spline_checkbox;
+	QCheckBox* _cubic_spline_checkbox;
 	QComboBox* _distribution_combo;
 	QComboBox* _barycentric_combo;
 	QComboBox* _step_spline_combo;
 	QComboBox* _quadratic_spline_combo;
+	QComboBox* _cubic_spline_combo;
 	QPushButton* _view_reset_button;
 };
 

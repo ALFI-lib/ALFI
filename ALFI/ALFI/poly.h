@@ -5,9 +5,9 @@
 #include "config.h"
 
 namespace alfi::poly {
-
-	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
-	Number val(const Container& coeffs, Number x) {
+	template <typename Number = DefaultNumber>
+	std::enable_if_t<!traits::has_size<Number>::value, Number>
+	val(const auto& coeffs, Number x) {
 		Number result = 0;
 		for (const Number& c : coeffs) {
 			result = x * result + c;
@@ -15,19 +15,21 @@ namespace alfi::poly {
 		return result;
 	}
 
-	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
-	Container val(const Container& coeffs, const Container& X) {
-		Container result(X.size(), 0);
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer, typename ContainerX = Container<Number>>
+	std::enable_if_t<traits::has_size<ContainerX>::value, Container<Number>>
+	val(const auto& coeffs, const ContainerX& X) {
+		Container<Number> result(X.size(), 0);
 		for (const Number& c : coeffs) {
-			for (size_t i = 0; i < X.size(); ++i) {
+			for (SizeT i = 0; i < X.size(); ++i) {
 				result[i] = X[i] * result[i] + c;
 			}
 		}
 		return result;
 	}
 
-	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
-	Number val(const Container& coeffs, Number x, Number x0) {
+	template <typename Number = DefaultNumber>
+	std::enable_if_t<!traits::has_size<Number>::value, Number>
+	val(const auto& coeffs, Number x, Number x0) {
 		Number result = 0;
 		for (const Number& c : coeffs) {
 			result = (x - x0) * result + c;
@@ -35,19 +37,20 @@ namespace alfi::poly {
 		return result;
 	}
 
-	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
-	Container val(const Container& coeffs, const Container& X, Number x0) {
-		Container result(X.size(), 0);
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer, typename ContainerX = Container<Number>>
+	std::enable_if_t<traits::has_size<ContainerX>::value, Container<Number>>
+	val(const auto& coeffs, const ContainerX& X, Number x0) {
+		Container<Number> result(X.size(), 0);
 		for (const Number& c : coeffs) {
-			for (size_t i = 0; i < X.size(); ++i) {
+			for (SizeT i = 0; i < X.size(); ++i) {
 				result[i] = (X[i] - x0) * result[i] + c;
 			}
 		}
 		return result;
 	}
 
-	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
-	Container lagrange(const Container& X, const Container& Y, Number x0 = 0) {
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	Container<Number> lagrange(const auto& X, const auto& Y, Number x0 = 0) {
 		if (X.size() != Y.size()) {
 			std::cerr << "Error in function " << __FUNCTION__
 					  << ": Vectors X (of size " << X.size()
@@ -62,26 +65,27 @@ namespace alfi::poly {
 			return {};
 		}
 
-		const size_t n = X.size();
+		const SizeT n = X.size();
 
-		Container L(n, 0);
+		Container<Number> L(n, 0);
 
-		Container l(n);
+		Container<Number> l(n);
 
-		for (size_t k = 0; k < n; ++k) {
+		for (SizeT k = 0; k < n; ++k) {
 			l.resize(1);
 			l[0] = 1;
-			for (size_t j = 0; j < n; ++j) {
+			for (SizeT j = 0; j < n; ++j) {
 				if (j != k) {
 					// A = conv(A, [1/(X[k]-X[j]), -(X[j] - x0)/(X[k]-X[j])]);
 					l.resize(l.size() + 1);
 					l[l.size()-1] = 0;
-					for (size_t i = l.size() - 1; i > 0; --i)
+					for (SizeT i = l.size() - 1; i > 0; --i) {
 						l[i] = (l[i] - (X[j] - x0) * l[i-1]) / (X[k] - X[j]);
+					}
 					l[0] /= X[k] - X[j];
 				}
 			}
-			for (size_t i = 0; i < l.size(); ++i) {
+			for (SizeT i = 0; i < l.size(); ++i) {
 				L[i] += Y[k] * l[i];
 			}
 		}
@@ -89,8 +93,8 @@ namespace alfi::poly {
 		return L;
 	}
 
-	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
-	Container newton(const Container& X, const Container& Y, Number x0 = 0) {
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	Container<Number> newton(const auto& X, const auto& Y, Number x0 = 0) {
 		if (X.size() != Y.size()) {
 			std::cerr << "Error in function " << __FUNCTION__
 					  << ": Vectors X (of size " << X.size()
@@ -105,32 +109,34 @@ namespace alfi::poly {
 			return {};
 		}
 
-		const size_t n = X.size();
+		const SizeT n = X.size();
 
-		Container F = Y;
+		Container<Number> F = Y;
 
-		for (size_t i = 1; i < n; ++i)
-			for (size_t j = n - 1; j >= i; --j)
+		for (SizeT i = 1; i < n; ++i)
+			for (SizeT j = n - 1; j >= i; --j)
 				F[j] = (F[j] - F[j-1]) / (X[j] - X[j-i]);
 
-		Container N(n, 0);
+		Container<Number> N(n, 0);
 		N[N.size()-1] = F[0];
 
-		Container f(n);
-		for (size_t i = 0; i < n - 1; ++i) {
+		Container<Number> f(n);
+		for (SizeT i = 0; i < n - 1; ++i) {
 			f.resize(1);
 			f[0] = F[i+1];
-			for (size_t j = 0; j <= i; ++j) {
+			for (SizeT j = 0; j <= i; ++j) {
 				// f = conv(f, [1, -(X[j] - x0)]);
 				f.resize(f.size() + 1);
 				f[f.size()-1] = 0;
-				for (size_t k = f.size() - 1; k > 0; --k)
+				for (SizeT k = f.size() - 1; k > 0; --k) {
 					f[k] -= (X[j] - x0) * f[k-1];
+				}
 			}
 			// N = conv(N, [0, 1]); N = N + f;
 			// N is buffered, so no need in conv
-			for (size_t j = 0; j < f.size(); ++j)
+			for (SizeT j = 0; j < f.size(); ++j) {
 				N[n-1-i-1+j] += f[j];
+			}
 		}
 
 		return N;

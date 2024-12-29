@@ -4,10 +4,10 @@
 #include <cmath>
 
 #include "../config.h"
-#include "../util.h"
+#include "../util/misc.h"
 
 namespace alfi::spline {
-	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	class StepSpline {
 	public:
 		enum class Type {
@@ -46,12 +46,15 @@ namespace alfi::spline {
 		}
 
 		Number eval(Number x) const {
-			return eval(x, std::distance(_X.begin(), util::first_leq_or_begin(_X.begin(), _X.end(), x)));
+			return eval(x, std::distance(_X.begin(), util::misc::first_leq_or_begin(_X.begin(), _X.end(), x)));
 		}
-		Number eval(Number x, size_t segment_index) const {
-			if (_X.empty())
+		Number eval(Number x, SizeT segment_index) const {
+			if (_Y.empty()) {
 				return NAN;
-			segment_index = std::max(std::min(segment_index, _X.size() - 2), static_cast<size_t>(0));
+			} else if (_Y.size() == 1) {
+				return _Y[0];
+			}
+			segment_index = std::max(std::min(segment_index, static_cast<SizeT>(_X.size() - 2)), static_cast<SizeT>(0));
 			if (x <= _X[segment_index]) {
 				return _Y[segment_index];
 			}
@@ -66,17 +69,17 @@ namespace alfi::spline {
 			}
 		}
 
-		Container eval(const Container& xx, bool sorted = true) const {
+		Container<Number> eval(const Container<Number>& xx, bool sorted = true) const {
 			Container result(xx.size());
 			if (sorted) {
-				for (size_t i = 0, i_x = 0; i < xx.size(); ++i) {
+				for (SizeT i = 0, i_x = 0; i < xx.size(); ++i) {
 					const Number x = xx[i];
 					while (i_x < _X.size() && x >= _X[i_x+1])
 						++i_x;
 					result[i] = eval(x, i_x);
 				}
 			} else {
-				for (size_t i = 0; i < xx.size(); ++i) {
+				for (SizeT i = 0; i < xx.size(); ++i) {
 					result[i] = eval(xx[i]);
 				}
 			}
@@ -86,7 +89,7 @@ namespace alfi::spline {
 		Number operator()(Number x) const {
 			return eval(x);
 		}
-		Container operator()(const Container& xx) const {
+		Container<Number> operator()(const Container<Number>& xx) const {
 			return eval(xx);
 		}
 
@@ -94,23 +97,23 @@ namespace alfi::spline {
 			return _type;
 		}
 
-		const Container& X() const & {
+		const Container<Number>& X() const & {
 			return _X;
 		}
-		Container&& X() && {
+		Container<Number>&& X() && {
 			return std::move(_X);
 		}
 
-		const Container& Y() const & {
+		const Container<Number>& Y() const & {
 			return _Y;
 		}
-		Container&& Y() && {
+		Container<Number>&& Y() && {
 			return std::move(_Y);
 		}
 
 	private:
 		Type _type = Type::Default;
-		Container _X = {};
-		Container _Y = {};
+		Container<Number> _X = {};
+		Container<Number> _Y = {};
 	};
 }

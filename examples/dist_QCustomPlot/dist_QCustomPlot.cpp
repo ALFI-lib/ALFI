@@ -157,7 +157,7 @@ private:
 	}
 
 	void update_plot() {
-		static const std::vector<QColor> colors = {
+		static const QVector<QColor> colors = {
 			QColor(  0,   0, 255), // blue        #0000ff =   0   0 255
 			QColor(255,   0,   0), // red         #ff0000 = 255   0   0
 			QColor(  0, 255,   0), // green       #00ff00 =   0 255   0
@@ -181,7 +181,7 @@ private:
 		const double B = _ratio_spin_box->value();
 		const double steepness = _steepness_spin_box->value();
 
-		const std::vector<std::pair<QString, std::vector<double>>> distributions = {
+		const QVector<std::pair<QString, std::vector<double>>> distributions = {
 			{"Uniform", alfi::dist::uniform(n, a, b)},
 			{"Chebyshev", alfi::dist::chebyshev(n, a, b)},
 			{"Stretched Chebyshev", alfi::dist::chebyshev_stretched(n, a, b)},
@@ -202,7 +202,7 @@ private:
 
 		double current_layer = -1;
 
-		for (size_t i = 0; i < distributions.size(); ++i) {
+		for (int i = 0; i < distributions.size(); ++i) {
 			const auto& [name, x_data] = distributions[i];
 			QVector<double> x, y;
 			for (const double& value : x_data) {

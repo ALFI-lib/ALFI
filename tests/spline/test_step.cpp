@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <ALFI.h>
+#include <ALFI/spline/step.h>
 
 TEST(StepSplineTest, General) {
 	const std::vector<double> X = {0, 1, 2, 3};

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <ALFI.h>
+#include <ALFI/dist.h>
 
 TEST(DistributionsTest, Uniform) {
 

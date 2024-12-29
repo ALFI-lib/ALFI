@@ -4,16 +4,49 @@
 #include <cmath>
 
 #include "../config.h"
-#include "../util.h"
+#include "../util/misc.h"
 
 namespace alfi::spline {
-	template <typename Number = DefaultNumber, typename Container = DefaultContainer<Number>>
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	class LinearSpline {
 	public:
+		static Container<Number> compute_coeffs(const auto& X, const auto& Y) {
+			if (X.size() != Y.size()) {
+				std::cerr << "Error in function " << __FUNCTION__
+						  << ": Vectors X (of size " << X.size()
+						  << ") and Y (of size " << Y.size()
+						  << ") are not the same size. Returning an empty array..." << std::endl;
+				return {};
+			}
+
+			const auto n = X.size();
+
+			if (n <= 2) {
+				if (n == 0) {
+					return {};
+				} else if (n == 1) {
+					return {Y[0]};
+				} else {
+					return {(Y[1] - Y[0]) / (X[1] - X[0]), Y[0]};
+				}
+			}
+
+			Container<Number> coeffs;
+
+			coeffs.resize(2 * (n - 1));
+
+			for (SizeT i = 0; i < n - 1; ++i) {
+				coeffs[2*i] = (Y[i+1] - Y[i]) / (X[i+1] - X[i]);
+				coeffs[2*i+1] = Y[i];
+			}
+
+			return coeffs;
+		}
+
 		LinearSpline() = default;
 
 		template <typename ContainerXType>
-		LinearSpline(ContainerXType&& X, const Container& Y) {
+		LinearSpline(ContainerXType&& X, const auto& Y) {
 			construct(std::forward<ContainerXType>(X), Y);
 		}
 
@@ -24,7 +57,7 @@ namespace alfi::spline {
 		LinearSpline& operator=(LinearSpline&& other) noexcept = default;
 
 		template <typename ContainerXType>
-		void construct(ContainerXType&& X, const Container& Y) {
+		void construct(ContainerXType&& X, const auto& Y) {
 			if (X.size() != Y.size()) {
 				std::cerr << "Error in function " << __FUNCTION__
 						  << ": Vectors X (of size " << X.size()
@@ -32,54 +65,41 @@ namespace alfi::spline {
 						  << ") are not the same size. Doing nothing..." << std::endl;
 				return;
 			}
-
-			const auto guard = util::SimpleScopeGuard([&]() {
-				_X = std::forward<ContainerXType>(X);
-			});
-
-			const size_t n = X.size();
-
-			if (n <= 2) {
-				if (n == 0) {
-					_coeffs = {};
-				} else if (n == 1) {
-					_coeffs = {Y[0]};
-				} else {
-					_coeffs = {(Y[1] - Y[0]) / (X[1] - X[0]), Y[0]};
-				}
+			auto coeffs = compute_coeffs(X, Y);
+			if (coeffs.empty() && !X.empty()) {
+				std::cerr << "Error in function " << __FUNCTION__
+						  << ": failed to construct coefficients. Not changing the object..." << std::endl;
 				return;
 			}
-
-			_coeffs.resize(2 * (n - 1));
-
-			for (size_t i = 0; i < n - 1; ++i) {
-				_coeffs[2*i] = (Y[i+1] - Y[i]) / (X[i+1] - X[i]);
-				_coeffs[2*i+1] = Y[i];
-			}
+			_X = std::forward<ContainerXType>(X);
+			_coeffs = std::move(coeffs);
 		}
 
 		Number eval(Number x) const {
-			return eval(x, std::distance(_X.begin(), util::first_leq_or_begin(_X.begin(), _X.end(), x)));
+			return eval(x, std::distance(_X.begin(), util::misc::first_leq_or_begin(_X.begin(), _X.end(), x)));
 		}
-		Number eval(Number x, size_t segment_index) const {
-			if (_X.empty())
+		Number eval(Number x, SizeT segment_index) const {
+			if (_coeffs.empty()) {
 				return NAN;
-			segment_index = std::max(std::min(segment_index, _X.size() - 2), static_cast<size_t>(0));
+			} else if (_coeffs.size() == 1) {
+				return _coeffs[0];
+			}
+			segment_index = std::max(std::min(segment_index, static_cast<SizeT>(_X.size() - 2)), static_cast<SizeT>(0));
 			x = x - _X[segment_index];
 			return _coeffs[2*segment_index] * x + _coeffs[2*segment_index+1];
 		}
 
-		Container eval(const Container& xx, bool sorted = true) const {
+		Container<Number> eval(const Container<Number>& xx, bool sorted = true) const {
 			Container result(xx.size());
 			if (sorted) {
-				for (size_t i = 0, i_x = 0; i < xx.size(); ++i) {
+				for (SizeT i = 0, i_x = 0; i < xx.size(); ++i) {
 					const Number x = xx[i];
 					while (i_x < _X.size() && x >= _X[i_x+1])
 						++i_x;
 					result[i] = eval(x, i_x);
 				}
 			} else {
-				for (size_t i = 0; i < xx.size(); ++i) {
+				for (SizeT i = 0; i < xx.size(); ++i) {
 					result[i] = eval(xx[i]);
 				}
 			}
@@ -89,30 +109,30 @@ namespace alfi::spline {
 		Number operator()(Number x) const {
 			return eval(x);
 		}
-		Container operator()(const Container& xx) const {
+		Container<Number> operator()(const Container<Number>& xx) const {
 			return eval(xx);
 		}
 
-		const Container& X() const & {
+		const Container<Number>& X() const & {
 			return _X;
 		}
-		Container&& X() && {
+		Container<Number>&& X() && {
 			return std::move(_X);
 		}
 
-		const Container& coeffs() const & {
+		const Container<Number>& coeffs() const & {
 			return _coeffs;
 		}
-		Container&& coeffs() && {
+		Container<Number>&& coeffs() && {
 			return std::move(_coeffs);
 		}
 
-		static std::pair<size_t, size_t> segment(size_t index) {
+		static std::pair<SizeT, SizeT> segment(SizeT index) {
 			return {2*index, 2*(index+1)};
 		}
 
 	private:
-		Container _X = {};
-		Container _coeffs = {};
+		Container<Number> _X = {};
+		Container<Number> _coeffs = {};
 	};
 }
