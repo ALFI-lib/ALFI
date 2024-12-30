@@ -58,13 +58,13 @@ namespace alfi::spline {
 			if (x <= _X[segment_index]) {
 				return _Y[segment_index];
 			}
-			if (x >= _X[segment_index + 1]) {
-				return _Y[segment_index + 1];
+			if (x >= _X[segment_index+1]) {
+				return _Y[segment_index+1];
 			}
 			switch (_type) {
 				case Type::LEFT: return _Y[segment_index];
 				case Type::RIGHT: return _Y[segment_index + 1];
-				case Type::MIDDLE: return (_Y[segment_index] + _Y[segment_index + 1]) / 2;
+				case Type::MIDDLE: return (_Y[segment_index] + _Y[segment_index+1]) / 2;
 				default: return NAN;
 			}
 		}

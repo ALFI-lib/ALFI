@@ -71,38 +71,38 @@ namespace alfi::spline {
 
 				Container<Number> dX(n - 1), dY(n - 1);
 				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i + 1] - X[i];
-					dY[i] = Y[i + 1] - Y[i];
+					dX[i] = X[i+1] - X[i];
+					dY[i] = Y[i+1] - Y[i];
 				}
 
 				Container<Number> B(n);
-				B[0] = B[n - 1] = 0;
+				B[0] = B[n-1] = 0;
 				// Tridiagonal matrix algorithm
 				Container<Number> diagonal(n - 2), right(n - 2);
 				for (SizeT i = 0; i < n - 2; ++i) {
-					diagonal[i] = 2 * (dX[i] + dX[i + 1]);
-					right[i] = 3 * ((dY[i + 1] / dX[i + 1]) - (dY[i] / dX[i]));
+					diagonal[i] = 2 * (dX[i] + dX[i+1]);
+					right[i] = 3 * (dY[i+1] / dX[i+1] - dY[i] / dX[i]);
 				}
 				// Forward pass
 				for (SizeT i = 1; i < n - 2; ++i) {
-					const auto m = dX[i] / diagonal[i - 1];
+					const auto m = dX[i] / diagonal[i-1];
 					diagonal[i] -= m * dX[i];
-					right[i] -= m * right[i - 1];
+					right[i] -= m * right[i-1];
 				}
 				// Backward pass
-				B[n - 2] = right[n - 3] / diagonal[n - 3];
+				B[n-2] = right[n-3] / diagonal[n-3];
 				for (SizeT i = n - 3; i >= 1; --i) {
-					B[i] = (right[i - 1] - dX[i] * B[i + 1]) / diagonal[i - 1];
+					B[i] = (right[i-1] - dX[i] * B[i+1]) / diagonal[i-1];
 				}
 
 				Container<Number> A(n - 1);
 				for (SizeT i = 0; i < A.size(); ++i) {
-					A[i] = (B[i + 1] - B[i]) / (3 * dX[i]);
+					A[i] = (B[i+1] - B[i]) / (3*dX[i]);
 				}
 
 				Container<Number> C(n - 1);
 				for (SizeT i = 0; i < C.size(); ++i) {
-					C[i] = dY[i] / dX[i] - dX[i] * ((2 * B[i] + B[i + 1]) / 3);
+					C[i] = dY[i] / dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
 				}
 
 				// const auto D = Y; - no need to create extra array
@@ -120,8 +120,8 @@ namespace alfi::spline {
 
 				Container<Number> dX(n - 1), dY(n - 1);
 				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i + 1] - X[i];
-					dY[i] = Y[i + 1] - Y[i];
+					dX[i] = X[i+1] - X[i];
+					dY[i] = Y[i+1] - Y[i];
 				}
 
 				const auto big_denominator = dX[n-2] * (dX[n-3] + dX[n-2]) * (2*dX[n-3] + dX[n-2]);
@@ -131,25 +131,25 @@ namespace alfi::spline {
 				Container<Number> diagonal(n - 3), right(n - 3);
 				diagonal[0] = ((dX[0] + dX[1]) * (dX[0] + 2 * dX[1])) / dX[1];
 				for (SizeT i = 1; i < n - 4; ++i) {
-					diagonal[i] = 2 * (dX[i] + dX[i + 1]);
+					diagonal[i] = 2 * (dX[i] + dX[i+1]);
 				}
-				diagonal[n - 4] = 2 * dX[n - 4] + 3 * dX[n - 3] * (1 - dX[n - 3] / (2 * dX[n - 3] + dX[n - 2]));
+				diagonal[n-4] = 2 * dX[n-4] + 3 * dX[n-3] * (1 - dX[n-3] / (2 * dX[n-3] + dX[n-2]));
 				for (SizeT i = 0; i < n - 4; ++i) {
-					right[i] = 3 * (dY[i + 1] / dX[i + 1] - dY[i] / dX[i]);
+					right[i] = 3 * (dY[i+1] / dX[i+1] - dY[i] / dX[i]);
 				}
 				right[n-4] = 3 * (dY[n-3]/dX[n-3] - dY[n-4]/dX[n-4]) - (3*dX[n-3]*(dY[n-2]*dX[n-3] - dY[n-3]*dX[n-2])) / big_denominator;
 				// Forward pass
 				diagonal[1] -= dX[1] / diagonal[0] * (dX[1] - (dX[0] * dX[0]) / dX[1]);
 				right[1] -= dX[1] / diagonal[0] * right[0];
 				for (SizeT i = 2; i < n - 3; ++i) {
-					const auto m = dX[i] / diagonal[i - 1];
+					const auto m = dX[i] / diagonal[i-1];
 					diagonal[i] -= m * dX[i];
-					right[i] -= m * right[i - 1];
+					right[i] -= m * right[i-1];
 				}
 				// Backward pass
-				B[n - 3] = right[n - 4] / diagonal[n - 4];
+				B[n-3] = right[n-4] / diagonal[n-4];
 				for (SizeT i = n - 4; i >= 2; --i) {
-					B[i] = (right[i - 1] - dX[i] * B[i + 1]) / diagonal[i - 1];
+					B[i] = (right[i-1] - dX[i] * B[i+1]) / diagonal[i-1];
 				}
 				B[1] = (right[0] - (dX[1] - (dX[0] * dX[0]) / dX[1]) * B[2]) / diagonal[0];
 
@@ -157,16 +157,16 @@ namespace alfi::spline {
 
 				Container<Number> A(n - 1);
 				for (SizeT i = 1; i < A.size() - 1; ++i) {
-					A[i] = (B[i+1] - B[i]) / (3 * dX[i]);
+					A[i] = (B[i+1] - B[i]) / (3*dX[i]);
 				}
 				A[0] = A[1];
-				A[n - 2] = A[n - 3];
+				A[n-2] = A[n-3];
 
 				B[0] = B[1] - 3 * A[0] * dX[0];
 
 				Container<Number> C(n - 1);
 				for (SizeT i = 0; i < C.size() - 1; ++i) {
-					C[i] = dY[i] / dX[i] - dX[i] * ((2 * B[i] + B[i + 1]) / 3);
+					C[i] = dY[i] / dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
 				}
 				C[n-2] = dY[n-2] / dX[n-2] - A[n-2] * dX[n-2] * dX[n-2] - B[n-2] * dX[n-2];
 
@@ -185,8 +185,8 @@ namespace alfi::spline {
 
 				Container<Number> dX(n - 1), dY(n - 1);
 				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i + 1] - X[i];
-					dY[i] = Y[i + 1] - Y[i];
+					dX[i] = X[i+1] - X[i];
+					dY[i] = Y[i+1] - Y[i];
 				}
 
 				Container<Number> B(n);
@@ -198,7 +198,7 @@ namespace alfi::spline {
 					Container<Number> diag(n - 1), right(n - 1);
 					for (SizeT i = 0; i < n - 2; ++i) {
 						diag[i] = 2 * (dX[i] + dX[i+1]);
-						right[i] = 3 * (dY[i+1]/dX[i+1] - dY[i]/dX[i]);
+						right[i] = 3 * (dY[i+1] / dX[i+1] - dY[i] / dX[i]);
 					}
 					diag[n-2] = 2 * (dX[n-2] + dX[0]);
 					right[n-2] = 3 * (dY[0]/dX[0] - dY[n-2]/dX[n-2]);
@@ -233,12 +233,12 @@ namespace alfi::spline {
 
 				Container<Number> A(n - 1);
 				for (SizeT i = 0; i < A.size(); ++i) {
-					A[i] = (B[i + 1] - B[i]) / (3 * dX[i]);
+					A[i] = (B[i+1] - B[i]) / (3*dX[i]);
 				}
 
 				Container<Number> C(n - 1);
 				for (SizeT i = 0; i < C.size(); ++i) {
-					C[i] = dY[i] / dX[i] - dX[i] * ((2 * B[i] + B[i + 1]) / 3);
+					C[i] = dY[i] / dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
 				}
 
 				for (SizeT i = 0, index = 0; i < n - 1; ++i) {
@@ -254,8 +254,8 @@ namespace alfi::spline {
 
 				Container<Number> dX(n - 1), dY(n - 1);
 				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i + 1] - X[i];
-					dY[i] = Y[i + 1] - Y[i];
+					dX[i] = X[i+1] - X[i];
+					dY[i] = Y[i+1] - Y[i];
 				}
 
 				{ // first four points
@@ -302,8 +302,8 @@ namespace alfi::spline {
 
 				Container<Number> dX(n - 1), dY(n - 1);
 				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i + 1] - X[i];
-					dY[i] = Y[i + 1] - Y[i];
+					dX[i] = X[i+1] - X[i];
+					dY[i] = Y[i+1] - Y[i];
 				}
 
 				{ // last four points
@@ -400,7 +400,7 @@ namespace alfi::spline {
 			}
 			segment_index = std::max(std::min(segment_index, static_cast<SizeT>(_X.size() - 2)), static_cast<SizeT>(0));
 			x = x - _X[segment_index];
-			return ((_coeffs[4 * segment_index] * x + _coeffs[4 * segment_index + 1]) * x + _coeffs[4 * segment_index + 2]) * x + _coeffs[4 * segment_index + 3];
+			return ((_coeffs[4*segment_index] * x + _coeffs[4*segment_index+1]) * x + _coeffs[4*segment_index+2]) * x + _coeffs[4*segment_index+3];
 		}
 
 		Container<Number> eval(const Container<Number>& xx, bool sorted = true) const {
@@ -408,7 +408,7 @@ namespace alfi::spline {
 			if (sorted) {
 				for (SizeT i = 0, i_x = 0; i < xx.size(); ++i) {
 					const Number evalx = xx[i];
-					while (i_x + 1 < _X.size() && evalx >= _X[i_x + 1])
+					while (i_x + 1 < _X.size() && evalx >= _X[i_x+1])
 						++i_x;
 					result[i] = eval(evalx, i_x);
 				}
