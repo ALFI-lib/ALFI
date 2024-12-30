@@ -69,11 +69,7 @@ namespace alfi::spline {
 					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
 
-				Container<Number> dX(n - 1), dY(n - 1);
-				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i+1] - X[i];
-					dY[i] = Y[i+1] - Y[i];
-				}
+				const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
 				Container<Number> B(n);
 				B[0] = B[n-1] = 0;
@@ -118,11 +114,7 @@ namespace alfi::spline {
 					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
 
-				Container<Number> dX(n - 1), dY(n - 1);
-				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i+1] - X[i];
-					dY[i] = Y[i+1] - Y[i];
-				}
+				const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
 				const auto big_denominator = dX[n-2] * (dX[n-3] + dX[n-2]) * (2*dX[n-3] + dX[n-2]);
 
@@ -183,11 +175,7 @@ namespace alfi::spline {
 					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
 
-				Container<Number> dX(n - 1), dY(n - 1);
-				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i+1] - X[i];
-					dY[i] = Y[i+1] - Y[i];
-				}
+				const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
 				Container<Number> B(n);
 				if (n == 3) {
@@ -252,11 +240,7 @@ namespace alfi::spline {
 					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
 
-				Container<Number> dX(n - 1), dY(n - 1);
-				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i+1] - X[i];
-					dY[i] = Y[i+1] - Y[i];
-				}
+				const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
 				{ // first four points
 					const auto h1 = dX[0], h2 = dX[1];
@@ -300,11 +284,7 @@ namespace alfi::spline {
 					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
 
-				Container<Number> dX(n - 1), dY(n - 1);
-				for (SizeT i = 0; i < n - 1; ++i) {
-					dX[i] = X[i+1] - X[i];
-					dY[i] = Y[i+1] - Y[i];
-				}
+				const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
 				{ // last four points
 					const auto h1 = dX[n-4], h2 = dX[n-3];

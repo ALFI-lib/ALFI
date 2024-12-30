@@ -6,7 +6,7 @@
 
 namespace alfi::util::arrays {
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
-	Container<Number> sum(const Container<Number>& container1, const Container<Number>& container2) {
+	Container<Number> add(const Container<Number>& container1, const Container<Number>& container2) {
 		if (container1.size() != container2.size()) {
 			std::cerr << "Error in function " << __FUNCTION__
 					  << ": Vectors container1 (of size " << container1.size()
@@ -23,7 +23,7 @@ namespace alfi::util::arrays {
 	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
-	Container<Number> diff(const Container<Number>& container1, const Container<Number>& container2) {
+	Container<Number> sub(const Container<Number>& container1, const Container<Number>& container2) {
 		if (container1.size() != container2.size()) {
 			std::cerr << "Error in function " << __FUNCTION__
 					  << ": Vectors container1 (of size " << container1.size()
@@ -35,6 +35,18 @@ namespace alfi::util::arrays {
 		Container<Number> result(n);
 		for (std::remove_const_t<decltype(n)> i = 0; i < n; ++i) {
 			result[i] = container1[i] - container2[i];
+		}
+		return result;
+	}
+
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	Container<Number> diff(const auto& container) {
+		if (container.empty()) {
+			return {};
+		}
+		Container<Number> result(container.size() - 1);
+		for (SizeT i = 0; i < result.size(); ++i) {
+			result[i] = container[i+1] - container[i];
 		}
 		return result;
 	}
