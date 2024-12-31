@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <iostream>
 #include <cmath>
 
@@ -78,15 +79,15 @@ namespace alfi::spline {
 		Number eval(Number x) const {
 			return eval(x, std::distance(_X.begin(), util::misc::first_leq_or_begin(_X.begin(), _X.end(), x)));
 		}
-		Number eval(Number x, SizeT segment_index) const {
+		Number eval(Number x, SizeT segment) const {
 			if (_coeffs.empty()) {
 				return NAN;
 			} else if (_coeffs.size() == 1) {
 				return _coeffs[0];
 			}
-			segment_index = std::max(std::min(segment_index, static_cast<SizeT>(_X.size() - 2)), static_cast<SizeT>(0));
-			x = x - _X[segment_index];
-			return _coeffs[2*segment_index] * x + _coeffs[2*segment_index+1];
+			segment = std::clamp(segment, static_cast<SizeT>(0), static_cast<SizeT>(_X.size() - 2));
+			x = x - _X[segment];
+			return _coeffs[2*segment] * x + _coeffs[2*segment+1];
 		}
 
 		Container<Number> eval(const Container<Number>& xx, bool sorted = true) const {

@@ -5,41 +5,63 @@
 TEST(StepSplineTest, General) {
 	const std::vector<double> X = {0, 1, 2, 3};
 	const std::vector<double> Y = {5, 2, 10, 4};
-	const auto left_spline = alfi::spline::StepSpline(X, Y, alfi::spline::StepSpline<>::Type::LEFT);
-	const auto right_spline = alfi::spline::StepSpline(X, Y, alfi::spline::StepSpline<>::Type::RIGHT);
-	const auto middle_spline = alfi::spline::StepSpline(X, Y, alfi::spline::StepSpline<>::Type::MIDDLE);
+	const auto left_spline = alfi::spline::StepSpline(X, Y, alfi::spline::StepSpline<>::Types::Left{});
+	const auto middle_spline = alfi::spline::StepSpline(X, Y, alfi::spline::StepSpline<>::Types::Middle{});
+	const auto right_spline = alfi::spline::StepSpline(X, Y, alfi::spline::StepSpline<>::Types::Right{});
+	const auto fraction_spline = alfi::spline::StepSpline(X, Y, alfi::spline::StepSpline<>::Types::Fraction{0.25});
+	const auto proportion_spline = alfi::spline::StepSpline(X, Y, alfi::spline::StepSpline<>::Types::Proportion{3, 7});
 	const auto epsilon = 0.0001;
 	for (size_t i = 0; i < X.size() - 1; ++i) {
-		// LEFT exact points
+		// Left exact points
 		EXPECT_EQ(left_spline(X[i]), Y[i]);
 		EXPECT_EQ(left_spline(X[i+1]), Y[i+1]);
-		// LEFT between points
+		// Left between points
 		EXPECT_EQ(left_spline(X[i] + epsilon), Y[i]);
 		EXPECT_EQ(left_spline((X[i]+X[i+1])/2), Y[i]);
 		EXPECT_EQ(left_spline(X[i+1] - epsilon), Y[i]);
 
-		// RIGHT exact points
+		// Middle exact points
+		EXPECT_EQ(middle_spline(X[i]), Y[i]);
+		EXPECT_EQ(middle_spline(X[i+1]), Y[i+1]);
+		// Middle between points
+		EXPECT_EQ(middle_spline(X[i] + epsilon), (Y[i]+Y[i+1])/2);
+		EXPECT_EQ(middle_spline((X[i]+X[i+1])/2), (Y[i]+Y[i+1])/2);
+		EXPECT_EQ(middle_spline(X[i+1] - epsilon), (Y[i]+Y[i+1])/2);
+
+		// Right exact points
 		EXPECT_EQ(right_spline(X[i]), Y[i]);
 		EXPECT_EQ(right_spline(X[i+1]), Y[i+1]);
-		// RIGHT between points
+		// Right between points
 		EXPECT_EQ(right_spline(X[i] + epsilon), Y[i+1]);
 		EXPECT_EQ(right_spline((X[i]+X[i+1])/2), Y[i+1]);
 		EXPECT_EQ(right_spline(X[i+1] - epsilon), Y[i+1]);
 
-		// MIDDLE exact points
-		EXPECT_EQ(middle_spline(X[i]), Y[i]);
-		EXPECT_EQ(middle_spline(X[i+1]), Y[i+1]);
-		// MIDDLE between points
-		EXPECT_EQ(middle_spline(X[i] + epsilon), (Y[i]+Y[i+1])/2);
-		EXPECT_EQ(middle_spline((X[i]+X[i+1])/2), (Y[i]+Y[i+1])/2);
-		EXPECT_EQ(middle_spline(X[i+1] - epsilon), (Y[i]+Y[i+1])/2);
+		// Fraction exact points
+		EXPECT_EQ(fraction_spline(X[i]), Y[i]);
+		EXPECT_EQ(fraction_spline(X[i+1]), Y[i+1]);
+		// Fraction between points
+		EXPECT_EQ(fraction_spline(X[i] + epsilon), Y[i] + 0.25*(Y[i+1] - Y[i]));
+		EXPECT_EQ(fraction_spline((X[i]+X[i+1])/2), Y[i] + 0.25*(Y[i+1] - Y[i]));
+		EXPECT_EQ(fraction_spline(X[i+1] - epsilon), Y[i] + 0.25*(Y[i+1] - Y[i]));
+
+		// Proportion exact points
+		EXPECT_EQ(proportion_spline(X[i]), Y[i]);
+		EXPECT_EQ(proportion_spline(X[i+1]), Y[i+1]);
+		// Proportion between points
+		EXPECT_EQ(proportion_spline(X[i] + epsilon), Y[i] + 0.3*(Y[i+1] - Y[i]));
+		EXPECT_EQ(proportion_spline((X[i]+X[i+1])/2), Y[i] + 0.3*(Y[i+1] - Y[i]));
+		EXPECT_EQ(proportion_spline(X[i+1] - epsilon), Y[i] + 0.3*(Y[i+1] - Y[i]));
 	}
 	EXPECT_EQ(left_spline(X.front() - 1), Y.front());
 	EXPECT_EQ(left_spline(X.back() + 1), Y.back());
-	EXPECT_EQ(right_spline(X.front() - 1), Y.front());
-	EXPECT_EQ(right_spline(X.back() + 1), Y.back());
 	EXPECT_EQ(middle_spline(X.front() - 1), Y.front());
 	EXPECT_EQ(middle_spline(X.back() + 1), Y.back());
+	EXPECT_EQ(right_spline(X.front() - 1), Y.front());
+	EXPECT_EQ(right_spline(X.back() + 1), Y.back());
+	EXPECT_EQ(fraction_spline(X.front() - 1), Y.front());
+	EXPECT_EQ(fraction_spline(X.back() + 1), Y.back());
+	EXPECT_EQ(proportion_spline(X.front() - 1), Y.front());
+	EXPECT_EQ(proportion_spline(X.back() + 1), Y.back());
 }
 
 TEST(StepSplineTest, Moving) {

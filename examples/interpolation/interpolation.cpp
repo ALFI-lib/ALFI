@@ -1,3 +1,5 @@
+#include <ranges>
+
 #include <qcustomplot.h>
 
 #include <ALFI.h>
@@ -8,9 +10,10 @@ QVector<T> to_qvector(const std::vector<T>& v) {
 }
 
 double f(double x) {
-	// return -3 * std::sin(10 * x) + std::abs(x) + 0.5 * x - x * x;
-	// return -3 * std::sin(10 * x) + 10 * sin(std::abs(x) + 0.5 * x);
-	return std::sin(3 * M_PI * x) + std::cos(M_PI * x / 5);
+	// return -3 * std::sin(10 * x) + std::abs(x) + 0.5 * x - x * x; // example 1
+	return -3 * std::sin(10 * x) + 10 * sin(std::abs(x) + 0.5 * x); // example 2
+	// return std::sin(3 * M_PI * x) + std::cos(M_PI * x / 5); // periodic
+	// return 1/(1+std::exp(-10000*(x-1))) - 1/(1+std::exp(-10000*(x+1))); // high local second derivative
 }
 
 template <typename Container>
@@ -25,6 +28,34 @@ Container f(const Container& X) {
 
 class PlotWindow final : public QWidget {
 public:
+	static const inline std::vector<std::pair<QString,alfi::spline::StepSpline<>::Type>> step_spline_types = {
+		{"Left", alfi::spline::StepSpline<>::Types::Left{}},
+		{"Middle", alfi::spline::StepSpline<>::Types::Middle{}},
+		{"Right", alfi::spline::StepSpline<>::Types::Right{}},
+	};
+	static const inline size_t step_spline_default_type_index = 0;
+
+	static const inline std::vector<std::pair<QString,alfi::spline::QuadraticSpline<>::Type>> quadratic_spline_types = {
+		{"Not-a-knot start", alfi::spline::QuadraticSpline<>::Types::NotAKnotStart{}},
+		{"Not-a-knot end", alfi::spline::QuadraticSpline<>::Types::NotAKnotEnd{}},
+		{"Semi-not-a-knot", alfi::spline::QuadraticSpline<>::Types::SemiNotAKnot{}},
+		{"Natural start", alfi::spline::QuadraticSpline<>::Types::NaturalStart{}},
+		{"Natural end", alfi::spline::QuadraticSpline<>::Types::NaturalEnd{}},
+		{"Semi-natural", alfi::spline::QuadraticSpline<>::Types::SemiNatural{}},
+		{"Semi-semi", alfi::spline::QuadraticSpline<>::Types::SemiSemi{}},
+	};
+	static const inline size_t quadratic_spline_default_type_index = 2;
+
+	static const inline std::vector<std::pair<QString,alfi::spline::CubicSpline<>::Type>> cubic_spline_types = {
+		{"Natural", alfi::spline::CubicSpline<>::Types::Natural{}},
+		{"Not-a-knot", alfi::spline::CubicSpline<>::Types::NotAKnot{}},
+		{"Periodic", alfi::spline::CubicSpline<>::Types::Periodic{}},
+		{"Not-a-knot start", alfi::spline::CubicSpline<>::Types::NotAKnotStart{}},
+		{"Not-a-knot end", alfi::spline::CubicSpline<>::Types::NotAKnotEnd{}},
+		{"Semi-not-a-knot", alfi::spline::CubicSpline<>::Types::SemiNotAKnot{}},
+	};
+	static const inline size_t cubic_spline_default_type_index = 0;
+
 	PlotWindow() {
 		static const QStringList distribution_types {
 			"Uniform", "Chebyshev", "Chebyshev Stretched", "Chebyshev Ellipse", "Chebyshev Ellipse Stretched",
@@ -66,22 +97,28 @@ public:
 
 		_function_checkbox->setChecked(true);
 		_points_checkbox->setChecked(true);
-		_barycentric_checkbox->setChecked(true);
 
 		_barycentric_combo = new QComboBox();
 		_barycentric_combo->addItem("Auto");
 		_barycentric_combo->addItems(distribution_types);
 
 		_step_spline_combo = new QComboBox();
-		_step_spline_combo->addItems({"Left", "Right", "Middle"});
+		for (const auto& name : step_spline_types | std::views::keys) {
+			_step_spline_combo->addItem(name);
+		}
+		_step_spline_combo->setCurrentIndex(step_spline_default_type_index);
 
 		_quadratic_spline_combo = new QComboBox();
-		_quadratic_spline_combo->addItems({"Natural start", "Natural end", "Semi-natural",
-			"Not-a-knot start", "Not-a-knot end", "Semi-not-a-knot", "Semi-semi"});
+		for (const auto& name : quadratic_spline_types | std::views::keys) {
+			_quadratic_spline_combo->addItem(name);
+		}
+		_quadratic_spline_combo->setCurrentIndex(quadratic_spline_default_type_index);
 
 		_cubic_spline_combo = new QComboBox();
-		_cubic_spline_combo->addItems({"Natural", "Not-a-knot", "Periodic",
-			"Not-a-knot start", "Not-a-knot end", "Semi-not-a-knot"});
+		for (const auto& name : cubic_spline_types | std::views::keys) {
+			_cubic_spline_combo->addItem(name);
+		}
+		_cubic_spline_combo->setCurrentIndex(cubic_spline_default_type_index);
 
 		_view_reset_button = new QPushButton("Reset View");
 
@@ -268,19 +305,16 @@ private:
 			add_graph("Barycentric", xx, alfi::misc::barycentric(X, Y, xx, static_cast<alfi::dist::Type>(barycentric_dist_type)));
 		}
 		if (_step_spline_checkbox->isChecked()) {
-			const auto step_spline_type = static_cast<alfi::spline::StepSpline<>::Type>(_step_spline_combo->currentIndex());
-			add_graph("Step Spline", xx, alfi::spline::StepSpline(X, Y, step_spline_type)(xx));
+			add_graph("Step Spline", xx, alfi::spline::StepSpline(X, Y, step_spline_types[_step_spline_combo->currentIndex()].second)(xx));
 		}
 		if (_linear_spline_checkbox->isChecked()) {
 			add_graph("Linear Spline", xx, alfi::spline::LinearSpline(X, Y)(xx));
 		}
 		if (_quadratic_spline_checkbox->isChecked()) {
-			const auto quadratic_spline_type = static_cast<alfi::spline::QuadraticSpline<>::Type>(_quadratic_spline_combo->currentIndex());
-			add_graph("Quadratic Spline", xx, alfi::spline::QuadraticSpline(X, Y, quadratic_spline_type)(xx));
+			add_graph("Quadratic Spline", xx, alfi::spline::QuadraticSpline(X, Y, quadratic_spline_types[_quadratic_spline_combo->currentIndex()].second)(xx));
 		}
 		if (_cubic_spline_checkbox->isChecked()) {
-			const auto cubic_spline_type = static_cast<alfi::spline::CubicSpline<>::Type>(_cubic_spline_combo->currentIndex());
-			add_graph("Cubic Spline", xx, alfi::spline::CubicSpline(X, Y, cubic_spline_type)(xx));
+			add_graph("Cubic Spline", xx, alfi::spline::CubicSpline(X, Y, cubic_spline_types[_cubic_spline_combo->currentIndex()].second)(xx));
 		}
 
 		if (_default_axis_ranges) {
