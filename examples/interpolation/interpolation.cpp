@@ -50,6 +50,7 @@ public:
 		{"Natural", alfi::spline::CubicSpline<>::Types::Natural{}},
 		{"Not-a-knot", alfi::spline::CubicSpline<>::Types::NotAKnot{}},
 		{"Periodic", alfi::spline::CubicSpline<>::Types::Periodic{}},
+		{"Clamped(0, 10)", alfi::spline::CubicSpline<>::Types::Clamped{0, 10}},
 		{"Not-a-knot start", alfi::spline::CubicSpline<>::Types::NotAKnotStart{}},
 		{"Not-a-knot end", alfi::spline::CubicSpline<>::Types::NotAKnotEnd{}},
 		{"Semi-not-a-knot", alfi::spline::CubicSpline<>::Types::SemiNotAKnot{}},
