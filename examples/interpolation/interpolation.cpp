@@ -28,6 +28,17 @@ Container f(const Container& X) {
 
 class PlotWindow final : public QWidget {
 public:
+	static const inline std::vector<std::pair<QString,std::function<std::vector<double>(std::vector<double>,std::vector<double>,std::vector<double>)>>>
+	poly_types = {
+		{"Lagrange", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val(alfi::poly::lagrange(X, Y), xx); }},
+		{"Lagrange values", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::lagrange_vals(X, Y, xx); }},
+		{"Improved Lagrange", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val(alfi::poly::imp_lagrange(X, Y), xx); }},
+		{"Improved Lagrange values", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::imp_lagrange_vals(X, Y, xx); }},
+		{"Newton", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val(alfi::poly::newton(X, Y), xx); }},
+		{"Newton values", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::newton_vals(X, Y, xx); }},
+	};
+	static const inline size_t poly_default_type_index = 0;
+
 	static const inline std::vector<std::pair<QString,alfi::spline::StepSpline<>::Type>> step_spline_types = {
 		{"Left", alfi::spline::StepSpline<>::Types::Left{}},
 		{"Middle", alfi::spline::StepSpline<>::Types::Middle{}},
@@ -88,8 +99,7 @@ public:
 
 		_function_checkbox = new QCheckBox("Function");
 		_points_checkbox = new QCheckBox("Points");
-		_lagrange_checkbox = new QCheckBox("Lagrange Polynomial");
-		_newton_checkbox = new QCheckBox("Newton Polynomial");
+		_poly_checkbox = new QCheckBox("Polynomial");
 		_barycentric_checkbox = new QCheckBox("Barycentric Formula");
 		_step_spline_checkbox = new QCheckBox("Step Spline");
 		_linear_spline_checkbox = new QCheckBox("Linear Spline");
@@ -98,6 +108,12 @@ public:
 
 		_function_checkbox->setChecked(true);
 		_points_checkbox->setChecked(true);
+
+		_poly_combo = new QComboBox();
+		for (const auto& name : poly_types | std::views::keys) {
+			_poly_combo->addItem(name);
+		}
+		_poly_combo->setCurrentIndex(poly_default_type_index);
 
 		_barycentric_combo = new QComboBox();
 		_barycentric_combo->addItem("Auto");
@@ -130,13 +146,13 @@ public:
 		connect(_b_spin_box, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &PlotWindow::update_plot);
 
 		for (const auto checkbox : {
-			_function_checkbox, _points_checkbox, _lagrange_checkbox,
-			_newton_checkbox, _barycentric_checkbox, _step_spline_checkbox,
+			_function_checkbox, _points_checkbox, _poly_checkbox,
+			_barycentric_checkbox, _step_spline_checkbox,
 			_linear_spline_checkbox, _quadratic_spline_checkbox, _cubic_spline_checkbox}) {
 			connect(checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
 		}
 
-		for (const auto combo : {_distribution_combo, _barycentric_combo, _step_spline_combo, _quadratic_spline_combo, _cubic_spline_combo}) {
+		for (const auto combo : {_distribution_combo, _poly_combo, _barycentric_combo, _step_spline_combo, _quadratic_spline_combo, _cubic_spline_combo}) {
 			connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PlotWindow::update_plot);
 		}
 
@@ -177,8 +193,8 @@ public:
 		QVBoxLayout* interpolation_layout = new QVBoxLayout();
 		interpolation_layout->addWidget(_function_checkbox);
 		interpolation_layout->addWidget(_points_checkbox);
-		interpolation_layout->addWidget(_lagrange_checkbox);
-		interpolation_layout->addWidget(_newton_checkbox);
+		interpolation_layout->addWidget(_poly_checkbox);
+		interpolation_layout->addWidget(_poly_combo);
 		interpolation_layout->addWidget(_barycentric_checkbox);
 		interpolation_layout->addWidget(_barycentric_combo);
 		interpolation_layout->addWidget(_step_spline_checkbox);
@@ -292,11 +308,8 @@ private:
 		if (_points_checkbox->isChecked()) {
 			add_graph("Points", X, Y, QCPGraph::lsNone, QCPScatterStyle::ssCircle, true);
 		}
-		if (_lagrange_checkbox->isChecked()) {
-			add_graph("Lagrange", xx, alfi::poly::val(alfi::poly::lagrange(X, Y), xx));
-		}
-		if (_newton_checkbox->isChecked()) {
-			add_graph("Newton", xx, alfi::poly::val(alfi::poly::newton(X, Y), xx));
+		if (_poly_checkbox->isChecked()) {
+			add_graph("Polynomial", xx, poly_types[_poly_combo->currentIndex()].second(X, Y, xx));
 		}
 		if (_barycentric_checkbox->isChecked()) {
 			int barycentric_dist_type = _barycentric_combo->currentIndex();
@@ -341,14 +354,14 @@ private:
 	QDoubleSpinBox* _b_spin_box;
 	QCheckBox* _function_checkbox;
 	QCheckBox* _points_checkbox;
-	QCheckBox* _lagrange_checkbox;
-	QCheckBox* _newton_checkbox;
+	QCheckBox* _poly_checkbox;
 	QCheckBox* _barycentric_checkbox;
 	QCheckBox* _step_spline_checkbox;
 	QCheckBox* _linear_spline_checkbox;
 	QCheckBox* _quadratic_spline_checkbox;
 	QCheckBox* _cubic_spline_checkbox;
 	QComboBox* _distribution_combo;
+	QComboBox* _poly_combo;
 	QComboBox* _barycentric_combo;
 	QComboBox* _step_spline_combo;
 	QComboBox* _quadratic_spline_combo;

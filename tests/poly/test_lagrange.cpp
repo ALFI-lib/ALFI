@@ -4,69 +4,32 @@
 #include <vector>
 
 #include <ALFI/poly.h>
+#include <ALFI/dist.h>
 
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y, Number x0,
-			   const std::vector<Number>& expected_coeffs,
-			   const std::vector<Number>& xx, const std::vector<Number>& yy) {
-	const auto L = alfi::poly::lagrange(X, Y, x0);
-	EXPECT_EQ(L, expected_coeffs);
-	const auto values = alfi::poly::val(L, xx, x0);
-	EXPECT_EQ(values, yy);
-}
-
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y,
-			   const std::vector<Number>& expected_coeffs,
-			   const std::vector<Number>& xx, const std::vector<Number>& yy) {
-	const auto L = alfi::poly::lagrange(X, Y);
-	EXPECT_EQ(L, expected_coeffs);
-	const auto values = alfi::poly::val(L, xx);
-	EXPECT_EQ(values, yy);
-}
-
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y, Number x0,
-			   const std::vector<Number>& xx, const std::vector<Number>& yy) {
-	const auto L = alfi::poly::lagrange(X, Y, x0);
-	const auto values = alfi::poly::val(L, xx, x0);
-	EXPECT_EQ(values, yy);
-}
-
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y,
-			   const std::vector<Number>& xx, const std::vector<Number>& yy) {
-	const auto L = alfi::poly::lagrange(X, Y);
-	const auto values = alfi::poly::val(L, xx);
-	EXPECT_EQ(values, yy);
-}
-
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y, Number x0, std::vector<Number> expected_coeffs) {
-	test_case(X, Y, x0, expected_coeffs, X, Y);
-}
-
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y, Number x0) {
-	test_case(X, Y, x0, X, Y);
-}
-
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y, std::vector<Number> expected_coeffs) {
-	test_case(X, Y, expected_coeffs, X, Y);
-}
-
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y) {
-	test_case(X, Y, X, Y);
-}
+#define POLYNOMIAL alfi::poly::lagrange
+#define POLYNOMIAL_VALS alfi::poly::lagrange_vals
+#include "test_case.h"
 
 TEST(LagrangeTest, Basic) {
-	test_case<double>({0, 1, 2}, {0, 0, 0});
-	test_case<double>({0, 1, 2}, {1, 1, 1});
-	test_case<double>({0, 1, 2}, {1, 2, 3});
+	test_case({0, 1, 2}, {0, 0, 0});
+	test_case({0, 1, 2}, {1, 1, 1});
+	test_case({0, 1, 2}, {1, 2, 3});
+	test_case({0, 1, 2, 3, 5}, {3, 1, 2, 5, -1});
+}
 
-	test_case<double>({0, 1, 2}, {0, 0, 0}, 5);
-	test_case<double>({0, 1, 2}, {1, 1, 1}, 5);
-	test_case<double>({0, 1, 2}, {1, 2, 3}, 5);
+TEST(LagrangeTest, Functions) {
+	test_case(
+		alfi::dist::uniform(3, 0.0, 20.0),
+		alfi::dist::uniform(10, 0.0, 20.0),
+		[](double x) { return x * x; });
+	test_case(
+		alfi::dist::chebyshev(21, -2.0, 2.0),
+		alfi::dist::uniform(10, -2.0, 2.0),
+		[](double x) { return std::exp(x); },
+		1e-6);
+	test_case(
+		alfi::dist::circle_proj(31, -2*M_PI, 2*M_PI),
+		alfi::dist::uniform(10, -2*M_PI, 2*M_PI),
+		[](double x) { return std::sin(x) + std::cos(x); },
+		2e-2);
 }

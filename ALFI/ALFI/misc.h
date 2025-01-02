@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "dist.h"
+#include "util/numeric.h"
 
 namespace alfi::misc {
 
@@ -29,7 +30,7 @@ namespace alfi::misc {
 			return {};
 		}
 
-		const SizeT N = X.size();
+		const auto N = X.size();
 
 		Container c(N);
 		if (dist_type == dist::Type::UNIFORM) {
@@ -75,22 +76,22 @@ namespace alfi::misc {
 			}
 		}
 
-		const SizeT nn = xx.size();
+		const auto nn = xx.size();
 
 		Container<Number> numerators(nn, static_cast<Number>(0));
 		Container<Number> denominators(nn, static_cast<Number>(0));
 
-		const SizeT NOT_EXACT = N;
+		const auto NOT_EXACT = N;
 		Container<SizeT> exact(nn, NOT_EXACT);
 
 		for (SizeT k = 0; k < N; ++k) {
 			for (SizeT i = 0; i < nn; ++i) {
-				const Number x_diff = xx[i] - X[k];
-				if (std::abs(x_diff) < epsilon) {
-					exact[i] = static_cast<Number>(k);
+				if (util::numeric::are_equal(xx[i], X[k], epsilon)) {
+					exact[i] = k;
 					continue;
 				}
-				const Number temp = c[k] / x_diff;
+				const auto x_diff = xx[i] - X[k];
+				const auto temp = c[k] / x_diff;
 				numerators[i] += temp * Y[k];
 				denominators[i] += temp;
 			}

@@ -2,8 +2,8 @@ set(CMAKE_CXX_STANDARD 23)
 
 find_package(GTest REQUIRED)
 
-macro(add_test_executable test_name test_source)
-	add_executable(${test_name} ${test_source})
+macro(add_test_executable test_name)
+	add_executable(${test_name} ${ARGN} test_utils.h)
 	target_include_directories(${test_name} PRIVATE ${GTEST_INCLUDE_DIRS})
 	target_link_libraries(${test_name} PRIVATE ALFI GTest::GTest GTest::Main)
 	target_compile_options(${test_name} PRIVATE -fsanitize=address,leak,undefined)
@@ -13,8 +13,9 @@ endmacro()
 
 add_test_executable(test_dist dist/test_dist.cpp)
 
-add_test_executable(test_lagrange poly/test_lagrange.cpp)
-add_test_executable(test_newton poly/test_newton.cpp)
+add_test_executable(test_lagrange poly/test_lagrange.cpp poly/test_case.h)
+add_test_executable(test_imp_lagrange poly/test_imp_lagrange.cpp poly/test_case.h)
+add_test_executable(test_newton poly/test_newton.cpp poly/test_case.h)
 
 add_test_executable(test_barycentric misc/test_barycentric.cpp)
 

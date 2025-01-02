@@ -6,18 +6,18 @@
 #include <ALFI/poly.h>
 #include <ALFI/dist.h>
 
-#define POLYNOMIAL alfi::poly::newton
-#define POLYNOMIAL_VALS alfi::poly::newton_vals
+#define POLYNOMIAL alfi::poly::imp_lagrange
+#define POLYNOMIAL_VALS alfi::poly::imp_lagrange_vals
 #include "test_case.h"
 
-TEST(NewtonTest, Basic) {
+TEST(ImprovedLagrangeTest, Basic) {
 	test_case({0, 1, 2}, {0, 0, 0});
 	test_case({0, 1, 2}, {1, 1, 1});
 	test_case({0, 1, 2}, {1, 2, 3});
 	test_case({0, 1, 2, 3, 5}, {3, 1, 2, 5, -1});
 }
 
-TEST(NewtonTest, Functions) {
+TEST(ImprovedLagrangeTest, Functions) {
 	test_case(
 		alfi::dist::uniform(3, 0.0, 20.0),
 		alfi::dist::uniform(10, 0.0, 20.0),
