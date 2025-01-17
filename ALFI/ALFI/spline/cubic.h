@@ -37,6 +37,13 @@ namespace alfi::spline {
 				Number df_1, df_n;
 			};
 			/**
+			 * The second derivative equals `d2f_1` at the first point and `d2f_n` at the last point.
+			 */
+			struct FixedSecond final {
+				FixedSecond(Number d2f_1, Number d2f_n) : d2f_1(std::move(d2f_1)), d2f_n(std::move(d2f_n)) {}
+				Number d2f_1, d2f_n;
+			};
+			/**
 			 * A cubic curve is constructed through the first four points. Then each subsequent segment is built sequentially.\n
 			 * This is equivalent to the condition of continuity of the third derivative at the second and third points.\n
 			 * In this way, the second and third points "cease to be knot points".
@@ -59,6 +66,7 @@ namespace alfi::spline {
 								  typename Types::NotAKnot,
 								  typename Types::Periodic,
 								  typename Types::Clamped,
+								  typename Types::FixedSecond,
 								  typename Types::NotAKnotStart,
 								  typename Types::NotAKnotEnd,
 								  typename Types::SemiNotAKnot>;
@@ -84,40 +92,7 @@ namespace alfi::spline {
 
 			std::visit(util::misc::overload{
 				[&](const typename Types::Natural&) {
-					if (n <= 2) {
-						coeffs = util::spline::simple_spline<Number,Container>(X, Y, 3);
-						return;
-					}
-
-					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
-
-					Container<Number> B(n);
-					B[0] = B[n-1] = 0;
-
-					Container<Number> diag(n - 2), right(n - 2);
-					for (SizeT i = 0; i < n - 2; ++i) {
-						diag[i] = 2 * (dX[i] + dX[i+1]);
-						right[i] = 3 * (dY[i+1]/dX[i+1] - dY[i]/dX[i]);
-					}
-					for (SizeT i = 1; i < n - 2; ++i) {
-						const auto m = dX[i] / diag[i-1];
-						diag[i] -= m * dX[i];
-						right[i] -= m * right[i-1];
-					}
-					B[n-2] = right[n-3] / diag[n-3];
-					for (SizeT i = n - 3; i >= 1; --i) {
-						B[i] = (right[i-1] - dX[i] * B[i+1]) / diag[i-1];
-					}
-
-					Container<Number> A(n - 1);
-					for (SizeT i = 0; i < A.size(); ++i) {
-						A[i] = (B[i+1] - B[i]) / (3*dX[i]);
-					}
-					Container<Number> C(n - 1);
-					for (SizeT i = 0; i < C.size(); ++i) {
-						C[i] = dY[i]/dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
-					}
-					util::spline::merge_coeffs(coeffs, {A, B, C, Y});
+					coeffs = compute_coeffs(X, Y, typename Types::FixedSecond{0, 0});
 				},
 				[&](const typename Types::NotAKnot&) {
 					if (n <= 4) {
@@ -265,6 +240,41 @@ namespace alfi::spline {
 						}
 						B[n-1] = 1.5*(c.df_n/dX[n-2] - dY[n-2]/dX[n-2]/dX[n-2]) - 0.5*B[n-2];
 						B[0] = 1.5*(dY[0]/dX[0]/dX[0] - c.df_1/dX[0]) - 0.5*B[1];
+					}
+
+					Container<Number> A(n - 1);
+					for (SizeT i = 0; i < A.size(); ++i) {
+						A[i] = (B[i+1] - B[i]) / (3*dX[i]);
+					}
+					Container<Number> C(n - 1);
+					for (SizeT i = 0; i < C.size(); ++i) {
+						C[i] = dY[i]/dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
+					}
+					util::spline::merge_coeffs(coeffs, {A, B, C, Y});
+				},
+				[&](const typename Types::FixedSecond& s) {
+					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
+
+					Container<Number> B(n);
+					B[0] = s.d2f_1 / 2;
+					B[n-1] = s.d2f_n / 2;
+					if (n > 2) {
+						Container<Number> diag(n - 2), right(n - 2);
+						for (SizeT i = 0; i < n - 2; ++i) {
+							diag[i] = 2 * (dX[i] + dX[i+1]);
+							right[i] = 3 * (dY[i+1]/dX[i+1] - dY[i]/dX[i]);
+						}
+						right[0] -= B[0] * dX[0];
+						right[n-3] -= B[n-1] * dX[n-2];
+						for (SizeT i = 1; i < n - 2; ++i) {
+							const auto m = dX[i] / diag[i-1];
+							diag[i] -= m * dX[i];
+							right[i] -= m * right[i-1];
+						}
+						B[n-2] = right[n-3] / diag[n-3];
+						for (SizeT i = n - 3; i >= 1; --i) {
+							B[i] = (right[i-1] - dX[i] * B[i+1]) / diag[i-1];
+						}
 					}
 
 					Container<Number> A(n - 1);
