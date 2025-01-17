@@ -1,0 +1,47 @@
+name: "CodeQL Advanced"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: Analyze C++
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+      packages: read
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        profile: [ Debug ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: c-cpp
+        build-mode: manual
+        queries: security-and-quality
+
+    - name: Install dependencies
+      run: ./helper.py -d
+
+    - name: Build
+      run: ./helper.py -b ${{ matrix.profile }}
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:c-cpp"
