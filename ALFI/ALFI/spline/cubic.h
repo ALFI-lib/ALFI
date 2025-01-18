@@ -17,7 +17,8 @@ namespace alfi::spline {
 		struct Types final {
 			/**
 			 * Second derivatives at the end points are equal to zero.\n
-			 * Has minimum curvature of all interpolating functions and is most stable.
+			 * Has minimum curvature of all interpolating functions and is most stable.\n
+			 * Equivalent to `FixedSecond{0, 0}`.
 			 */
 			struct Natural final {};
 			/**
@@ -29,6 +30,11 @@ namespace alfi::spline {
 			 * The first and the second derivatives at the end points are equal.
 			 */
 			struct Periodic final {};
+			/**
+			 * The first and the last segments are second degree curves (third derivative equals zero at the ends).\n
+			 * Equivalent to `FixedThird{0, 0}`.
+			 */
+			struct ParabolicEnds final {};
 			/**
 			 * The first derivative equals `df_1` at the first point and `df_n` at the last point.
 			 */
@@ -42,6 +48,14 @@ namespace alfi::spline {
 			struct FixedSecond final {
 				FixedSecond(Number d2f_1, Number d2f_n) : d2f_1(std::move(d2f_1)), d2f_n(std::move(d2f_n)) {}
 				Number d2f_1, d2f_n;
+			};
+			/**
+			 * The third derivative equals `d3f_1` at the first point and `d3f_n` at the last point.\n
+			 * If number of points equals two, the third derivative on the single segment equals (d3f_1+d3f_n)/2.
+			 */
+			struct FixedThird final {
+				FixedThird(Number d3f_1, Number d3f_n) : d3f_1(std::move(d3f_1)), d3f_n(std::move(d3f_n)) {}
+				Number d3f_1, d3f_n;
 			};
 			/**
 			 * A cubic curve is constructed through the first four points. Then each subsequent segment is built sequentially.\n
@@ -65,8 +79,10 @@ namespace alfi::spline {
 		using Type = std::variant<typename Types::Natural,
 								  typename Types::NotAKnot,
 								  typename Types::Periodic,
+								  typename Types::ParabolicEnds,
 								  typename Types::Clamped,
 								  typename Types::FixedSecond,
+								  typename Types::FixedThird,
 								  typename Types::NotAKnotStart,
 								  typename Types::NotAKnotEnd,
 								  typename Types::SemiNotAKnot>;
@@ -206,6 +222,9 @@ namespace alfi::spline {
 					}
 					util::spline::merge_coeffs(coeffs, {A, B, C, Y});
 				},
+				[&](const typename Types::ParabolicEnds&) {
+					coeffs = compute_coeffs(X, Y, typename Types::FixedThird{0, 0});
+				},
 				[&](const typename Types::Clamped& c) {
 					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
@@ -280,6 +299,61 @@ namespace alfi::spline {
 					Container<Number> A(n - 1);
 					for (SizeT i = 0; i < A.size(); ++i) {
 						A[i] = (B[i+1] - B[i]) / (3*dX[i]);
+					}
+					Container<Number> C(n - 1);
+					for (SizeT i = 0; i < C.size(); ++i) {
+						C[i] = dY[i]/dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
+					}
+					util::spline::merge_coeffs(coeffs, {A, B, C, Y});
+				},
+				[&](const typename Types::FixedThird& t) {
+					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
+
+					Container<Number> B(n);
+					if (n == 2) {
+						B[0] = -dX[0] * (t.d3f_1 + t.d3f_n) / 8;
+						B[1] = -B[0];
+					} else {
+						Container<Number> diag(n), right(n);
+						diag[0] = 1;
+						for (SizeT i = 1; i < n - 1; ++i) {
+							diag[i] = 2 * (dX[i-1] + dX[i]);
+						}
+						diag[n-1] = 1;
+						right[0] = -dX[0] * t.d3f_1 / 2;
+						for (SizeT i = 1; i < n - 1; ++i) {
+							right[i] = 3 * (dY[i]/dX[i] - dY[i-1]/dX[i-1]);
+						}
+						right[n-1] = dX[n-2] * t.d3f_n / 2;
+
+						const auto m_1 = dX[0] / diag[0];
+						diag[1] -= m_1 * (-1);
+						right[1] -= m_1 * right[0];
+						for (SizeT i = 2; i < n - 1; ++i) {
+							const auto m = dX[i-1] / diag[i-1];
+							diag[i] -= m * dX[i-1];
+							right[i] -= m * right[i-1];
+						}
+						const auto m_n_1 = (-1) / diag[n-2];
+						diag[n-1] -= m_n_1 * dX[n-2];
+						right[n-1] -= m_n_1 * right[n-2];
+
+						B[n-1] = right[n-1] / diag[n-1];
+						for (SizeT i = n - 2; i >= 1; --i) {
+							B[i] = (right[i] - dX[i] * B[i+1]) / diag[i];
+						}
+						B[0] = right[0] + B[1];
+					}
+
+					Container<Number> A(n - 1);
+					for (SizeT i = 1; i < A.size() - 1; ++i) {
+						A[i] = (B[i+1] - B[i]) / (3*dX[i]);
+					}
+					if (n == 2) {
+						A[0] = (t.d3f_1 + t.d3f_n) / 12;
+					} else {
+						A[0] = t.d3f_1 / 6;
+						A[n-2] = t.d3f_n / 6;
 					}
 					Container<Number> C(n - 1);
 					for (SizeT i = 0; i < C.size(); ++i) {
