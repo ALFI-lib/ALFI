@@ -2,7 +2,6 @@
 import argparse
 import os
 import subprocess
-import sys
 
 profile_directories = {
 	'Debug': 'build/debug',
@@ -40,31 +39,17 @@ if args.profile:
 	try:
 		profile_dir = next(d for p, d in profile_directories.items() if p.lower() == args.profile.lower())
 	except StopIteration:
-		parser.error(f"Profile '{args.profile}' not found. Allowed profiles: '{"', '".join(profile_directories.keys())}'.")
+		parser.error(f"Profile '{args.profile}' not found. Allowed profiles: '{"', '".join(profile_directories)}'.")
 
-try:
-	if args.deps:
-		apt_update_command = ['sudo', 'apt', 'update']
-		print(' '.join(apt_update_command), flush=True)
-		subprocess.check_call(apt_update_command)
+def execute_command(command):
+	print(' '.join(command), flush=True)
+	subprocess.check_call(command)
 
-		apt_install_command = ['sudo', 'apt', 'install', '-y'] + dependencies
-		print(' '.join(apt_install_command), flush=True)
-		subprocess.check_call(apt_install_command)
-
-	if args.build:
-		configure_command = ['cmake', '-DCMAKE_BUILD_TYPE=' + args.profile, '-B', profile_dir]
-		print(' '.join(configure_command), flush=True)
-		subprocess.check_call(configure_command)
-
-		build_command = ['cmake', '--build', profile_dir, '-j', str(os.cpu_count())]
-		print(' '.join(build_command), flush=True)
-		subprocess.check_call(build_command)
-
-	if args.test:
-		test_command = ['ctest', '--test-dir', profile_dir, '--verbose']
-		print(' '.join(test_command), flush=True)
-		subprocess.check_call(test_command)
-except subprocess.CalledProcessError as e:
-	print(f'Error during build: {e}', file=sys.stderr)
-	sys.exit(1)
+if args.deps:
+	execute_command(['sudo', 'apt', 'update'])
+	execute_command(['sudo', 'apt', 'install', '-y'] + dependencies)
+if args.build:
+	execute_command(['cmake', '-DCMAKE_BUILD_TYPE=' + args.profile, '-B', profile_dir])
+	execute_command(['cmake', '--build', profile_dir, '-j', str(os.cpu_count())])
+if args.test:
+	execute_command(['ctest', '--test-dir', profile_dir, '--verbose'])
