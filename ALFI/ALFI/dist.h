@@ -98,13 +98,15 @@ namespace alfi::dist {
 		@brief Generates a distribution of \p n points on the interval `(a, b)` using the sigmoid function.
 
 		The following transform function \f(f\f):
-		\f[f(x) = \frac{1}{1 + e^{-steepness \cdot x}}\f]
+		\f[
+			f(x) = \frac{1}{1 + e^{-steepness \cdot x}}
+		\f]
 		is applied to `n` points uniformly distributed on the interval `(-1, 1)`, mapping them onto the `(0, 1)` interval.\n
 		The resulting points are then linearly mapped to the target interval `(a, b)`.
 
 		The slope of the transform function \f(f\f) at `x = 0` is determined by \p steepness and is given by:
 		\f[
-		\left. \dv{f}{x} \right\vert_{x=0} = \frac14 \cdot steepness
+			\left. \dv{f}{x} \right\vert_{x=0} = \frac14 \cdot steepness
 		\f]
 
 		@note Extreme points don't lie on the interval `(a, b)` boundaries.
@@ -151,13 +153,15 @@ namespace alfi::dist {
 		@brief Generates a distribution of \p n points on the interval `(a, b)` using the error function.
 
 		The following transform function \f(f\f):
-		\f[f(x) = \operatorname{erf}(steepness \cdot x)\f]
+		\f[
+			f(x) = \operatorname{erf}(steepness \cdot x)
+		\f]
 		is applied to `n` points uniformly distributed on the interval `(-1, 1)`, mapping them onto the same interval.\n
 		The resulting points are then linearly mapped to the target interval `(a, b)`.
 
 		The slope of the transform function \f(f\f) at `x = 0` is determined by \p steepness and is given by:
 		\f[
-		\left. \dv{f}{x} \right\vert_{x=0} = \frac2\pi \cdot steepness
+			\left. \dv{f}{x} \right\vert_{x=0} = \frac2\pi \cdot steepness
 		\f]
 
 		@note Extreme points don't lie on the interval `(a, b)` boundaries.
