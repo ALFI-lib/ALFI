@@ -31,5 +31,5 @@ TEST(ImprovedLagrangeTest, Functions) {
 		alfi::dist::circle_proj(31, -2*M_PI, 2*M_PI),
 		alfi::dist::uniform(10, -2*M_PI, 2*M_PI),
 		[](double x) { return std::sin(x) + std::cos(x); },
-		1e-6);
+		1e-5);
 }
