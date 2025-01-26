@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Install dependencies
         run: ./helper.py -d
       - name: Build

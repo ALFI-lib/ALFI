@@ -1,13 +1,17 @@
 set(CMAKE_CXX_STANDARD 23)
 
 find_package(GTest REQUIRED)
+add_subdirectory(deps/toml++)
+
+set(TEST_DATA_DIR "${CMAKE_CURRENT_LIST_DIR}/test_data")
 
 macro(add_test_executable test_name)
 	add_executable(${test_name} ${ARGN} test_utils.h)
 	target_include_directories(${test_name} PRIVATE ${GTEST_INCLUDE_DIRS})
-	target_link_libraries(${test_name} PRIVATE ALFI GTest::GTest GTest::Main)
+	target_link_libraries(${test_name} PRIVATE ALFI GTest::GTest GTest::Main tomlplusplus::tomlplusplus)
 	target_compile_options(${test_name} PRIVATE -fsanitize=address,leak,undefined)
 	target_link_options(${test_name} PRIVATE -fsanitize=address,leak,undefined)
+	target_compile_definitions(${test_name} PRIVATE TEST_DATA_DIR="${TEST_DATA_DIR}")
 	add_test(NAME ${test_name} COMMAND ${test_name} --gtest_color=yes)
 endmacro()
 

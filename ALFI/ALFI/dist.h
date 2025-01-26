@@ -1,8 +1,9 @@
 #pragma once
 
-#include "config.h"
-
 #include <cmath>
+
+#include "config.h"
+#include "util/points.h"
 
 namespace alfi::dist {
 	enum class Type {
@@ -19,30 +20,6 @@ namespace alfi::dist {
 		ERF,
 		ERF_STRETCHED,
 	};
-
-	template <typename Number = DefaultNumber>
-	void stretch(auto& points, Number a, Number b) {
-		if (points.empty()) {
-			return;
-		}
-
-		if (points.size() == 1 || points.front() == points.back()) {
-			std::fill(points.begin(), points.end(), (a + b) / 2);
-			return;
-		}
-
-		const Number& min = points.front();
-		const Number& max = points.back();
-		const Number mid = (a + b) / 2;
-		const Number scale = (b - a) / (max - min);
-
-		for (SizeT i = 1; i < points.size() - 1; ++i) {
-			points[i] = mid + scale * (points[i] - mid);
-		}
-
-		points.front() = a;
-		points.back() = b;
-	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> uniform(SizeT n, Number a, Number b) {
@@ -69,9 +46,7 @@ namespace alfi::dist {
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> chebyshev_stretched(SizeT n, Number a, Number b) {
-		Container<Number> points = chebyshev(n, a, b);
-		stretch(points, a, b);
-		return points;
+		return points::stretched(chebyshev(n, a, b), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
@@ -90,9 +65,7 @@ namespace alfi::dist {
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> chebyshev_ellipse_stretched(SizeT n, Number a, Number b, Number ratio) {
-		Container<Number> points = chebyshev_ellipse(n, a, b, ratio);
-		stretch(points, a, b);
-		return points;
+		return points::stretched(chebyshev_ellipse(n, a, b, ratio), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
@@ -121,14 +94,35 @@ namespace alfi::dist {
 		return points;
 	}
 
+	/**
+		@brief Generates a distribution of \p n points on the interval `(a, b)` using the sigmoid function.
+
+		The following transform function \f(f\f):
+		\f[f(x) = \frac{1}{1 + e^{-steepness \cdot x}}\f]
+		is applied to `n` points uniformly distributed on the interval `(-1, 1)`, mapping them onto the `(0, 1)` interval.\n
+		The resulting points are then linearly mapped to the target interval `(a, b)`.
+
+		The slope of the transform function \f(f\f) at `x = 0` is determined by \p steepness and is given by:
+		\f[
+		\left. \dv{f}{x} \right\vert_{x=0} = \frac14 \cdot steepness
+		\f]
+
+		@note Extreme points don't lie on the interval `(a, b)` boundaries.
+
+		@param n number of points
+		@param a left boundary of the interval
+		@param b right boundary of the interval
+		@param steepness determines the slope of the transform function at `x = 0`
+		@return a container with \p n points distributed on the interval `(a, b)` according to the transform function
+	*/
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> sigmoid(SizeT n, Number a, Number b, Number steepness) {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = static_cast<Number>(i) / (static_cast<Number>(n) - 1);
-			const Number sigmoidValue = 1.0 / (1.0 + exp(-steepness * (x - 0.5)));
+			const Number x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
+			const Number sigmoidValue = 1 / (1 + exp(-steepness * x));
 			points[i] = a + (b - a) * sigmoidValue;
 		}
 		return points;
@@ -141,11 +135,11 @@ namespace alfi::dist {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
-		const Number stretch_factor = 1 - 2 / (1 + std::exp(0.5 * steepness));
+		const Number stretch_factor = 1 - 2 / (1 + std::exp(steepness));
 		for (SizeT i = 1; i < n - 1; ++i) {
-			const Number x = static_cast<double>(i) / (static_cast<Number>(n) - 1);
-			const Number sigmoid = 1.0 / (1.0 + std::exp(-steepness * (x - 0.5)));
-			const Number stretched = (sigmoid - 1.0 / (1.0 + std::exp(0.5 * steepness))) / stretch_factor;
+			const Number x = 2 * static_cast<double>(i) / (static_cast<Number>(n) - 1) - 1;
+			const Number sigmoid = 1 / (1 + std::exp(-steepness * x));
+			const Number stretched = (sigmoid - 1 / (1 + std::exp(steepness))) / stretch_factor;
 			points[i] = a + (b - a) * stretched;
 		}
 		points[0] = a;
@@ -153,6 +147,27 @@ namespace alfi::dist {
 		return points;
 	}
 
+	/**
+		@brief Generates a distribution of \p n points on the interval `(a, b)` using the error function.
+
+		The following transform function \f(f\f):
+		\f[f(x) = \operatorname{erf}(steepness \cdot x)\f]
+		is applied to `n` points uniformly distributed on the interval `(-1, 1)`, mapping them onto the same interval.\n
+		The resulting points are then linearly mapped to the target interval `(a, b)`.
+
+		The slope of the transform function \f(f\f) at `x = 0` is determined by \p steepness and is given by:
+		\f[
+		\left. \dv{f}{x} \right\vert_{x=0} = \frac2\pi \cdot steepness
+		\f]
+
+		@note Extreme points don't lie on the interval `(a, b)` boundaries.
+
+		@param n number of points
+		@param a left boundary of the interval
+		@param b right boundary of the interval
+		@param steepness determines the slope of the transform function at `x = 0`
+		@return a container with \p n points distributed on the interval `(a, b)` according to the transform function
+	*/
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> erf(SizeT n, Number a, Number b, Number steepness) {
 		if (n == 0)
@@ -161,8 +176,8 @@ namespace alfi::dist {
 			return {(a+b)/2};
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = static_cast<Number>(i) / (static_cast<Number>(n) - 1);
-			const Number erf_value = std::erf(steepness * (x - 0.5));
+			const Number x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
+			const Number erf_value = std::erf(steepness * x);
 			points[i] = a + (b - a) * (1 + erf_value) / 2;
 		}
 		return points;
@@ -170,13 +185,11 @@ namespace alfi::dist {
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> erf_stretched(SizeT n, Number a, Number b, Number steepness) {
-		Container<Number> points = erf(n, a, b, steepness);
-		stretch(points, a, b);
-		return points;
+		return points::stretched(erf(n, a, b, steepness), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
-	Container<Number> of_type(Type type, SizeT n, Number a, Number b, Number parameter = 0) {
+	Container<Number> of_type(Type type, SizeT n, Number a, Number b, Number parameter = NAN) {
 		switch (type) {
 		case Type::CHEBYSHEV:
 			return chebyshev(n, a, b);

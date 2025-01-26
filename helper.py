@@ -15,6 +15,7 @@ profile_directories = {
 dependencies = [
 	'build-essential',
 	'cmake',
+	'git',
 	'libgnuplot-iostream-dev',
 	'libgtest-dev',
 	'libqcustomplot-dev',
@@ -48,6 +49,7 @@ def execute_command(command):
 if args.deps:
 	execute_command(['sudo', 'apt', 'update'])
 	execute_command(['sudo', 'apt', 'install', '-y'] + dependencies)
+	execute_command(['git', 'submodule', 'update', '--init'])
 if args.build:
 	execute_command(['cmake', '-DCMAKE_BUILD_TYPE=' + args.profile, '-B', profile_dir])
 	execute_command(['cmake', '--build', profile_dir, '-j', str(os.cpu_count())])
