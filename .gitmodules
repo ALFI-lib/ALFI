@@ -1,8 +1,8 @@
 [submodule "tests/deps/toml++"]
 	path = tests/deps/toml++
-	url = git@github.com:marzer/tomlplusplus
+	url = https://github.com/marzer/tomlplusplus
 	shallow = true
 [submodule "tests/test_data"]
 	path = tests/test_data
-	url = git@github.com:ALFI-library/test_data
+	url = https://github.com/ALFI-library/test_data
 	shallow = true
