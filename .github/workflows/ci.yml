@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        profile: [ Fast ]
+        profile: [ Debug, Release, Fast ]
 
     steps:
       - name: Checkout repository
