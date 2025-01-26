@@ -5,8 +5,10 @@
 #include "../test_utils.h"
 
 const auto test_data_path = TEST_DATA_DIR "/dist/dist.toml";
+
 const auto test_data = toml::parse_file(test_data_path);
-const auto mapping_intervals = test_data["mapping_intervals"].ref<toml::array>();
+
+const auto& mapping_intervals = test_data["mapping_intervals"].ref<toml::array>();
 
 void test_distribution(const char*const name, const alfi::dist::Type type, double epsilon) {
 	const auto& test_cases = test_data[name]["test_cases"].ref<toml::array>();
