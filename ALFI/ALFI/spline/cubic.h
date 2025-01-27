@@ -16,61 +16,61 @@ namespace alfi::spline {
 	public:
 		struct Types final {
 			/**
-			 * Second derivatives at the end points are equal to zero.\n
-			 * Has minimum curvature of all interpolating functions and is most stable.\n
-			 * Equivalent to `FixedSecond{0, 0}`.
+				Second derivatives at the end points are equal to zero.\n
+				Has minimum curvature of all interpolating functions and is most stable.\n
+				Equivalent to `FixedSecond{0, 0}`.
 			 */
 			struct Natural final {};
 			/**
-			 * The third derivative is continuous at the second and second-to-last points.\n
-			 * In this way, the second and second-to-last points "cease to be knot points".
+				The third derivative is continuous at the second and second-to-last points.\n
+				In this way, the second and second-to-last points "cease to be knot points".
 			 */
 			struct NotAKnot final {};
 			/**
-			 * The first and the second derivatives at the end points are equal.
+				The first and the second derivatives at the end points are equal.
 			 */
 			struct Periodic final {};
 			/**
-			 * The first and the last segments are second degree curves (third derivative equals zero at the ends).\n
-			 * Equivalent to `FixedThird{0, 0}`.
+				The first and the last segments are second degree curves (third derivative equals zero at the ends).\n
+				Equivalent to `FixedThird{0, 0}`.
 			 */
 			struct ParabolicEnds final {};
 			/**
-			 * The first derivative equals `df_1` at the first point and `df_n` at the last point.
+				The first derivative equals `df_1` at the first point and `df_n` at the last point.
 			 */
 			struct Clamped final {
 				Clamped(Number df_1, Number df_n) : df_1(std::move(df_1)), df_n(std::move(df_n)) {}
 				Number df_1, df_n;
 			};
 			/**
-			 * The second derivative equals `d2f_1` at the first point and `d2f_n` at the last point.
+				The second derivative equals `d2f_1` at the first point and `d2f_n` at the last point.
 			 */
 			struct FixedSecond final {
 				FixedSecond(Number d2f_1, Number d2f_n) : d2f_1(std::move(d2f_1)), d2f_n(std::move(d2f_n)) {}
 				Number d2f_1, d2f_n;
 			};
 			/**
-			 * The third derivative equals `d3f_1` at the first point and `d3f_n` at the last point.\n
-			 * If number of points equals two, the third derivative on the single segment equals (d3f_1+d3f_n)/2.
+				The third derivative equals `d3f_1` at the first point and `d3f_n` at the last point.\n
+				If number of points equals two, the third derivative on the single segment equals (d3f_1+d3f_n)/2.
 			 */
 			struct FixedThird final {
 				FixedThird(Number d3f_1, Number d3f_n) : d3f_1(std::move(d3f_1)), d3f_n(std::move(d3f_n)) {}
 				Number d3f_1, d3f_n;
 			};
 			/**
-			 * A cubic curve is constructed through the first four points. Then each subsequent segment is built sequentially.\n
-			 * This is equivalent to the condition of continuity of the third derivative at the second and third points.\n
-			 * In this way, the second and third points "cease to be knot points".
+				A cubic curve is constructed through the first four points. Then each subsequent segment is built sequentially.\n
+				This is equivalent to the condition of continuity of the third derivative at the second and third points.\n
+				In this way, the second and third points "cease to be knot points".
 			 */
 			struct NotAKnotStart final {};
 			/**
-			 * A cubic curve is constructed through the last four points. Then each previous segment is built sequentially.\n
-			 * This is equivalent to the condition of continuity of the third derivative at the third-to-last and second-to-last points.\n
-			 * In this way, the third-to-last and second-to-last points "cease to be knot points".
+				A cubic curve is constructed through the last four points. Then each previous segment is built sequentially.\n
+				This is equivalent to the condition of continuity of the third derivative at the third-to-last and second-to-last points.\n
+				In this way, the third-to-last and second-to-last points "cease to be knot points".
 			 */
 			struct NotAKnotEnd final {};
 			/**
-			 * The arithmetic mean_array between NotAKnotStart and NotAKnotEnd.
+				The arithmetic mean_array between NotAKnotStart and NotAKnotEnd.
 			 */
 			struct SemiNotAKnot final {};
 			using Default = Natural;

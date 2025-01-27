@@ -16,35 +16,35 @@ namespace alfi::spline {
 	public:
 		struct Types final {
 			/**
-			 * A parabola is constructed through the first three points. Then each subsequent segment is built sequentially.\n
-			 * This is equivalent to the condition of continuity of the second derivative at the second point.\n
-			 * In this way, the second point "ceases to be a knot point".
+				A parabola is constructed through the first three points. Then each subsequent segment is built sequentially.\n
+				This is equivalent to the condition of continuity of the second derivative at the second point.\n
+				In this way, the second point "ceases to be a knot point".
 			 */
 			struct NotAKnotStart final {};
 			/**
-			 * A parabola is constructed through the last three points. Then each previous segment is built sequentially.\n
-			 * This is equivalent to the condition of continuity of the second derivative at the second-to-last point.\n
-			 * In this way, the second-to-last point "ceases to be a knot point".
+				A parabola is constructed through the last three points. Then each previous segment is built sequentially.\n
+				This is equivalent to the condition of continuity of the second derivative at the second-to-last point.\n
+				In this way, the second-to-last point "ceases to be a knot point".
 			 */
 			struct NotAKnotEnd final {};
 			/**
-			 * The arithmetic mean_array between NotAKnotStart and NotAKnotEnd.
+				The arithmetic mean_array between NotAKnotStart and NotAKnotEnd.
 			 */
 			struct SemiNotAKnot final {};
 			/**
-			 * The second derivative at the first point is equal to zero.
+				The second derivative at the first point is equal to zero.
 			 */
 			struct NaturalStart final {};
 			/**
-			 * The second derivative at the last point is equal to zero.
+				The second derivative at the last point is equal to zero.
 			 */
 			struct NaturalEnd final {};
 			/**
-			 * The arithmetic mean_array between NaturalStart and NaturalEnd.
+				The arithmetic mean_array between NaturalStart and NaturalEnd.
 			 */
 			struct SemiNatural final {};
 			/**
-			 * The arithmetic mean_array between SemiNotAKnot and SemiNatural.
+				The arithmetic mean_array between SemiNotAKnot and SemiNatural.
 			 */
 			struct SemiSemi final {};
 			using Default = SemiNotAKnot;
