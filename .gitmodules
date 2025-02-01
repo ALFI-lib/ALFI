@@ -4,5 +4,5 @@
 	shallow = true
 [submodule "tests/test_data"]
 	path = tests/test_data
-	url = https://github.com/ALFI-library/test_data
+	url = https://github.com/ALFI-lib/test_data
 	shallow = true
