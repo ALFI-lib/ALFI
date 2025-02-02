@@ -67,6 +67,8 @@ int main() {
 
 	plot_data({
 		{"Uniform", alfi::dist::uniform(n, a, b)},
+		{"Quadratic", alfi::dist::quadratic(n, a, b)},
+		{"Cubic", alfi::dist::cubic(n, a, b)},
 		{"Chebyshev", alfi::dist::chebyshev(n, a, b)},
 		{"Stretched Chebyshev", alfi::dist::chebyshev_stretched(n, a, b)},
 		{"Chebyshev Ellipse", alfi::dist::chebyshev_ellipse(n, a, b, ratio)},

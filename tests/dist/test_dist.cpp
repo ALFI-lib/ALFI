@@ -38,6 +38,14 @@ TEST(DistributionsTest, Uniform) {
 	test_distribution("uniform", alfi::dist::Type::UNIFORM, 1e-15);
 }
 
+TEST(DistributionsTest, Quadratic) {
+	test_distribution("quadratic", alfi::dist::Type::QUADRATIC, 1e-15);
+}
+
+TEST(DistributionsTest, Cubic) {
+	test_distribution("cubic", alfi::dist::Type::CUBIC, 1e-15);
+}
+
 TEST(DistributionsTest, Chebyshev) {
 	test_distribution("chebyshev", alfi::dist::Type::CHEBYSHEV, 1e-15);
 }

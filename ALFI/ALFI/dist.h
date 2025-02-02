@@ -9,6 +9,8 @@ namespace alfi::dist {
 	enum class Type {
 		GENERAL,
 		UNIFORM,
+		QUADRATIC,
+		CUBIC,
 		CHEBYSHEV,
 		CHEBYSHEV_STRETCHED,
 		CHEBYSHEV_ELLIPSE,
@@ -28,6 +30,65 @@ namespace alfi::dist {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
 			points[i] = a + (b - a) * static_cast<Number>(i) / static_cast<Number>(n - 1);
+		}
+		return points;
+	}
+
+	/**
+		@brief Generates a distribution of \p n points on the segment `[a, b]` using two quadratic polynomials.
+
+		The following transform function \f(f\f):
+		\f[
+			f(x) = \begin{cases}
+				(x+1)^2 - 1, & x \leq 0 \\
+				-(x-1)^2 + 1, & x > 0
+			\end{cases}
+		\f]
+		is applied to `n` points uniformly distributed on the segment `[-1, 1]`, mapping them onto the same segment.\n
+		The resulting points are then linearly mapped to the target segment `[a, b]`.
+
+		@param n number of points
+		@param a left boundary of the segment
+		@param b right boundary of the segment
+		@return a container with \p n points distributed on the segment `[a, b]` according to the transform function
+	*/
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	Container<Number> quadratic(SizeT n, Number a, Number b) {
+		if (n == 1)
+			return {(a+b)/2};
+		Container<Number> points(n);
+		for (SizeT i = 0; i < n; ++i) {
+			const Number x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
+			const Number value = x <= 0 ? x * (x + 2) : -x * (x - 2);
+			points[i] = a + (b - a) * (1 + value) / 2;
+		}
+		return points;
+	}
+
+	/**
+		@brief Generates a distribution of \p n points on the segment `[a, b]` using cubic polynomial.
+
+		The following transform function \f(f\f):
+		\f[
+			f(x) = -0.5x^3 + 1.5x
+		\f]
+		is applied to `n` points uniformly distributed on the segment `[-1, 1]`, mapping them onto the same segment.\n
+		The resulting points are then linearly mapped to the target segment `[a, b]`.
+
+		@param n number of points
+		@param a left boundary of the segment
+		@param b right boundary of the segment
+		@return a container with \p n points distributed on the segment `[a, b]` according to the transform function
+	*/
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	Container<Number> cubic(SizeT n, Number a, Number b) {
+		if (n == 1)
+			return {(a+b)/2};
+		Container<Number> points(n);
+		for (SizeT i = 0; i < n; ++i) {
+			const Number x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
+			const Number value = (3 - x*x) * x / 2;
+			points[i] = a + (b - a) * (1 + value) / 2;
 		}
 		return points;
 	}
@@ -195,6 +256,10 @@ namespace alfi::dist {
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> of_type(Type type, SizeT n, Number a, Number b, Number parameter = NAN) {
 		switch (type) {
+		case Type::QUADRATIC:
+			return quadratic(n, a, b);
+		case Type::CUBIC:
+			return cubic(n, a, b);
 		case Type::CHEBYSHEV:
 			return chebyshev(n, a, b);
 		case Type::CHEBYSHEV_STRETCHED:

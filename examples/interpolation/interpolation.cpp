@@ -73,9 +73,9 @@ public:
 
 	PlotWindow() {
 		static const QStringList distribution_types {
-			"Uniform", "Chebyshev", "Chebyshev Stretched", "Chebyshev Ellipse", "Chebyshev Ellipse Stretched",
-			"Circle Projection", "Ellipse Projection", "Logistic", "Stretched Logistic",
-			"Error Function", "Stretched Error Function"
+			"Uniform", "Quadratic", "Cubic", "Chebyshev", "Stretched Chebyshev",
+			"Chebyshev Ellipse", "Stretched Chebyshev Ellipse", "Circle Projection", "Ellipse Projection",
+			"Logistic", "Stretched Logistic", "Error Function", "Stretched Error Function"
 		};
 
 		_plot = new QCustomPlot();
@@ -262,6 +262,8 @@ private:
 		std::vector<double> X;
 		switch (static_cast<alfi::dist::Type>(dist_type)) {
 			case alfi::dist::Type::UNIFORM: X = alfi::dist::uniform(N, a, b); break;
+			case alfi::dist::Type::QUADRATIC: X = alfi::dist::quadratic(N, a, b); break;
+			case alfi::dist::Type::CUBIC: X = alfi::dist::cubic(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV: X = alfi::dist::chebyshev(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_STRETCHED: X = alfi::dist::chebyshev_stretched(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE: X = alfi::dist::chebyshev_ellipse(N, a, b, 2.0); break;
