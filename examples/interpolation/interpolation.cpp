@@ -74,7 +74,7 @@ public:
 	PlotWindow() {
 		static const QStringList distribution_types {
 			"Uniform", "Chebyshev", "Chebyshev Stretched", "Chebyshev Ellipse", "Chebyshev Ellipse Stretched",
-			"Circle Projection", "Ellipse Projection", "Sigmoid", "Stretched Sigmoid",
+			"Circle Projection", "Ellipse Projection", "Logistic", "Stretched Logistic",
 			"Error Function", "Stretched Error Function"
 		};
 
@@ -268,8 +268,8 @@ private:
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_STRETCHED: X = alfi::dist::chebyshev_ellipse_stretched(N, a, b, 2.0); break;
 			case alfi::dist::Type::CIRCLE_PROJECTION: X = alfi::dist::circle_proj(N, a, b); break;
 			case alfi::dist::Type::ELLIPSE_PROJECTION: X = alfi::dist::ellipse_proj(N, a, b, 2.0); break;
-			case alfi::dist::Type::SIGMOID: X = alfi::dist::sigmoid(N, a, b, 16.0); break;
-			case alfi::dist::Type::SIGMOID_STRETCHED: X = alfi::dist::sigmoid_stretched(N, a, b, 16.0); break;
+			case alfi::dist::Type::LOGISTIC: X = alfi::dist::logistic(N, a, b, 16.0); break;
+			case alfi::dist::Type::LOGISTIC_STRETCHED: X = alfi::dist::logistic_stretched(N, a, b, 16.0); break;
 			case alfi::dist::Type::ERF: X = alfi::dist::erf(N, a, b, 8.0); break;
 			case alfi::dist::Type::ERF_STRETCHED: X = alfi::dist::erf_stretched(N, a, b, 8.0); break;
 			default: return;

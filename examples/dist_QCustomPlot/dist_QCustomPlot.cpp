@@ -189,8 +189,8 @@ private:
 			{"Stretched Chebyshev Ellipse", alfi::dist::chebyshev_ellipse_stretched(n, a, b, B)},
 			{"Circle Projection", alfi::dist::circle_proj(n, a, b)},
 			{"Ellipse Projection", alfi::dist::ellipse_proj(n, a, b, B)},
-			{"Sigmoid", alfi::dist::sigmoid(n, a, b, steepness)},
-			{"Stretched Sigmoid", alfi::dist::sigmoid_stretched(n, a, b, steepness)},
+			{"Logistic", alfi::dist::logistic(n, a, b, steepness)},
+			{"Stretched Logistic", alfi::dist::logistic_stretched(n, a, b, steepness)},
 			{"Error function", alfi::dist::erf(n, a, b, steepness)},
 			{"Stretched Error function", alfi::dist::erf_stretched(n, a, b, steepness)},
 		};

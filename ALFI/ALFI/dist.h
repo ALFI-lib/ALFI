@@ -15,8 +15,8 @@ namespace alfi::dist {
 		CHEBYSHEV_ELLIPSE_STRETCHED,
 		CIRCLE_PROJECTION,
 		ELLIPSE_PROJECTION,
-		SIGMOID,
-		SIGMOID_STRETCHED,
+		LOGISTIC,
+		LOGISTIC_STRETCHED,
 		ERF,
 		ERF_STRETCHED,
 	};
@@ -95,7 +95,7 @@ namespace alfi::dist {
 	}
 
 	/**
-		@brief Generates a distribution of \p n points on the interval `(a, b)` using the sigmoid function.
+		@brief Generates a distribution of \p n points on the interval `(a, b)` using the logistic function.
 
 		The following transform function \f(f\f):
 		\f[
@@ -118,20 +118,20 @@ namespace alfi::dist {
 		@return a container with \p n points distributed on the interval `(a, b)` according to the transform function
 	*/
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
-	Container<Number> sigmoid(SizeT n, Number a, Number b, Number steepness) {
+	Container<Number> logistic(SizeT n, Number a, Number b, Number steepness) {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
 			const Number x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
-			const Number sigmoidValue = 1 / (1 + exp(-steepness * x));
-			points[i] = a + (b - a) * sigmoidValue;
+			const Number logisticValue = 1 / (1 + std::exp(-steepness * x));
+			points[i] = a + (b - a) * logisticValue;
 		}
 		return points;
 	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
-	Container<Number> sigmoid_stretched(SizeT n, Number a, Number b, Number steepness) {
+	Container<Number> logistic_stretched(SizeT n, Number a, Number b, Number steepness) {
 		if (n == 0)
 			return {};
 		if (n == 1)
@@ -140,8 +140,8 @@ namespace alfi::dist {
 		const Number stretch_factor = 1 - 2 / (1 + std::exp(steepness));
 		for (SizeT i = 1; i < n - 1; ++i) {
 			const Number x = 2 * static_cast<double>(i) / (static_cast<Number>(n) - 1) - 1;
-			const Number sigmoid = 1 / (1 + std::exp(-steepness * x));
-			const Number stretched = (sigmoid - 1 / (1 + std::exp(steepness))) / stretch_factor;
+			const Number logisticValue = 1 / (1 + std::exp(-steepness * x));
+			const Number stretched = (logisticValue - 1 / (1 + std::exp(steepness))) / stretch_factor;
 			points[i] = a + (b - a) * stretched;
 		}
 		points[0] = a;
@@ -207,10 +207,10 @@ namespace alfi::dist {
 			return circle_proj(n, a, b);
 		case Type::ELLIPSE_PROJECTION:
 			return ellipse_proj(n, a, b, parameter);
-		case Type::SIGMOID:
-			return sigmoid(n, a, b, parameter);
-		case Type::SIGMOID_STRETCHED:
-			return sigmoid_stretched(n, a, b, parameter);
+		case Type::LOGISTIC:
+			return logistic(n, a, b, parameter);
+		case Type::LOGISTIC_STRETCHED:
+			return logistic_stretched(n, a, b, parameter);
 		case Type::ERF:
 			return erf(n, a, b, parameter);
 		case Type::ERF_STRETCHED:

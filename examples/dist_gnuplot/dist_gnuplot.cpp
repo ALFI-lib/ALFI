@@ -62,7 +62,7 @@ int main() {
 	const double b = 1;
 
 	const double ratio = 2;
-	const double sigmoid_steepness = 8;
+	const double logistic_steepness = 8;
 	const double erf_steepness = 3;
 
 	plot_data({
@@ -73,8 +73,8 @@ int main() {
 		{"Stretched Chebyshev Ellipse", alfi::dist::chebyshev_ellipse_stretched(n, a, b, ratio)},
 		{"Circle Projection", alfi::dist::circle_proj(n, a, b)},
 		{"Ellipse Projection", alfi::dist::ellipse_proj(n, a, b, ratio)},
-		{"Sigmoid", alfi::dist::sigmoid(n, a, b, sigmoid_steepness)},
-		{"Stretched Sigmoid", alfi::dist::sigmoid_stretched(n, a, b, sigmoid_steepness)},
+		{"Logistic", alfi::dist::logistic(n, a, b, logistic_steepness)},
+		{"Stretched Logistic", alfi::dist::logistic_stretched(n, a, b, logistic_steepness)},
 		{"Error function", alfi::dist::erf(n, a, b, erf_steepness)},
 		{"Stretched Error function", alfi::dist::erf_stretched(n, a, b, erf_steepness)},
 	});

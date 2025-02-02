@@ -62,12 +62,12 @@ TEST(DistributionsTest, EllipseProjection) {
 	test_distribution("ellipse_proj", alfi::dist::Type::ELLIPSE_PROJECTION, 1e-14);
 }
 
-TEST(DistributionsTest, Sigmoid) {
-	test_distribution("sigmoid", alfi::dist::Type::SIGMOID, 1e-13);
+TEST(DistributionsTest, Logistic) {
+	test_distribution("logistic", alfi::dist::Type::LOGISTIC, 1e-13);
 }
 
-TEST(DistributionsTest, SigmoidStretched) {
-	test_distribution("sigmoid_stretched", alfi::dist::Type::SIGMOID_STRETCHED, 1e-11);
+TEST(DistributionsTest, LogisticStretched) {
+	test_distribution("logistic_stretched", alfi::dist::Type::LOGISTIC_STRETCHED, 1e-11);
 }
 
 TEST(DistributionsTest, Erf) {
