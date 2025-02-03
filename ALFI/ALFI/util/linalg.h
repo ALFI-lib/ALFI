@@ -63,4 +63,53 @@ namespace alfi::util::linalg {
 
 		return X;
 	}
+
+	// WRONG CODE
+	// Tried to implement this for "Not-a-knot" spline, because it had the third coefficient in the first equation,
+	// but decided that it would be better to derive and equation with only two coefficients.
+	// See https://github.com/ALFI-lib/alfi-lib.github.io/pull/8
+	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer, typename I1, typename I2, typename I3, typename I4>
+	Container<Number> tridiag_solve(
+			Number a11, Number a12, Number a13, Number r1,
+			Number ann2, Number ann1, Number ann, Number rn,
+			I1& lower_begin, const I1& lower_end,
+			I2& diag_begin, const I2& diag_end,
+			I3& upper_begin, const I3& upper_end,
+			I4& right_begin, const I4& right_end
+	) {
+		const auto n = right_end - right_begin + 2;
+		assert(n == (lower_end - lower_begin + 2));
+		assert(n == (diag_end - diag_begin + 2));
+		assert(n == (upper_end - upper_begin + 2));
+		auto lower = lower_begin;
+		auto diag = diag_begin;
+		auto upper = upper_begin;
+		auto right = right_begin;
+		const auto m_1 = *lower / a11;
+		*diag -= m_1 * a12;
+		*upper -= m_1 * a13;
+		*right -= m_1 * r1;
+		++lower, ++diag, ++upper, ++right;
+		for (; lower < lower_end; ++lower, ++diag, ++upper, ++right) {
+			const auto m = *lower / *(diag - 1);
+			*diag -= m * *(upper - 1);
+			*right -= m * *(right - 1);
+		}
+		if (ann2 != 0) {
+			const auto m_n = ann2 / *(lower - 1);
+			ann1 -= m_n * *(diag - 1);
+			ann -= m_n * *(upper - 1);
+			rn -= m_n * *(right - 1);
+		}
+		const auto m_n = ann1 / *(diag - 1);
+		ann -= m_n * *(upper - 1);
+		rn -= m_n * *(right - 1);
+		Container<Number> X(n);
+		X[n-1] = rn / ann;
+		for (auto i = n - 2; i > 0; --i) {
+			X[i] = (*--right - *--upper * X[i+1]) / *--diag;
+		}
+		X[0] = (r1 - a12 * X[1] - a13 * X[2]) / a11;
+		return X;
+	}
 }
