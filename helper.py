@@ -16,6 +16,7 @@ dependencies = [
 	'build-essential',
 	'cmake',
 	'git',
+	'graphviz',
 	'libgnuplot-iostream-dev',
 	'libgtest-dev',
 	'libqcustomplot-dev',
