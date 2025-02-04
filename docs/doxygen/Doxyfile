@@ -58,7 +58,7 @@ HTML_FORMULA_FORMAT    = svg
 USE_MATHJAX            = YES
 MATHJAX_VERSION        = MathJax_3
 MATHJAX_FORMAT         = SVG
-MATHJAX_RELPATH        =
+MATHJAX_RELPATH        = mathjax
 MATHJAX_EXTENSIONS     = ams physics
 
 #-------------------------#

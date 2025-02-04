@@ -26,6 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--deps', action='store_true', help="Install dependencies")
 parser.add_argument('-b', '--build', action='store_true', help="Build project (requires profile)")
 parser.add_argument('-t', '--test', action='store_true', help='Run tests (requires profile)')
+parser.add_argument('--doxygen', action='store_true', help='Generate Doxygen documentation')
 parser.add_argument('profile', nargs='?', help="Profile to build and/or test (case-insensitive)")
 args = parser.parse_args()
 
@@ -55,3 +56,10 @@ if args.build:
 	execute_command(['cmake', '--build', profile_dir, '-j', str(os.cpu_count())])
 if args.test:
 	execute_command(['ctest', '--test-dir', profile_dir, '--verbose'])
+if args.doxygen:
+	execute_command(['curl', '--create-dirs', '-C', '-',
+					 '-o', 'docs/doxygen/html/mathjax/es5/tex-svg.js',
+					 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
+					 '-o', 'docs/doxygen/html/mathjax/es5/input/tex/extensions/physics.js',
+					 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/input/tex/extensions/physics.js'])
+	execute_command(['doxygen', 'docs/doxygen/Doxyfile'])
