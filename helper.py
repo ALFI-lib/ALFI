@@ -58,9 +58,8 @@ if args.build:
 if args.test:
 	execute_command(['ctest', '--test-dir', profile_dir, '--verbose'])
 if args.doxygen:
-	execute_command(['curl', '--create-dirs', '-C', '-',
-					 '-o', 'docs/doxygen/html/mathjax/es5/tex-svg.js',
-					 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
-					 '-o', 'docs/doxygen/html/mathjax/es5/input/tex/extensions/physics.js',
-					 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/input/tex/extensions/physics.js'])
+	local = 'docs/doxygen/html/mathjax/es5/'
+	remote = 'https://raw.githubusercontent.com/mathjax/MathJax/refs/tags/3.2.2/es5/'
+	files = ['tex-svg.js', 'input/tex/extensions/physics.js']
+	execute_command(['curl', '--create-dirs', '-C', '-', '-Z'] + [i for f in files for i in ['-o', local + f, remote + f]])
 	execute_command(['doxygen', 'docs/doxygen/Doxyfile'])
