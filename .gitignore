@@ -1,6 +1,8 @@
 /build/
 /cmake-*/
 
+/docs/doxygen/html/
+
 /.idea/*
 !/.idea/codeStyles/
 !/.idea/runConfigurations/
