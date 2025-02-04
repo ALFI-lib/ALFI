@@ -1,4 +1,4 @@
-# Doxyfile 1.9.8
+# Doxyfile 1.13.2
 
 #---------#
 # Project #
@@ -8,6 +8,7 @@ PROJECT_NAME           = ALFI
 PROJECT_NUMBER         =
 PROJECT_BRIEF          = "Advanced Library for Function Interpolation"
 PROJECT_LOGO           =
+PROJECT_ICON           =
 OUTPUT_DIRECTORY       = docs/doxygen
 ALWAYS_DETAILED_SEC    = YES
 BUILTIN_STL_SUPPORT    = YES
@@ -47,7 +48,9 @@ GENERATE_HTML          = YES
 GENERATE_LATEX         = NO
 HTML_COLORSTYLE        = TOGGLE
 HTML_DYNAMIC_MENUS     = NO
+HTML_PROJECT_COOKIE    = ALFI
 SITEMAP_URL            = alfi-lib.github.io/alfi
+DISABLE_INDEX          = NO
 GENERATE_TREEVIEW      = YES
 ENUM_VALUES_PER_LINE   = 1
 EXT_LINKS_IN_WINDOW    = YES
@@ -62,6 +65,7 @@ MATHJAX_EXTENSIONS     = ams physics
 # Diagram generator tools #
 #-------------------------#
 
+HAVE_DOT               = YES
 DOT_IMAGE_FORMAT       = svg
 INTERACTIVE_SVG        = YES
 DOT_MULTI_TARGETS      = YES
