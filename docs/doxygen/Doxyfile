@@ -34,12 +34,6 @@ EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = YES
 USE_MDFILE_AS_MAINPAGE =
 
-#-----------------#
-# Source browsing #
-#-----------------#
-
-INLINE_SOURCES         = YES
-
 #--------#
 # Output #
 #--------#
@@ -48,6 +42,7 @@ GENERATE_HTML          = YES
 GENERATE_LATEX         = NO
 HTML_COLORSTYLE        = TOGGLE
 HTML_DYNAMIC_MENUS     = NO
+HTML_COPY_CLIPBOARD    = NO
 HTML_PROJECT_COOKIE    = ALFI
 SITEMAP_URL            = alfi-lib.github.io/ALFI
 DISABLE_INDEX          = NO
