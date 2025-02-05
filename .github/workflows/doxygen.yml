@@ -1,4 +1,4 @@
-name: Generate Doxygen Documentation
+name: Doxygen Build & Deploy
 
 on:
   workflow_dispatch:
