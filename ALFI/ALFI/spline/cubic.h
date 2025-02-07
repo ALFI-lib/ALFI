@@ -115,52 +115,23 @@ namespace alfi::spline {
 						coeffs = util::spline::simple_spline<Number,Container>(X, Y, 3);
 						return;
 					}
-
-					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
-
-					Container<Number> B(n);
-
+					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 					Container<Number> diag(n - 2), right(n - 2);
-					diag[0] = ((dX[0] + dX[1]) * (dX[0] + 2 * dX[1])) / dX[1];
-					for (SizeT i = 1; i < n - 3; ++i) {
-						diag[i] = 2 * (dX[i] + dX[i+1]);
-					}
-					diag[n-3] = ((dX[n-2] + dX[n-3]) * (dX[n-2] + 2 * dX[n-3])) / dX[n-3];
 					for (SizeT i = 0; i < n - 2; ++i) {
+						diag[i] = 2 * (dX[i] + dX[i+1]);
 						right[i] = 3 * (dY[i+1]/dX[i+1] - dY[i]/dX[i]);
 					}
-
-					const auto m_1 = dX[1] / diag[0];
-					diag[1] -= m_1 * (dX[1] - dX[0]*dX[0]/dX[1]);
-					right[1] -= m_1 * right[0];
-					for (SizeT i = 2; i < n - 3; ++i) {
-						const auto m = dX[i] / diag[i-1];
-						diag[i] -= m * dX[i];
-						right[i] -= m * right[i-1];
+					const auto C = util::linalg::tridiag_solve(
+						dX[0] - dX[1], 2*dX[0] + dX[1], dX[0] / (dX[0]+dX[1]) * right[0],
+						2*dX[n-2] + dX[n-3], dX[n-2] - dX[n-3], dX[n-2] / (dX[n-2]+dX[n-3]) * right[n-3],
+						dX.begin(), diag.begin(), dX.begin() + 1, right.begin(), n
+					);
+					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
+						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
+						coeffs[index++] = C[i];
+						coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
+						coeffs[index++] = Y[i];
 					}
-					const auto m_n_3 = (dX[n-3] - dX[n-2]*dX[n-2]/dX[n-3]) / diag[n-4];
-					diag[n-3] -= m_n_3 * dX[n-3];
-					right[n-3] -= m_n_3 * right[n-4];
-
-					B[n-2] = right[n-3] / diag[n-3];
-					for (SizeT i = n - 3; i >= 2; --i) {
-						B[i] = (right[i-1] - dX[i] * B[i+1]) / diag[i-1];
-					}
-					B[1] = (right[0] - (dX[1] - dX[0]*dX[0]/dX[1]) * B[2]) / diag[0];
-					B[0] = B[1] + dX[0]/dX[1] * (B[1] - B[2]);
-					B[n-1] = B[n-2] + dX[n-2]/dX[n-3] * (B[n-2] - B[n-3]);
-
-					Container<Number> A(n - 1);
-					for (SizeT i = 1; i < A.size() - 1; ++i) {
-						A[i] = (B[i+1] - B[i]) / (3*dX[i]);
-					}
-					A[0] = A[1];
-					A[n-2] = A[n-3];
-					Container<Number> C(n - 1);
-					for (SizeT i = 0; i < C.size(); ++i) {
-						C[i] = dY[i]/dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
-					}
-					util::spline::merge_coeffs(coeffs, {A, B, C, Y});
 				},
 				[&](const typename Types::Periodic&) {
 					if (n <= 2) {
@@ -168,13 +139,13 @@ namespace alfi::spline {
 						return;
 					}
 
-					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
+					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
-					Container<Number> B(n);
+					Container<Number> C(n);
 					if (n == 3) {
-						B[0] = 3 * (dY[0]/dX[0] - dY[1]/dX[1]) / (dX[0] + dX[1]);
-						B[1] = -B[0];
-						B[2] = B[0];
+						C[0] = 3 * (dY[0]/dX[0] - dY[1]/dX[1]) / (dX[0] + dX[1]);
+						C[1] = -C[0];
+						C[2] = C[0];
 					} else {
 						Container<Number> diag(n - 1), right(n - 1);
 						for (SizeT i = 0; i < n - 2; ++i) {
@@ -204,38 +175,35 @@ namespace alfi::spline {
 						diag[n-2] -= last_row[n-3] / diag[n-3] * last_col[n-3];
 						right[n-2] -= last_row[n-3] / diag[n-3] * right[n-3];
 
-						B[n-1] = right[n-2] / diag[n-2];
-						B[n-2] = (right[n-3] - last_col[n-3] * B[n-1]) / diag[n-3];
+						C[n-1] = right[n-2] / diag[n-2];
+						C[n-2] = (right[n-3] - last_col[n-3] * C[n-1]) / diag[n-3];
 						for (SizeT i = n - 3; i >= 1; --i) {
-							B[i] = (right[i-1] - dX[i]*B[i+1] - last_col[i-1]*B[n-1]) / diag[i-1];
+							C[i] = (right[i-1] - dX[i]*C[i+1] - last_col[i-1]*C[n-1]) / diag[i-1];
 						}
-						B[0] = B[n-1];
+						C[0] = C[n-1];
 					}
 
-					Container<Number> A(n - 1);
-					for (SizeT i = 0; i < A.size(); ++i) {
-						A[i] = (B[i+1] - B[i]) / (3*dX[i]);
+					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
+						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
+						coeffs[index++] = C[i];
+						coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
+						coeffs[index++] = Y[i];
 					}
-					Container<Number> C(n - 1);
-					for (SizeT i = 0; i < C.size(); ++i) {
-						C[i] = dY[i]/dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
-					}
-					util::spline::merge_coeffs(coeffs, {A, B, C, Y});
 				},
 				[&](const typename Types::ParabolicEnds&) {
 					coeffs = compute_coeffs(X, Y, typename Types::FixedThird{0, 0});
 				},
 				[&](const typename Types::Clamped& c) {
-					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
+					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
-					Container<Number> B(n);
+					Container<Number> C(n);
 					if (n == 2) {
-						B[0] = (3*dY[0]/dX[0] - c.df_n - 2*c.df_1) / dX[0];
-						B[1] = (c.df_1 + 2*c.df_n - 3*dY[0]/dX[0]) / dX[0];
+						C[0] = (3*dY[0]/dX[0] - c.df_n - 2*c.df_1) / dX[0];
+						C[1] = (c.df_1 + 2*c.df_n - 3*dY[0]/dX[0]) / dX[0];
 					} else if (n == 3) {
-						B[1] = (3*(dY[1]/dX[1] - dY[0]/dX[0]) + (c.df_1 - c.df_n)) / (dX[0] + dX[1]);
-						B[0] = (3*(dY[0]/dX[0] - c.df_1)/dX[0] - B[1]) / 2;
-						B[2] = (3*(c.df_n - dY[1]/dX[1])/dX[1] - B[1]) / 2;
+						C[1] = (3*(dY[1]/dX[1] - dY[0]/dX[0]) + (c.df_1 - c.df_n)) / (dX[0] + dX[1]);
+						C[0] = (3*(dY[0]/dX[0] - c.df_1)/dX[0] - C[1]) / 2;
+						C[2] = (3*(c.df_n - dY[1]/dX[1])/dX[1] - C[1]) / 2;
 					} else {
 						Container<Number> diag(n - 2), right(n - 2);
 						diag[0] = 1.5*dX[0] + 2*dX[1];
@@ -253,66 +221,60 @@ namespace alfi::spline {
 							right[i] -= m * right[i-1];
 						}
 
-						B[n-2] = right[n-3] / diag[n-3];
+						C[n-2] = right[n-3] / diag[n-3];
 						for (SizeT i = n - 3; i >= 1; --i) {
-							B[i] = (right[i-1] - dX[i] * B[i+1]) / diag[i-1];
+							C[i] = (right[i-1] - dX[i] * C[i+1]) / diag[i-1];
 						}
-						B[n-1] = 1.5*(c.df_n/dX[n-2] - dY[n-2]/dX[n-2]/dX[n-2]) - 0.5*B[n-2];
-						B[0] = 1.5*(dY[0]/dX[0]/dX[0] - c.df_1/dX[0]) - 0.5*B[1];
+						C[n-1] = 1.5*(c.df_n/dX[n-2] - dY[n-2]/dX[n-2]/dX[n-2]) - 0.5*C[n-2];
+						C[0] = 1.5*(dY[0]/dX[0]/dX[0] - c.df_1/dX[0]) - 0.5*C[1];
 					}
 
-					Container<Number> A(n - 1);
-					for (SizeT i = 0; i < A.size(); ++i) {
-						A[i] = (B[i+1] - B[i]) / (3*dX[i]);
+					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
+						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
+						coeffs[index++] = C[i];
+						coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
+						coeffs[index++] = Y[i];
 					}
-					Container<Number> C(n - 1);
-					for (SizeT i = 0; i < C.size(); ++i) {
-						C[i] = dY[i]/dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
-					}
-					util::spline::merge_coeffs(coeffs, {A, B, C, Y});
 				},
 				[&](const typename Types::FixedSecond& s) {
-					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
+					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
-					Container<Number> B(n);
-					B[0] = s.d2f_1 / 2;
-					B[n-1] = s.d2f_n / 2;
+					Container<Number> C(n);
+					C[0] = s.d2f_1 / 2;
+					C[n-1] = s.d2f_n / 2;
 					if (n > 2) {
 						Container<Number> diag(n - 2), right(n - 2);
 						for (SizeT i = 0; i < n - 2; ++i) {
 							diag[i] = 2 * (dX[i] + dX[i+1]);
 							right[i] = 3 * (dY[i+1]/dX[i+1] - dY[i]/dX[i]);
 						}
-						right[0] -= B[0] * dX[0];
-						right[n-3] -= B[n-1] * dX[n-2];
+						right[0] -= C[0] * dX[0];
+						right[n-3] -= C[n-1] * dX[n-2];
 						for (SizeT i = 1; i < n - 2; ++i) {
 							const auto m = dX[i] / diag[i-1];
 							diag[i] -= m * dX[i];
 							right[i] -= m * right[i-1];
 						}
-						B[n-2] = right[n-3] / diag[n-3];
+						C[n-2] = right[n-3] / diag[n-3];
 						for (SizeT i = n - 3; i >= 1; --i) {
-							B[i] = (right[i-1] - dX[i] * B[i+1]) / diag[i-1];
+							C[i] = (right[i-1] - dX[i] * C[i+1]) / diag[i-1];
 						}
 					}
 
-					Container<Number> A(n - 1);
-					for (SizeT i = 0; i < A.size(); ++i) {
-						A[i] = (B[i+1] - B[i]) / (3*dX[i]);
+					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
+						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
+						coeffs[index++] = C[i];
+						coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
+						coeffs[index++] = Y[i];
 					}
-					Container<Number> C(n - 1);
-					for (SizeT i = 0; i < C.size(); ++i) {
-						C[i] = dY[i]/dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
-					}
-					util::spline::merge_coeffs(coeffs, {A, B, C, Y});
 				},
 				[&](const typename Types::FixedThird& t) {
-					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
+					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
-					Container<Number> B(n);
+					Container<Number> C(n);
 					if (n == 2) {
-						B[0] = -dX[0] * (t.d3f_1 + t.d3f_n) / 8;
-						B[1] = -B[0];
+						C[0] = -dX[0] * (t.d3f_1 + t.d3f_n) / 8;
+						C[1] = -C[0];
 					} else {
 						Container<Number> diag(n), right(n);
 						diag[0] = 1;
@@ -338,28 +300,29 @@ namespace alfi::spline {
 						diag[n-1] -= m_n_1 * dX[n-2];
 						right[n-1] -= m_n_1 * right[n-2];
 
-						B[n-1] = right[n-1] / diag[n-1];
+						C[n-1] = right[n-1] / diag[n-1];
 						for (SizeT i = n - 2; i >= 1; --i) {
-							B[i] = (right[i] - dX[i] * B[i+1]) / diag[i];
+							C[i] = (right[i] - dX[i] * C[i+1]) / diag[i];
 						}
-						B[0] = right[0] + B[1];
+						C[0] = right[0] + C[1];
 					}
 
-					Container<Number> A(n - 1);
-					for (SizeT i = 1; i < A.size() - 1; ++i) {
-						A[i] = (B[i+1] - B[i]) / (3*dX[i]);
+					Container<Number> D(n - 1);
+					for (SizeT i = 1; i < D.size() - 1; ++i) {
+						D[i] = (C[i+1] - C[i]) / (3*dX[i]);
 					}
 					if (n == 2) {
-						A[0] = (t.d3f_1 + t.d3f_n) / 12;
+						D[0] = (t.d3f_1 + t.d3f_n) / 12;
 					} else {
-						A[0] = t.d3f_1 / 6;
-						A[n-2] = t.d3f_n / 6;
+						D[0] = t.d3f_1 / 6;
+						D[n-2] = t.d3f_n / 6;
 					}
-					Container<Number> C(n - 1);
-					for (SizeT i = 0; i < C.size(); ++i) {
-						C[i] = dY[i]/dX[i] - dX[i] * ((2*B[i] + B[i+1]) / 3);
+					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
+						coeffs[index++] = D[i];
+						coeffs[index++] = C[i];
+						coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
+						coeffs[index++] = Y[i];
 					}
-					util::spline::merge_coeffs(coeffs, {A, B, C, Y});
 				},
 				[&](const typename Types::NotAKnotStart&) {
 					if (n <= 4) {
@@ -367,7 +330,7 @@ namespace alfi::spline {
 						return;
 					}
 
-					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
+					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
 					{ // first four points
 						const auto h1 = dX[0], h2 = dX[1];
@@ -414,7 +377,7 @@ namespace alfi::spline {
 						return;
 					}
 
-					const Container<Number> dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
+					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
 
 					{ // last four points
 						const auto h1 = dX[n-4], h2 = dX[n-3];

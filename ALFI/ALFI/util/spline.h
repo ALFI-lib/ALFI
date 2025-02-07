@@ -100,13 +100,4 @@ namespace alfi::util::spline {
 				  << ") is too big (bigger than 4). Returning an empty array..." << std::endl;
 		return {};
 	}
-
-	template <typename Number = DefaultNumber, template <typename> class C1 = DefaultContainer, template <typename> class C2 = DefaultContainer>
-	void merge_coeffs(auto& coeffs, const C1<C2<Number>>& separate) {
-		for (SizeT index = 0, i = 0; index < coeffs.size(); ++i) {
-			for (SizeT k = 0; k < separate.size(); ++k) {
-				coeffs[index++] = separate[k][i];
-			}
-		}
-	}
 }
