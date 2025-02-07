@@ -116,16 +116,22 @@ namespace alfi::spline {
 						return;
 					}
 					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
-					Container<Number> diag(n - 2), right(n - 2);
-					for (SizeT i = 0; i < n - 2; ++i) {
-						diag[i] = 2 * (dX[i] + dX[i+1]);
-						right[i] = 3 * (dY[i+1]/dX[i+1] - dY[i]/dX[i]);
+					Container<Number> lower(n), diag(n), upper(n), right(n);
+					for (SizeT i = 1; i < n - 1; ++i) {
+						lower[i] = dX[i-1];
+						diag[i] = 2 * (dX[i-1] + dX[i]);
+						upper[i] = dX[i];
+						right[i] = 3 * (dY[i]/dX[i] - dY[i-1]/dX[i-1]);
 					}
-					const auto C = util::linalg::tridiag_solve(
-						dX[0] - dX[1], 2*dX[0] + dX[1], dX[0] / (dX[0]+dX[1]) * right[0],
-						2*dX[n-2] + dX[n-3], dX[n-2] - dX[n-3], dX[n-2] / (dX[n-2]+dX[n-3]) * right[n-3],
-						dX.begin(), diag.begin(), dX.begin() + 1, right.begin(), n
-					);
+					lower[0] = NAN;
+					diag[0] = dX[0] - dX[1];
+					upper[0] = 2*dX[0] + dX[1];
+					right[0] = dX[0] / (dX[0]+dX[1]) * right[1];
+					lower[n-1] = 2*dX[n-2] + dX[n-3];
+					diag[n-1] = dX[n-2] - dX[n-3];
+					upper[n-1] = NAN;
+					right[n-1] = dX[n-2] / (dX[n-2]+dX[n-3]) * right[n-2];
+					const auto C = util::linalg::tridiag_solve(lower, diag, upper, right);
 					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
 						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
 						coeffs[index++] = C[i];
