@@ -201,40 +201,22 @@ namespace alfi::spline {
 				},
 				[&](const typename Types::Clamped& c) {
 					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
-
-					Container<Number> C(n);
-					if (n == 2) {
-						C[0] = (3*dY[0]/dX[0] - c.df_n - 2*c.df_1) / dX[0];
-						C[1] = (c.df_1 + 2*c.df_n - 3*dY[0]/dX[0]) / dX[0];
-					} else if (n == 3) {
-						C[1] = (3*(dY[1]/dX[1] - dY[0]/dX[0]) + (c.df_1 - c.df_n)) / (dX[0] + dX[1]);
-						C[0] = (3*(dY[0]/dX[0] - c.df_1)/dX[0] - C[1]) / 2;
-						C[2] = (3*(c.df_n - dY[1]/dX[1])/dX[1] - C[1]) / 2;
-					} else {
-						Container<Number> diag(n - 2), right(n - 2);
-						diag[0] = 1.5*dX[0] + 2*dX[1];
-						right[0] = 3*dY[1]/dX[1] - 4.5*dY[0]/dX[0] + 1.5*c.df_1;
-						for (SizeT i = 1; i < n - 3; ++i) {
-							diag[i] = 2 * (dX[i] + dX[i+1]);
-							right[i] = 3 * (dY[i+1]/dX[i+1] - dY[i]/dX[i]);
-						}
-						diag[n-3] = 2*dX[n-3] + 1.5*dX[n-2];
-						right[n-3] = 4.5*dY[n-2]/dX[n-2] - 3*dY[n-3]/dX[n-3] - 1.5*c.df_n;
-
-						for (SizeT i = 1; i < n - 2; ++i) {
-							const auto m = dX[i] / diag[i-1];
-							diag[i] -= m * dX[i];
-							right[i] -= m * right[i-1];
-						}
-
-						C[n-2] = right[n-3] / diag[n-3];
-						for (SizeT i = n - 3; i >= 1; --i) {
-							C[i] = (right[i-1] - dX[i] * C[i+1]) / diag[i-1];
-						}
-						C[n-1] = 1.5*(c.df_n/dX[n-2] - dY[n-2]/dX[n-2]/dX[n-2]) - 0.5*C[n-2];
-						C[0] = 1.5*(dY[0]/dX[0]/dX[0] - c.df_1/dX[0]) - 0.5*C[1];
+					Container<Number> lower(n), diag(n), upper(n), right(n);
+					for (SizeT i = 1; i < n - 1; ++i) {
+						lower[i] = dX[i-1];
+						diag[i] = 2 * (dX[i-1] + dX[i]);
+						upper[i] = dX[i];
+						right[i] = 3 * (dY[i]/dX[i] - dY[i-1]/dX[i-1]);
 					}
-
+					lower[0] = NAN;
+					diag[0] = 2*dX[0];
+					upper[0] = dX[0];
+					right[0] = 3 * (dY[0]/dX[0] - c.df_1);
+					lower[n-1] = dX[n-2];
+					diag[n-1] = 2*dX[n-2];
+					upper[n-1] = NAN;
+					right[n-1] = 3 * (c.df_n - dY[n-2]/dX[n-2]);
+					const auto C = util::linalg::tridiag_solve(lower, diag, upper, right);
 					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
 						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
 						coeffs[index++] = C[i];
@@ -244,29 +226,22 @@ namespace alfi::spline {
 				},
 				[&](const typename Types::FixedSecond& s) {
 					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
-
-					Container<Number> C(n);
-					C[0] = s.d2f_1 / 2;
-					C[n-1] = s.d2f_n / 2;
-					if (n > 2) {
-						Container<Number> diag(n - 2), right(n - 2);
-						for (SizeT i = 0; i < n - 2; ++i) {
-							diag[i] = 2 * (dX[i] + dX[i+1]);
-							right[i] = 3 * (dY[i+1]/dX[i+1] - dY[i]/dX[i]);
-						}
-						right[0] -= C[0] * dX[0];
-						right[n-3] -= C[n-1] * dX[n-2];
-						for (SizeT i = 1; i < n - 2; ++i) {
-							const auto m = dX[i] / diag[i-1];
-							diag[i] -= m * dX[i];
-							right[i] -= m * right[i-1];
-						}
-						C[n-2] = right[n-3] / diag[n-3];
-						for (SizeT i = n - 3; i >= 1; --i) {
-							C[i] = (right[i-1] - dX[i] * C[i+1]) / diag[i-1];
-						}
+					Container<Number> lower(n), diag(n), upper(n), right(n);
+					for (SizeT i = 1; i < n - 1; ++i) {
+						lower[i] = dX[i-1];
+						diag[i] = 2 * (dX[i-1] + dX[i]);
+						upper[i] = dX[i];
+						right[i] = 3 * (dY[i]/dX[i] - dY[i-1]/dX[i-1]);
 					}
-
+					lower[0] = NAN;
+					diag[0] = 1;
+					upper[0] = 0;
+					right[0] = s.d2f_1 / 2;
+					lower[n-1] = 0;
+					diag[n-1] = 1;
+					upper[n-1] = NAN;
+					right[n-1] = s.d2f_n / 2;
+					const auto C = util::linalg::tridiag_solve(lower, diag, upper, right);
 					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
 						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
 						coeffs[index++] = C[i];
@@ -276,43 +251,28 @@ namespace alfi::spline {
 				},
 				[&](const typename Types::FixedThird& t) {
 					const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
-
 					Container<Number> C(n);
 					if (n == 2) {
 						C[0] = -dX[0] * (t.d3f_1 + t.d3f_n) / 8;
 						C[1] = -C[0];
 					} else {
-						Container<Number> diag(n), right(n);
-						diag[0] = 1;
+						Container<Number> lower(n), diag(n), upper(n), right(n);
 						for (SizeT i = 1; i < n - 1; ++i) {
+							lower[i] = dX[i-1];
 							diag[i] = 2 * (dX[i-1] + dX[i]);
-						}
-						diag[n-1] = 1;
-						right[0] = -dX[0] * t.d3f_1 / 2;
-						for (SizeT i = 1; i < n - 1; ++i) {
+							upper[i] = dX[i];
 							right[i] = 3 * (dY[i]/dX[i] - dY[i-1]/dX[i-1]);
 						}
+						lower[0] = NAN;
+						diag[0] = 1;
+						upper[0] = -1;
+						right[0] = -dX[0] * t.d3f_1 / 2;
+						lower[n-1] = -1;
+						diag[n-1] = 1;
+						upper[n-1] = NAN;
 						right[n-1] = dX[n-2] * t.d3f_n / 2;
-
-						const auto m_1 = dX[0] / diag[0];
-						diag[1] -= m_1 * (-1);
-						right[1] -= m_1 * right[0];
-						for (SizeT i = 2; i < n - 1; ++i) {
-							const auto m = dX[i-1] / diag[i-1];
-							diag[i] -= m * dX[i-1];
-							right[i] -= m * right[i-1];
-						}
-						const auto m_n_1 = (-1) / diag[n-2];
-						diag[n-1] -= m_n_1 * dX[n-2];
-						right[n-1] -= m_n_1 * right[n-2];
-
-						C[n-1] = right[n-1] / diag[n-1];
-						for (SizeT i = n - 2; i >= 1; --i) {
-							C[i] = (right[i] - dX[i] * C[i+1]) / diag[i];
-						}
-						C[0] = right[0] + C[1];
+						C = util::linalg::tridiag_solve<Number,Container>(lower, diag, upper, right);
 					}
-
 					Container<Number> D(n - 1);
 					for (SizeT i = 1; i < D.size() - 1; ++i) {
 						D[i] = (C[i+1] - C[i]) / (3*dX[i]);
