@@ -303,7 +303,7 @@ namespace alfi::spline {
 						const auto h12 = X[2]-X[0], h13 = X[3]-X[0];
 						const auto d1 = Y[1]-Y[0], d12 = Y[2]-Y[0], d13 = Y[3]-Y[0];
 
-						const auto abc = util::linalg::linsolve(
+						const auto abc = util::linalg::lup_solve(
 							{{std::pow(h1, 3), std::pow(h1, 2), h1},
 								{std::pow(h12, 3), std::pow(h12, 2), h12},
 								{std::pow(h13, 3), std::pow(h13, 2), h13}},
@@ -350,7 +350,7 @@ namespace alfi::spline {
 						const auto h12 = X[n-2]-X[n-4], h13 = X[n-1]-X[n-4];
 						const auto d1 = dY[n-4], d12 = Y[n-2] - Y[n-4], d13 = Y[n-1] - Y[n-4];
 
-						const auto abc = util::linalg::linsolve(
+						const auto abc = util::linalg::lup_solve(
 							{{std::pow(h1, 3), std::pow(h1, 2), h1},
 								{std::pow(h12, 3), std::pow(h12, 2), h12},
 								{std::pow(h13, 3), std::pow(h13, 2), h13}},

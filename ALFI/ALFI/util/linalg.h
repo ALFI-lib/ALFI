@@ -5,62 +5,73 @@
 #include "../config.h"
 
 namespace alfi::util::linalg {
+	/**
+		@brief Solves a system of linear equations using LUP decomposition.
+
+		This function solves the system of linear equations \f(AX = B\f), where \f(A\f) is a square matrix,
+		by performing LUP decomposition and forward-backward substitution.\n
+		The input matrix \f(A\f) is decomposed into lower \f(L\f) and upper \f(U\f) triangular matrices,
+		such that \f(PA = LU\f), transforming the equation into \f(PLUX = B\f) or \f(LUX = PB\f).
+
+		The solution is found in two stages:
+		1. The first stage solves the system \f(LY = PB\f) for the intermediate vector \f(Y\f) using forward substitution.
+		2. The second stage solves the system \f(UX = Y\f) for the final solution \f(X\f) using backward substitution.
+
+		If the pivot element in a given column is too small (less than the specified \f(epsilon\f)),
+		the function returns an empty container, indicating that the matrix is degenerate,
+		and prints the corresponding message to `std::cerr`.
+
+		The input matrix \f(A\f) and vector \f(B\f) are modified in place.
+
+		@param A the matrix (2D container of size \f(n \times n\f))
+		@param B the right-hand side vector (1D container of size \f(n\f))
+		@param epsilon a small threshold value to detect degeneracy (default is machine epsilon)
+		@return the solution vector or an empty container if the matrix is degenerate
+	 */
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
-	Container<Number> linsolve(Container<Container<Number>>&& A, const Container<Number>& B, Number epsilon = std::numeric_limits<Number>::epsilon()) {
-		const auto N = B.size();
-
-		Container<SizeT> P(N);
-		for (SizeT i = 0; i < N; ++i) {
-			P[i] = i;
-		}
-
-		for (SizeT i = 0; i < N; ++i) {
+	Container<Number> lup_solve(Container<Container<Number>>&& A, Container<Number>&& B, Number epsilon = std::numeric_limits<Number>::epsilon()) {
+		const auto n = B.size();
+		assert(n == A.size());
+		for (SizeT i = 0; i < n; ++i) {
+			assert(n == A[i].size());
 			Number max_a = std::abs(A[i][i]);
 			SizeT i_max = i;
-
-			for (SizeT k = i + 1; k < N; ++k) {
+			for (SizeT k = i + 1; k < n; ++k) {
 				const auto cur = std::abs(A[k][i]);
 				if (cur > max_a) {
 					max_a = cur;
 					i_max = k;
 				}
 			}
-
 			if (max_a < epsilon) {
 				std::cerr << "Error in function " << __FUNCTION__ << ": Matrix A is degenerate. Returning an empty array..." << std::endl;
 				return {};
 			}
-
 			if (i_max != i) {
-				std::swap(P[i], P[i_max]);
 				std::swap(A[i], A[i_max]);
+				std::swap(B[i], B[i_max]);
 			}
-
-			for (SizeT j = i + 1; j < N; ++j) {
+			for (SizeT j = i + 1; j < n; ++j) {
 				A[j][i] /= A[i][i];
-				for (SizeT k = i + 1; k < N; ++k) {
+				for (SizeT k = i + 1; k < n; ++k) {
 					A[j][k] -= A[j][i] * A[i][k];
 				}
 			}
 		}
-
-		Container<Number> X(N);
-
-		for (SizeT i = 0; i < N; ++i) {
-			X[i] = B[P[i]];
+		Container<Number> X(n);
+		for (SizeT i = 0; i < n; ++i) {
+			X[i] = B[i];
 			for (SizeT k = 0; k < i; ++k) {
 				X[i] -= A[i][k] * X[k];
 			}
 		}
-
-		for (SizeT iter = 0; iter < N; ++iter) {
-			const auto i = N - 1 - iter;
-			for (SizeT k = i + 1; k < N; ++k) {
+		for (SizeT iter = 0; iter < n; ++iter) {
+			const auto i = n - 1 - iter;
+			for (SizeT k = i + 1; k < n; ++k) {
 				X[i] -= A[i][k] * X[k];
 			}
 			X[i] /= A[i][i];
 		}
-
 		return X;
 	}
 
