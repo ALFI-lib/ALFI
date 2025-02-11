@@ -28,7 +28,7 @@ namespace alfi::spline {
 			 */
 			struct NotAKnotEnd final {};
 			/**
-				The arithmetic mean_array between NotAKnotStart and NotAKnotEnd.
+				The arithmetic mean of NotAKnotStart and NotAKnotEnd.
 			 */
 			struct SemiNotAKnot final {};
 			/**
@@ -40,13 +40,80 @@ namespace alfi::spline {
 			 */
 			struct NaturalEnd final {};
 			/**
-				The arithmetic mean_array between NaturalStart and NaturalEnd.
+				The arithmetic mean of NaturalStart and NaturalEnd.
 			 */
 			struct SemiNatural final {};
 			/**
-				The arithmetic mean_array between SemiNotAKnot and SemiNatural.
+				The arithmetic mean of SemiNotAKnot and SemiNatural.
 			 */
 			struct SemiSemi final {};
+			/**
+				The first derivative equals `df` at the first point.
+			 */
+			struct ClampedStart final {
+				explicit ClampedStart(Number df) : df(df) {}
+				Number df;
+			};
+			/**
+				The first derivative equals `df` at the last point.
+			 */
+			struct ClampedEnd final {
+				explicit ClampedEnd(Number df) : df(df) {}
+				Number df;
+			};
+			/**
+				The arithmetic mean of ClampedStart and ClampedEnd.
+			 */
+			struct SemiClamped final {
+				SemiClamped(Number df_1, Number df_n) : df_1(df_1), df_n(df_n) {}
+				Number df_1, df_n;
+			};
+			/**
+				The second derivative equals `d2f` on the first segment.
+			 */
+			struct FixedSecondStart final {
+				explicit FixedSecondStart(Number d2f) : d2f(d2f) {}
+				Number d2f;
+			};
+			/**
+				The second derivative equals `d2f` on the last segment.
+			 */
+			struct FixedSecondEnd final {
+				explicit FixedSecondEnd(Number d2f) : d2f(d2f) {}
+				Number d2f;
+			};
+			/**
+				The arithmetic mean of FixedSecondStart and FixedSecondEnd.
+			 */
+			struct SemiFixedSecond final {
+				SemiFixedSecond(Number d2f_1, Number d2f_n) : d2f_1(d2f_1), d2f_n(d2f_n) {}
+				Number d2f_1, d2f_n;
+			};
+			/**
+				The first derivative equals `df` at the point with index `point_idx`.
+			 */
+			struct Clamped final {
+				Clamped(SizeT point_idx, Number df) : point_idx(point_idx), df(df) {}
+				SizeT point_idx;
+				Number df;
+			};
+			/**
+				The second derivative equals `d2f` on the segment with index `segment_idx`.
+			 */
+			struct FixedSecond final {
+				FixedSecond(SizeT segment_idx, Number d2f) : segment_idx(segment_idx), d2f(d2f) {}
+				SizeT segment_idx;
+				Number d2f;
+			};
+			/**
+				The second derivative is continuous at the point with index `point_idx`.\n
+				This also means, that the second derivative is the same on the segments with indices `point_idx-1` and `point_idx`.\n
+				If number of points is less than or equal to 2, then `point_idx` is ignored.
+			 */
+			struct NotAKnot final {
+				explicit NotAKnot(SizeT point_idx) : point_idx(point_idx) {}
+				SizeT point_idx;
+			};
 			using Default = SemiNotAKnot;
 		};
 
@@ -56,7 +123,16 @@ namespace alfi::spline {
 								  typename Types::NaturalStart,
 								  typename Types::NaturalEnd,
 								  typename Types::SemiNatural,
-								  typename Types::SemiSemi>;
+								  typename Types::SemiSemi,
+								  typename Types::ClampedStart,
+								  typename Types::ClampedEnd,
+								  typename Types::SemiClamped,
+								  typename Types::FixedSecondStart,
+								  typename Types::FixedSecondEnd,
+								  typename Types::SemiFixedSecond,
+								  typename Types::Clamped,
+								  typename Types::FixedSecond,
+								  typename Types::NotAKnot>;
 
 		static Container<Number> compute_coeffs(const auto& X, const auto& Y, Type type = typename Types::Default{}) {
 			if (X.size() != Y.size()) {
@@ -73,97 +149,115 @@ namespace alfi::spline {
 				return util::spline::simple_spline<Number,Container>(X, Y, 2);
 			}
 
+			if (std::holds_alternative<typename Types::NotAKnotStart>(type)) {
+				return compute_coeffs(X, Y, typename Types::NotAKnot(1));
+			} else if (std::holds_alternative<typename Types::NotAKnotEnd>(type)) {
+				return compute_coeffs(X, Y, typename Types::NotAKnot(n - 2));
+			} else if (std::holds_alternative<typename Types::SemiNotAKnot>(type)) {
+				return util::arrays::mean(compute_coeffs(X, Y, typename Types::NotAKnot{1}), compute_coeffs(X, Y, typename Types::NotAKnot{n - 2}));
+			} else if (std::holds_alternative<typename Types::NaturalStart>(type)) {
+				return compute_coeffs(X, Y, typename Types::FixedSecond(0, 0));
+			} else if (std::holds_alternative<typename Types::NaturalEnd>(type)) {
+				return compute_coeffs(X, Y, typename Types::FixedSecond(n - 2, 0));
+			} else if (std::holds_alternative<typename Types::SemiNatural>(type)) {
+				return util::arrays::mean(compute_coeffs(X, Y, typename Types::NaturalStart{}), compute_coeffs(X, Y, typename Types::NaturalEnd{}));
+			} else if (std::holds_alternative<typename Types::SemiSemi>(type)) {
+				return util::arrays::mean(compute_coeffs(X, Y, typename Types::SemiNotAKnot{}), compute_coeffs(X, Y, typename Types::SemiNatural{}));
+			} else if (const auto* cs = std::get_if<typename Types::ClampedStart>(&type)) {
+				return compute_coeffs(X, Y, typename Types::Clamped(0, cs->df));
+			} else if (const auto* ce = std::get_if<typename Types::ClampedEnd>(&type)) {
+				return compute_coeffs(X, Y, typename Types::Clamped(n - 1, ce->df));
+			} else if (const auto* sc = std::get_if<typename Types::SemiClamped>(&type)) {
+				return util::arrays::mean(compute_coeffs(X, Y, typename Types::Clamped(0, sc->df_1)), compute_coeffs(X, Y, typename Types::Clamped(n - 1, sc->df_n)));
+			} else if (const auto* fss = std::get_if<typename Types::FixedSecondStart>(&type)) {
+				return compute_coeffs(X, Y, typename Types::FixedSecond(0, fss->d2f));
+			} else if (const auto* fse = std::get_if<typename Types::FixedSecondEnd>(&type)) {
+				return compute_coeffs(X, Y, typename Types::FixedSecond(n - 2, fse->d2f));
+			} else if (const auto* sfs = std::get_if<typename Types::SemiFixedSecond>(&type)) {
+				return util::arrays::mean(compute_coeffs(X, Y, typename Types::FixedSecond(0, sfs->d2f_1)), compute_coeffs(X, Y, typename Types::FixedSecond(n - 2, sfs->d2f_n)));
+			}
+
 			Container<Number> coeffs(3 * (n - 1));
 
-			std::visit(util::misc::overload{
-				[&](const typename Types::NotAKnotStart&) {
-					if (n <= 3) {
-						coeffs = util::spline::simple_spline<Number,Container>(X, Y, 2);
-						return;
-					}
-					{ // first three points
-						const Number h1 = X[1] - X[0], h2 = X[2] - X[1];
-						const Number d1 = (Y[1] - Y[0]) / h1, d2 = (Y[2] - Y[1]) / h2;
-						coeffs[0] = (d2 - d1) / (h1 + h2); // a1
-						coeffs[1] = d1 - h1 * coeffs[0]; // b1
-						coeffs[2] = Y[0]; // c1
-						coeffs[3] = coeffs[0]; // a2
-						coeffs[4] = d1 + h1 * coeffs[0]; // b2
-						coeffs[5] = Y[1]; // c2
-					}
-					for (SizeT i = 2; i < n - 1; ++i) {
-						const Number hi = X[i+1] - X[i], hi_1 = X[i] - X[i-1];
-						const Number d = 2 * coeffs[3*(i-1)] * hi_1 + coeffs[3*(i-1)+1];
-						coeffs[3*i] = ((Y[i+1] - Y[i])/hi - d) / hi;
-						coeffs[3*i+1] = d;
-						coeffs[3*i+2] = Y[i];
-					}
-				},
-				[&](const typename Types::NotAKnotEnd&) {
-					if (n <= 3) {
-						coeffs = util::spline::simple_spline<Number,Container>(X, Y, 2);
-						return;
-					}
-					{ // last three points
-						const Number hn_2 = X[n-2] - X[n-3], hn_1 = X[n-1] - X[n-2];
-						const Number dn_2 = (Y[n-2] - Y[n-3]) / hn_2, dn_1 = (Y[n-1] - Y[n-2]) / hn_1;
-						coeffs[3*(n-3)] = (dn_1 - dn_2) / (hn_2 + hn_1); // an-2
-						coeffs[3*(n-3)+1] = dn_2 - hn_2 * coeffs[3*(n-3)]; // bn-2
-						coeffs[3*(n-3)+2] = Y[n-3]; // cn-2
-						coeffs[3*(n-2)] = coeffs[3*(n-3)]; // an-1
-						coeffs[3*(n-2)+1] = dn_2 + hn_2 * coeffs[3*(n-3)]; // bn-1
-						coeffs[3*(n-2)+2] = Y[n-2]; // cn-1
-					}
-					for (SizeT iter = 0; iter <= n - 4; ++iter) {
-						const SizeT i = n - 4 - iter;
-						const Number hi = X[i+1] - X[i];
-						coeffs[3*i] = (coeffs[3*(i+1)+1] - (Y[i+1] - Y[i])/hi) / hi;
-						coeffs[3*i+1] = coeffs[3*(i+1)+1] - 2*coeffs[3*i]*hi;
-						// another way: coeffs[3*i+1] = (Y[i+1] - Y[i])/hi - coeffs[3*i]*hi;
-						coeffs[3*i+2] = Y[i];
-					}
-				},
-				[&](const typename Types::SemiNotAKnot&) {
-					coeffs = util::arrays::mean(compute_coeffs(X, Y, typename Types::NotAKnotStart{}), compute_coeffs(X, Y, typename Types::NotAKnotEnd{}));
-				},
-				[&](const typename Types::NaturalStart&) {
-					if (n <= 2) {
-						coeffs = util::spline::simple_spline<Number,Container>(X, Y, 2);
-						return;
-					}
-					coeffs[0] = 0; // a1 = 0
-					coeffs[1] = (Y[1] - Y[0]) / (X[1] - X[0]); // b1
-					coeffs[2] = Y[0]; // c1
-					for (SizeT i = 1; i < n - 1; ++i) {
-						coeffs[3*i+1] = 2 * (Y[i] - Y[i-1]) / (X[i] - X[i-1]) - coeffs[3*(i-1)+1];
-						coeffs[3*i] = ((Y[i+1] - Y[i]) / (X[i+1] - X[i]) - coeffs[3*i+1]) / (X[i+1] - X[i]);
-						// another way: coeffs[3*i] = (coeffs[3*(i+1)+1] - coeffs[3*i+1]) / 2 / (X[i+1] - X[i]);
-						coeffs[3*i+2] = Y[i];
-					}
-				},
-				[&](const typename Types::NaturalEnd&) {
-					if (n <= 2) {
-						coeffs = util::spline::simple_spline<Number,Container>(X, Y, 2);
-						return;
-					}
-					coeffs[3*(n-2)] = 0; // an-1 = 0
-					coeffs[3*(n-2)+1] = (Y[n-1] - Y[n-2]) / (X[n-1] - X[n-2]); // bn-1
-					coeffs[3*(n-2)+2] = Y[n-2]; // cn-1
-					for (SizeT iter = 0; iter <= n - 3; ++iter) {
-						const SizeT i = n - 3 - iter;
-						coeffs[3*i+1] = 2 * (Y[i+1] - Y[i]) / (X[i+1] - X[i]) - coeffs[3*(i+1)+1];
-						// another way: coeffs[3*i] = ((Y[i+1] - Y[i]) / (X[i+1] - X[i]) - coeffs[3*i+1]) / (X[i+1] - X[i]);
-						coeffs[3*i] = (coeffs[3*(i+1)+1] - coeffs[3*i+1]) / 2 / (X[i+1] - X[i]);
-						coeffs[3*i+2] = Y[i];
-					}
-				},
-				[&](const typename Types::SemiNatural&) {
-					coeffs = util::arrays::mean(compute_coeffs(X, Y, typename Types::NaturalStart{}), compute_coeffs(X, Y, typename Types::NaturalEnd{}));
-				},
-				[&](const typename Types::SemiSemi&) {
-					coeffs = util::arrays::mean(compute_coeffs(X, Y, typename Types::SemiNotAKnot{}), compute_coeffs(X, Y, typename Types::SemiNatural{}));
-				},
-			}, type);
+			SizeT i1 = 0, i2 = n - 1;
+
+			if (const auto* clamped = std::get_if<typename Types::Clamped>(&type)) {
+				const auto i = clamped->point_idx;
+				if (i < 0 || i >= n) {
+					std::cerr << "Error in function " << __FUNCTION__
+							  << ": point index for type 'Clamped' is out of bounds:"
+							  << "expected to be non-negative and less than " << n << ", but got " << i
+							  << ". Returning an empty array..." << std::endl;
+					return {};
+				}
+				if (i > 0) {
+					const auto dx1 = X[i] - X[i-1], dy1 = Y[i] - Y[i-1];
+					coeffs[3*(i-1)+2] = Y[i-1];
+					coeffs[3*(i-1)+1] = 2*dy1/dx1 - clamped->df;
+					coeffs[3*(i-1)] = dy1/dx1/dx1 - coeffs[3*(i-1)+1]/dx1;
+					i1 = i - 1;
+				}
+				if (i < n - 1) {
+					const auto dx = X[i+1] - X[i], dy = Y[i+1] - Y[i];
+					coeffs[3*i+2] = Y[i];
+					coeffs[3*i+1] = clamped->df;
+					coeffs[3*i] = dy/dx/dx - coeffs[3*i+1]/dx;
+					i2 = i;
+				}
+			} else if (const auto* fixed_second = std::get_if<typename Types::FixedSecond>(&type)) {
+				const auto i = fixed_second->segment_idx;
+				if (i < 0 || i >= n - 1) {
+					std::cerr << "Error in function " << __FUNCTION__
+							  << ": point index for type 'FixedSecond' is out of bounds:"
+							  << "expected to be non-negative and less than " << n - 1 << ", but got " << i
+							  << ". Returning an empty array..." << std::endl;
+					return {};
+				}
+				coeffs[3*i] = fixed_second->d2f / 2;
+				coeffs[3*i+1] = (Y[i+1]-Y[i])/(X[i+1]-X[i]) - coeffs[3*i]*(X[i+1]-X[i]);
+				coeffs[3*i+2] = Y[i];
+				i1 = i2 = i;
+			} else if (const auto* not_a_knot = std::get_if<typename Types::NotAKnot>(&type)) {
+				if (n <= 2) {
+					return util::spline::simple_spline<Number,Container>(X, Y, 2);
+				}
+				const auto i = not_a_knot->point_idx;
+				if (i < 1 || i >= n - 1) {
+					std::cerr << "Error in function " << __FUNCTION__
+							  << ": point index for type 'NotAKnot' is out of bounds:"
+							  << "expected to be positive and less than " << n - 1 << ", but got " << i
+							  << ". Returning an empty array..." << std::endl;
+					return {};
+				}
+				const auto dx1 = X[i] - X[i-1], dy1 = Y[i] - Y[i-1];
+				const auto dx = X[i+1] - X[i], dy = Y[i+1] - Y[i];
+				coeffs[3*(i-1)+2] = Y[i-1];
+				coeffs[3*i+2] = Y[i];
+				coeffs[3*(i-1)] = coeffs[3*i] = (dy/dx - dy1/dx1) / (dx1 + dx);
+				coeffs[3*(i-1)+1] = dy1/dx1 - coeffs[3*(i-1)]*dx1;
+				coeffs[3*i+1] = dy/dx - coeffs[3*i]*dx;
+				i1 = i - 1;
+				i2 = i;
+			} else {
+				std::cerr << "Error in function " << __FUNCTION__ << ": Unknown type. This should not have happened."
+						  << " Please report this to the developers. Returning an empty array..." << std::endl;
+				return {};
+			}
+
+			for (SizeT iter = 0; iter < i1; ++iter) {
+				const auto i = i1 - 1 - iter;
+				const auto dx = X[i+1] - X[i], dy = Y[i+1] - Y[i];
+				coeffs[3*i] = coeffs[3*(i+1)+1]/dx - dy/dx/dx;
+				coeffs[3*i+1] = 2*dy/dx - coeffs[3*(i+1)+1];
+				coeffs[3*i+2] = Y[i];
+			}
+
+			for (SizeT i = i2 + 1; i < n - 1; ++i) {
+				const auto dx = X[i+1] - X[i], dy = Y[i+1] - Y[i];
+				coeffs[3*i+2] = Y[i];
+				coeffs[3*i+1] = coeffs[3*(i-1)+1] + 2*coeffs[3*(i-1)]*(X[i]-X[i-1]);
+				coeffs[3*i] = dy/dx/dx - coeffs[3*i+1]/dx;
+			}
 
 			return coeffs;
 		}

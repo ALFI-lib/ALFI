@@ -54,6 +54,17 @@ public:
 		{"Natural end", alfi::spline::QuadraticSpline<>::Types::NaturalEnd{}},
 		{"Semi-natural", alfi::spline::QuadraticSpline<>::Types::SemiNatural{}},
 		{"Semi-semi", alfi::spline::QuadraticSpline<>::Types::SemiSemi{}},
+		{"Clamped-start(10)", alfi::spline::QuadraticSpline<>::Types::ClampedStart{10}},
+		{"Clamped-start(-10)", alfi::spline::QuadraticSpline<>::Types::ClampedStart{-10}},
+		{"Clamped-end(10)", alfi::spline::QuadraticSpline<>::Types::ClampedEnd{10}},
+		{"Clamped-end(-10)", alfi::spline::QuadraticSpline<>::Types::ClampedEnd{-10}},
+		{"Semi-clamped(10, 10)", alfi::spline::QuadraticSpline<>::Types::SemiClamped{10, 10}},
+		{"Fixed-second-start(10)", alfi::spline::QuadraticSpline<>::Types::FixedSecondStart{10}},
+		{"Fixed-second-end(10)", alfi::spline::QuadraticSpline<>::Types::FixedSecondEnd{10}},
+		{"Semi-fixed-second(10, 10)", alfi::spline::QuadraticSpline<>::Types::SemiFixedSecond{10, 10}},
+		{"Clamped(10, 10)", alfi::spline::QuadraticSpline<>::Types::Clamped{10, 10}},
+		{"Fixed-second(10, 10)", alfi::spline::QuadraticSpline<>::Types::FixedSecond{10, 10}},
+		{"Not-a-knot(10)", alfi::spline::QuadraticSpline<>::Types::NotAKnot{10}},
 	};
 	static const inline size_t quadratic_spline_default_type_index = 2;
 

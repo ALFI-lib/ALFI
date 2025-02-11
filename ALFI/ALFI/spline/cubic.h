@@ -70,7 +70,7 @@ namespace alfi::spline {
 			 */
 			struct NotAKnotEnd final {};
 			/**
-				The arithmetic mean_array between NotAKnotStart and NotAKnotEnd.
+				The arithmetic mean of NotAKnotStart and NotAKnotEnd.
 			 */
 			struct SemiNotAKnot final {};
 			using Default = Natural;
