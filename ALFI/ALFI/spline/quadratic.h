@@ -51,49 +51,49 @@ namespace alfi::spline {
 				The first derivative equals `df` at the first point.
 			 */
 			struct ClampedStart final {
-				explicit ClampedStart(Number df) : df(df) {}
+				explicit ClampedStart(Number df) : df(std::move(df)) {}
 				Number df;
 			};
 			/**
 				The first derivative equals `df` at the last point.
 			 */
 			struct ClampedEnd final {
-				explicit ClampedEnd(Number df) : df(df) {}
+				explicit ClampedEnd(Number df) : df(std::move(df)) {}
 				Number df;
 			};
 			/**
 				The arithmetic mean of ClampedStart and ClampedEnd.
 			 */
 			struct SemiClamped final {
-				SemiClamped(Number df_1, Number df_n) : df_1(df_1), df_n(df_n) {}
+				SemiClamped(Number df_1, Number df_n) : df_1(std::move(df_1)), df_n(std::move(df_n)) {}
 				Number df_1, df_n;
 			};
 			/**
 				The second derivative equals `d2f` on the first segment.
 			 */
 			struct FixedSecondStart final {
-				explicit FixedSecondStart(Number d2f) : d2f(d2f) {}
+				explicit FixedSecondStart(Number d2f) : d2f(std::move(d2f)) {}
 				Number d2f;
 			};
 			/**
 				The second derivative equals `d2f` on the last segment.
 			 */
 			struct FixedSecondEnd final {
-				explicit FixedSecondEnd(Number d2f) : d2f(d2f) {}
+				explicit FixedSecondEnd(Number d2f) : d2f(std::move(d2f)) {}
 				Number d2f;
 			};
 			/**
 				The arithmetic mean of FixedSecondStart and FixedSecondEnd.
 			 */
 			struct SemiFixedSecond final {
-				SemiFixedSecond(Number d2f_1, Number d2f_n) : d2f_1(d2f_1), d2f_n(d2f_n) {}
+				SemiFixedSecond(Number d2f_1, Number d2f_n) : d2f_1(std::move(d2f_1)), d2f_n(std::move(d2f_n)) {}
 				Number d2f_1, d2f_n;
 			};
 			/**
 				The first derivative equals `df` at the point with index `point_idx`.
 			 */
 			struct Clamped final {
-				Clamped(SizeT point_idx, Number df) : point_idx(point_idx), df(df) {}
+				Clamped(SizeT point_idx, Number df) : point_idx(std::move(point_idx)), df(std::move(df)) {}
 				SizeT point_idx;
 				Number df;
 			};
@@ -101,7 +101,7 @@ namespace alfi::spline {
 				The second derivative equals `d2f` on the segment with index `segment_idx`.
 			 */
 			struct FixedSecond final {
-				FixedSecond(SizeT segment_idx, Number d2f) : segment_idx(segment_idx), d2f(d2f) {}
+				FixedSecond(SizeT segment_idx, Number d2f) : segment_idx(std::move(segment_idx)), d2f(std::move(d2f)) {}
 				SizeT segment_idx;
 				Number d2f;
 			};
@@ -111,7 +111,7 @@ namespace alfi::spline {
 				If number of points is less than or equal to 2, then `point_idx` is ignored.
 			 */
 			struct NotAKnot final {
-				explicit NotAKnot(SizeT point_idx) : point_idx(point_idx) {}
+				explicit NotAKnot(SizeT point_idx) : point_idx(std::move(point_idx)) {}
 				SizeT point_idx;
 			};
 			using Default = SemiNotAKnot;
