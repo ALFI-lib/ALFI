@@ -32,7 +32,7 @@ namespace alfi::misc {
 
 		const auto N = X.size();
 
-		Container c(N);
+		Container<Number> c(N);
 		if (dist_type == dist::Type::UNIFORM) {
 			c[0] = 1;
 			for (SizeT j = 1; j <= N / 2; ++j) {
@@ -78,31 +78,29 @@ namespace alfi::misc {
 
 		const auto nn = xx.size();
 
-		Container<Number> numerators(nn, static_cast<Number>(0));
-		Container<Number> denominators(nn, static_cast<Number>(0));
+		Container<Number> result(nn);
 
 		const auto NOT_EXACT = N;
-		Container<SizeT> exact(nn, NOT_EXACT);
 
-		for (SizeT k = 0; k < N; ++k) {
-			for (SizeT i = 0; i < nn; ++i) {
-				if (util::numeric::are_equal(xx[i], X[k], epsilon)) {
-					exact[i] = k;
-					continue;
+		for (SizeT k = 0; k < nn; ++k) {
+			Number numerator = 0, denominator = 0;
+			SizeT exact = NOT_EXACT;
+
+			for (SizeT i = 0; i < N; ++i) {
+				if (util::numeric::are_equal(xx[k], X[i], epsilon)) {
+					exact = i;
+					break;
 				}
-				const auto x_diff = xx[i] - X[k];
-				const auto temp = c[k] / x_diff;
-				numerators[i] += temp * Y[k];
-				denominators[i] += temp;
+				const auto x_diff = xx[k] - X[i];
+				const auto temp = c[i] / x_diff;
+				numerator += temp * Y[i];
+				denominator += temp;
 			}
-		}
 
-		Container<Number> result(nn, static_cast<Number>(0));
-		for (SizeT i = 0; i < nn; ++i) {
-			if (exact[i] != NOT_EXACT) {
-				result[i] = Y[exact[i]];
+			if (exact != NOT_EXACT) {
+				result[k] = Y[exact];
 			} else {
-				result[i] = numerators[i] / denominators[i];
+				result[k] = numerator / denominator;
 			}
 		}
 
