@@ -21,8 +21,11 @@ namespace alfi::poly {
 	std::enable_if_t<traits::has_size<ContainerX>::value, Container<Number>>
 	val(const auto& coeffs, const ContainerX& X) {
 		Container<Number> result(X.size(), 0);
-		for (const Number& c : coeffs) {
-			for (SizeT i = 0; i < X.size(); ++i) {
+#if defined(_OPENMP) && !defined(ALFI_DISABLE_OPENMP)
+#pragma omp parallel for
+#endif
+		for (SizeT i = 0; i < X.size(); ++i) {
+			for (const Number& c : coeffs) {
 				result[i] = X[i] * result[i] + c;
 			}
 		}
