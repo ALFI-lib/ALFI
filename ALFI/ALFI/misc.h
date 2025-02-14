@@ -80,15 +80,13 @@ namespace alfi::misc {
 
 		Container<Number> result(nn);
 
-		const auto NOT_EXACT = N;
-
 		for (SizeT k = 0; k < nn; ++k) {
 			Number numerator = 0, denominator = 0;
-			SizeT exact = NOT_EXACT;
+			SizeT exact_idx = N;
 
 			for (SizeT i = 0; i < N; ++i) {
 				if (util::numeric::are_equal(xx[k], X[i], epsilon)) {
-					exact = i;
+					exact_idx = i;
 					break;
 				}
 				const auto x_diff = xx[k] - X[i];
@@ -97,8 +95,8 @@ namespace alfi::misc {
 				denominator += temp;
 			}
 
-			if (exact != NOT_EXACT) {
-				result[k] = Y[exact];
+			if (exact_idx != N) {
+				result[k] = Y[exact_idx];
 			} else {
 				result[k] = numerator / denominator;
 			}
