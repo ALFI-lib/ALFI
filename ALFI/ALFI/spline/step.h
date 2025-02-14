@@ -86,7 +86,7 @@ namespace alfi::spline {
 		}
 
 		Container<Number> eval(const Container<Number>& xx, bool sorted = true) const {
-			Container result(xx.size());
+			Container<Number> result(xx.size());
 			if (sorted) {
 				for (SizeT i = 0, i_x = 0; i < xx.size(); ++i) {
 					const Number x = xx[i];
