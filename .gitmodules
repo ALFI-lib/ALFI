@@ -1,6 +1,6 @@
 [submodule "tests/deps/toml++"]
 	path = tests/deps/toml++
-	url = https://github.com/marzer/tomlplusplus
+	url = https://github.com/pasabanov/tomlpp-min
 	shallow = true
 [submodule "tests/test_data"]
 	path = tests/test_data
