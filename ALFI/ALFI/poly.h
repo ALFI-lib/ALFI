@@ -100,6 +100,9 @@ namespace alfi::poly {
 
 		Container<Number> yy(nn);
 
+#if defined(_OPENMP) && !defined(ALFI_DISABLE_OPENMP)
+#pragma omp parallel for
+#endif
 		for (SizeT k = 0; k < nn; ++k) {
 			yy[k] = 0;
 			for (SizeT i = 0; i < N; ++i) {
@@ -212,6 +215,9 @@ namespace alfi::poly {
 
 		Container<Number> yy(nn);
 
+#if defined(_OPENMP) && !defined(ALFI_DISABLE_OPENMP)
+#pragma omp parallel for
+#endif
 		for (SizeT k = 0; k < nn; ++k) {
 			Number l = 1;
 			for (SizeT i = 0; i < N; ++i) {
@@ -318,6 +324,9 @@ namespace alfi::poly {
 
 		Container<Number> yy(nn);
 
+#if defined(_OPENMP) && !defined(ALFI_DISABLE_OPENMP)
+#pragma omp parallel for
+#endif
 		for (SizeT k = 0; k < nn; ++k) {
 			yy[k] = F[N-1];
 			for (SizeT iter = 0; iter < N - 1; ++iter) {

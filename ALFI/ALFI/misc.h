@@ -80,6 +80,9 @@ namespace alfi::misc {
 
 		Container<Number> result(nn);
 
+#if defined(_OPENMP) && !defined(ALFI_DISABLE_OPENMP)
+#pragma omp parallel for
+#endif
 		for (SizeT k = 0; k < nn; ++k) {
 			Number numerator = 0, denominator = 0;
 			SizeT exact_idx = N;
