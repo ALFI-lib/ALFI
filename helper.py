@@ -9,6 +9,7 @@ profile_directories = {
 	'RelWithDebInfo': 'build/relwithdebinfo',
 	'MinSizeRel': 'build/minsizerel',
 	'Fast': 'build/fast',
+	'FastParallel': 'build/fastparallel',
 	'Sanitize': 'build/sanitize',
 }
 
