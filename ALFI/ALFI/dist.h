@@ -107,7 +107,7 @@ namespace alfi::dist {
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> chebyshev_stretched(SizeT n, Number a, Number b) {
-		return points::stretched(chebyshev(n, a, b), a, b);
+		return points::stretched<Number,Container>(chebyshev(n, a, b), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
@@ -126,7 +126,7 @@ namespace alfi::dist {
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> chebyshev_ellipse_stretched(SizeT n, Number a, Number b, Number ratio) {
-		return points::stretched(chebyshev_ellipse(n, a, b, ratio), a, b);
+		return points::stretched<Number,Container>(chebyshev_ellipse(n, a, b, ratio), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
@@ -250,7 +250,7 @@ namespace alfi::dist {
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> erf_stretched(SizeT n, Number a, Number b, Number steepness) {
-		return points::stretched(erf(n, a, b, steepness), a, b);
+		return points::stretched<Number,Container>(erf(n, a, b, steepness), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
