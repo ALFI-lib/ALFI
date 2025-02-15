@@ -98,7 +98,12 @@ namespace alfi::util::linalg {
 		@return the solution vector
 	 */
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
-	Container<Number> tridiag_solve_unstable(const auto& lower, auto&& diag, const auto& upper, auto&& right) {
+	Container<Number> tridiag_solve_unstable(
+			const Container<Number>& lower,
+			Container<Number>&& diag,
+			const Container<Number>& upper,
+			Container<Number>&& right
+	) {
 		const auto n = right.size();
 		assert(n == lower.size());
 		assert(n == diag.size());
@@ -140,7 +145,12 @@ namespace alfi::util::linalg {
 		@return the solution vector
 	 */
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
-	Container<Number> tridiag_solve(auto&& lower, auto&& diag, auto&& upper, auto&& right) {
+	Container<Number> tridiag_solve(
+			Container<Number>&& lower,
+			Container<Number>&& diag,
+			Container<Number>&& upper,
+			Container<Number>&& right
+	) {
 		const auto n = right.size();
 		assert(n == lower.size());
 		assert(n == diag.size());

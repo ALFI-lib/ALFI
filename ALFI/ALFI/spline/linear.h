@@ -11,7 +11,7 @@ namespace alfi::spline {
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	class LinearSpline {
 	public:
-		static Container<Number> compute_coeffs(const auto& X, const auto& Y) {
+		static Container<Number> compute_coeffs(const Container<Number>& X, const Container<Number>& Y) {
 			if (X.size() != Y.size()) {
 				std::cerr << "Error in function " << __FUNCTION__
 						  << ": Vectors X (of size " << X.size()
@@ -47,7 +47,7 @@ namespace alfi::spline {
 		LinearSpline() = default;
 
 		template <typename ContainerXType>
-		LinearSpline(ContainerXType&& X, const auto& Y) {
+		LinearSpline(ContainerXType&& X, const Container<Number>& Y) {
 			construct(std::forward<ContainerXType>(X), Y);
 		}
 
@@ -58,7 +58,7 @@ namespace alfi::spline {
 		LinearSpline& operator=(LinearSpline&& other) noexcept = default;
 
 		template <typename ContainerXType>
-		void construct(ContainerXType&& X, const auto& Y) {
+		void construct(ContainerXType&& X, const Container<Number>& Y) {
 			if (X.size() != Y.size()) {
 				std::cerr << "Error in function " << __FUNCTION__
 						  << ": Vectors X (of size " << X.size()

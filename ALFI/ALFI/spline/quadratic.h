@@ -134,7 +134,7 @@ namespace alfi::spline {
 								  typename Types::FixedSecond,
 								  typename Types::NotAKnot>;
 
-		static Container<Number> compute_coeffs(const auto& X, const auto& Y, Type type = typename Types::Default{}) {
+		static Container<Number> compute_coeffs(const Container<Number>& X, const Container<Number>& Y, Type type = typename Types::Default{}) {
 			if (X.size() != Y.size()) {
 				std::cerr << "Error in function " << __FUNCTION__
 						  << ": Vectors X (of size " << X.size()
@@ -265,7 +265,7 @@ namespace alfi::spline {
 		QuadraticSpline() = default;
 
 		template <typename ContainerXType>
-		QuadraticSpline(ContainerXType&& X, const auto& Y, Type type = typename Types::Default{}) {
+		QuadraticSpline(ContainerXType&& X, const Container<Number>& Y, Type type = typename Types::Default{}) {
 			construct(std::forward<ContainerXType>(X), Y, type);
 		}
 
@@ -276,7 +276,7 @@ namespace alfi::spline {
 		QuadraticSpline& operator=(QuadraticSpline&& other) noexcept = default;
 
 		template <typename ContainerXType>
-		void construct(ContainerXType&& X, const auto& Y, Type type = typename Types::Default{}) {
+		void construct(ContainerXType&& X, const Container<Number>& Y, Type type = typename Types::Default{}) {
 			if (X.size() != Y.size()) {
 				std::cerr << "Error in function " << __FUNCTION__
 						  << ": Vectors X (of size " << X.size()

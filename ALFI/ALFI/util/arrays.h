@@ -40,7 +40,7 @@ namespace alfi::util::arrays {
 	}
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
-	Container<Number> diff(const auto& container) {
+	Container<Number> diff(const Container<Number>& container) {
 		if (container.empty()) {
 			return {};
 		}

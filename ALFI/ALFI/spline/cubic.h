@@ -87,7 +87,7 @@ namespace alfi::spline {
 								  typename Types::NotAKnotEnd,
 								  typename Types::SemiNotAKnot>;
 
-		static Container<Number> compute_coeffs(const auto& X, const auto& Y, Type type = typename Types::Default{}) {
+		static Container<Number> compute_coeffs(const Container<Number>& X, const Container<Number>& Y, Type type = typename Types::Default{}) {
 			constexpr auto FUNCTION = __FUNCTION__;
 
 			if (X.size() != Y.size()) {
@@ -131,7 +131,8 @@ namespace alfi::spline {
 					diag[n-1] = dX[n-2] - dX[n-3];
 					upper[n-1] = NAN;
 					right[n-1] = dX[n-2] / (dX[n-2]+dX[n-3]) * right[n-2];
-					const auto C = util::linalg::tridiag_solve(lower, diag, upper, right);
+					const auto C = util::linalg::tridiag_solve<Number,Container>(
+						std::move(lower), std::move(diag), std::move(upper), std::move(right));
 					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
 						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
 						coeffs[index++] = C[i];
@@ -216,7 +217,8 @@ namespace alfi::spline {
 					diag[n-1] = 2*dX[n-2];
 					upper[n-1] = NAN;
 					right[n-1] = 3 * (c.df_n - dY[n-2]/dX[n-2]);
-					const auto C = util::linalg::tridiag_solve(lower, diag, upper, right);
+					const auto C = util::linalg::tridiag_solve<Number,Container>(
+						std::move(lower), std::move(diag), std::move(upper), std::move(right));
 					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
 						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
 						coeffs[index++] = C[i];
@@ -241,7 +243,8 @@ namespace alfi::spline {
 					diag[n-1] = 1;
 					upper[n-1] = NAN;
 					right[n-1] = s.d2f_n / 2;
-					const auto C = util::linalg::tridiag_solve(lower, diag, upper, right);
+					const auto C = util::linalg::tridiag_solve<Number,Container>(
+						std::move(lower), std::move(diag), std::move(upper), std::move(right));
 					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
 						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
 						coeffs[index++] = C[i];
@@ -271,7 +274,8 @@ namespace alfi::spline {
 						diag[n-1] = 1;
 						upper[n-1] = NAN;
 						right[n-1] = dX[n-2] * t.d3f_n / 2;
-						C = util::linalg::tridiag_solve<Number,Container>(lower, diag, upper, right);
+						C = util::linalg::tridiag_solve<Number,Container>(
+							std::move(lower), std::move(diag), std::move(upper), std::move(right));
 					}
 					Container<Number> D(n - 1);
 					for (SizeT i = 1; i < D.size() - 1; ++i) {
@@ -303,7 +307,7 @@ namespace alfi::spline {
 						const auto h12 = X[2]-X[0], h13 = X[3]-X[0];
 						const auto d1 = Y[1]-Y[0], d12 = Y[2]-Y[0], d13 = Y[3]-Y[0];
 
-						const auto abc = util::linalg::lup_solve(
+						const auto abc = util::linalg::lup_solve<Number,Container>(
 							{{std::pow(h1, 3), std::pow(h1, 2), h1},
 								{std::pow(h12, 3), std::pow(h12, 2), h12},
 								{std::pow(h13, 3), std::pow(h13, 2), h13}},
@@ -350,7 +354,7 @@ namespace alfi::spline {
 						const auto h12 = X[n-2]-X[n-4], h13 = X[n-1]-X[n-4];
 						const auto d1 = dY[n-4], d12 = Y[n-2] - Y[n-4], d13 = Y[n-1] - Y[n-4];
 
-						const auto abc = util::linalg::lup_solve(
+						const auto abc = util::linalg::lup_solve<Number,Container>(
 							{{std::pow(h1, 3), std::pow(h1, 2), h1},
 								{std::pow(h12, 3), std::pow(h12, 2), h12},
 								{std::pow(h13, 3), std::pow(h13, 2), h13}},
@@ -396,7 +400,7 @@ namespace alfi::spline {
 		CubicSpline() = default;
 
 		template <typename ContainerXType>
-		CubicSpline(ContainerXType&& X, const auto& Y, Type type = typename Types::Default{}) {
+		CubicSpline(ContainerXType&& X, const Container<Number>& Y, Type type = typename Types::Default{}) {
 			construct(std::forward<ContainerXType>(X), Y, type);
 		}
 
@@ -407,7 +411,7 @@ namespace alfi::spline {
 		CubicSpline& operator=(CubicSpline&& other) noexcept = default;
 
 		template <typename ContainerXType>
-		void construct(ContainerXType&& X, const auto& Y, Type type = typename Types::Default{}) {
+		void construct(ContainerXType&& X, const Container<Number>& Y, Type type = typename Types::Default{}) {
 			if (X.size() != Y.size()) {
 				std::cerr << "Error in function " << __FUNCTION__
 						  << ": Vectors X (of size " << X.size()

@@ -10,9 +10,9 @@ namespace alfi::misc {
 
 	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
 	Container<Number> barycentric(
-			const auto& X,
-			const auto& Y,
-			const auto& xx,
+			const Container<Number>& X,
+			const Container<Number>& Y,
+			const Container<Number>& xx,
 			dist::Type dist_type = dist::Type::GENERAL,
 			Number epsilon = std::numeric_limits<Number>::epsilon()
 	) {
