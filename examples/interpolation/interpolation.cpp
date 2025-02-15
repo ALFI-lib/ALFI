@@ -30,11 +30,11 @@ class PlotWindow final : public QWidget {
 public:
 	static const inline std::vector<std::pair<QString,std::function<std::vector<double>(std::vector<double>,std::vector<double>,std::vector<double>)>>>
 	poly_types = {
-		{"Lagrange", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val<double,std::vector>(alfi::poly::lagrange(X, Y), xx); }},
+		{"Lagrange", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val(alfi::poly::lagrange(X, Y), xx); }},
 		{"Lagrange values", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::lagrange_vals(X, Y, xx); }},
-		{"Improved Lagrange", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val<double,std::vector>(alfi::poly::imp_lagrange(X, Y), xx); }},
+		{"Improved Lagrange", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val(alfi::poly::imp_lagrange(X, Y), xx); }},
 		{"Improved Lagrange values", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::imp_lagrange_vals(X, Y, xx); }},
-		{"Newton", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val<double,std::vector>(alfi::poly::newton(X, Y), xx); }},
+		{"Newton", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val(alfi::poly::newton(X, Y), xx); }},
 		{"Newton values", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::newton_vals(X, Y, xx); }},
 	};
 	static const inline size_t poly_default_type_index = 0;
@@ -332,13 +332,13 @@ private:
 			if (barycentric_dist_type == 0) {
 				barycentric_dist_type = dist_type;
 			}
-			add_graph("Barycentric", xx, alfi::misc::barycentric<double,std::vector>(X, Y, xx, static_cast<alfi::dist::Type>(barycentric_dist_type)));
+			add_graph("Barycentric", xx, alfi::misc::barycentric(X, Y, xx, static_cast<alfi::dist::Type>(barycentric_dist_type)));
 		}
 		if (_step_spline_checkbox->isChecked()) {
 			add_graph("Step Spline", xx, alfi::spline::StepSpline(X, Y, step_spline_types[_step_spline_combo->currentIndex()].second)(xx));
 		}
 		if (_linear_spline_checkbox->isChecked()) {
-			add_graph("Linear Spline", xx, alfi::spline::LinearSpline<>(X, Y)(xx));
+			add_graph("Linear Spline", xx, alfi::spline::LinearSpline(X, Y)(xx));
 		}
 		if (_quadratic_spline_checkbox->isChecked()) {
 			add_graph("Quadratic Spline", xx, alfi::spline::QuadraticSpline<>(X, Y, quadratic_spline_types[_quadratic_spline_combo->currentIndex()].second)(xx));

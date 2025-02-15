@@ -23,7 +23,7 @@ namespace alfi::dist {
 		ERF_STRETCHED,
 	};
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> uniform(SizeT n, Number a, Number b) {
 		if (n == 1)
 			return {(a+b)/2};
@@ -52,7 +52,7 @@ namespace alfi::dist {
 		@param b right boundary of the segment
 		@return a container with \p n points distributed on the segment `[a, b]` according to the transform function
 	*/
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> quadratic(SizeT n, Number a, Number b) {
 		if (n == 1)
 			return {(a+b)/2};
@@ -80,7 +80,7 @@ namespace alfi::dist {
 		@param b right boundary of the segment
 		@return a container with \p n points distributed on the segment `[a, b]` according to the transform function
 	*/
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> cubic(SizeT n, Number a, Number b) {
 		if (n == 1)
 			return {(a+b)/2};
@@ -93,7 +93,7 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> chebyshev(SizeT n, Number a, Number b) {
 		if (n == 1)
 			return {(a+b)/2};
@@ -105,12 +105,12 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> chebyshev_stretched(SizeT n, Number a, Number b) {
 		return points::stretched<Number,Container>(chebyshev(n, a, b), a, b);
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> chebyshev_ellipse(SizeT n, Number a, Number b, Number ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n / 2; ++i) {
@@ -124,12 +124,12 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> chebyshev_ellipse_stretched(SizeT n, Number a, Number b, Number ratio) {
 		return points::stretched<Number,Container>(chebyshev_ellipse(n, a, b, ratio), a, b);
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> circle_proj(SizeT n, Number a, Number b) {
 		if (n == 1)
 			return {(a+b)/2};
@@ -141,7 +141,7 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> ellipse_proj(SizeT n, Number a, Number b, Number ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n / 2; ++i) {
@@ -178,7 +178,7 @@ namespace alfi::dist {
 		@param steepness determines the slope of the transform function at `x = 0`
 		@return a container with \p n points distributed on the interval `(a, b)` according to the transform function
 	*/
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> logistic(SizeT n, Number a, Number b, Number steepness) {
 		if (n == 1)
 			return {(a+b)/2};
@@ -191,7 +191,7 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> logistic_stretched(SizeT n, Number a, Number b, Number steepness) {
 		if (n == 0)
 			return {};
@@ -233,7 +233,7 @@ namespace alfi::dist {
 		@param steepness determines the slope of the transform function at `x = 0`
 		@return a container with \p n points distributed on the interval `(a, b)` according to the transform function
 	*/
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> erf(SizeT n, Number a, Number b, Number steepness) {
 		if (n == 0)
 			return {};
@@ -248,12 +248,12 @@ namespace alfi::dist {
 		return points;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> erf_stretched(SizeT n, Number a, Number b, Number steepness) {
 		return points::stretched<Number,Container>(erf(n, a, b, steepness), a, b);
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> of_type(Type type, SizeT n, Number a, Number b, Number parameter = NAN) {
 		switch (type) {
 		case Type::QUADRATIC:

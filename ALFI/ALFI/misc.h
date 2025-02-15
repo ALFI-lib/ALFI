@@ -8,7 +8,7 @@
 
 namespace alfi::misc {
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> barycentric(
 			const Container<Number>& X,
 			const Container<Number>& Y,

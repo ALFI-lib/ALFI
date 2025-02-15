@@ -8,7 +8,7 @@
 #include "../util/misc.h"
 
 namespace alfi::spline {
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	class LinearSpline {
 	public:
 		static Container<Number> compute_coeffs(const Container<Number>& X, const Container<Number>& Y) {

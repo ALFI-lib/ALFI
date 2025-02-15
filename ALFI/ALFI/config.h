@@ -16,8 +16,8 @@
 namespace alfi {
 	using DefaultNumber = ALFI_DEFAULT_NUMBER;
 
-	template <typename Number = DefaultNumber>
-	using DefaultContainer = ALFI_DEFAULT_CONTAINER<Number>;
+	template <typename Number = DefaultNumber, typename... Ts>
+	using DefaultContainer = ALFI_DEFAULT_CONTAINER<Number, Ts...>;
 
 	using SizeT = ALFI_SIZE_TYPE;
 

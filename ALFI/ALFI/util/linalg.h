@@ -28,7 +28,7 @@ namespace alfi::util::linalg {
 		@param epsilon a small threshold value to detect degeneracy (default is machine epsilon)
 		@return the solution vector or an empty container if the matrix is degenerate
 	 */
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> lup_solve(Container<Container<Number>>&& A, Container<Number>&& B, Number epsilon = std::numeric_limits<Number>::epsilon()) {
 		const auto n = B.size();
 		assert(n == A.size());
@@ -97,7 +97,7 @@ namespace alfi::util::linalg {
 		@param right the right-hand side vector of the system
 		@return the solution vector
 	 */
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> tridiag_solve_unstable(
 			const Container<Number>& lower,
 			Container<Number>&& diag,
@@ -144,7 +144,7 @@ namespace alfi::util::linalg {
 		@param right the right-hand side vector of the system
 		@return the solution vector
 	 */
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> tridiag_solve(
 			Container<Number>&& lower,
 			Container<Number>&& diag,

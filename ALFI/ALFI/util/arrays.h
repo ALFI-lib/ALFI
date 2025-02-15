@@ -5,7 +5,7 @@
 #include "../config.h"
 
 namespace alfi::util::arrays {
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> add(const Container<Number>& container1, const Container<Number>& container2) {
 		if (container1.size() != container2.size()) {
 			std::cerr << "Error in function " << __FUNCTION__
@@ -22,7 +22,7 @@ namespace alfi::util::arrays {
 		return result;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> sub(const Container<Number>& container1, const Container<Number>& container2) {
 		if (container1.size() != container2.size()) {
 			std::cerr << "Error in function " << __FUNCTION__
@@ -39,7 +39,7 @@ namespace alfi::util::arrays {
 		return result;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> diff(const Container<Number>& container) {
 		if (container.empty()) {
 			return {};
@@ -51,7 +51,7 @@ namespace alfi::util::arrays {
 		return result;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> mean(const Container<Number>& container1, const Container<Number>& container2) {
 		if (container1.size() != container2.size()) {
 			std::cerr << "Error in function " << __FUNCTION__

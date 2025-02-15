@@ -7,7 +7,7 @@
 #include "util/numeric.h"
 
 namespace alfi::poly {
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	std::enable_if_t<!traits::has_size<Number>::value, Number>
 	val(const Container<Number>& coeffs, Number x) {
 		Number result = 0;
@@ -17,7 +17,7 @@ namespace alfi::poly {
 		return result;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	std::enable_if_t<traits::has_size<Container<Number>>::value, Container<Number>>
 	val(const Container<Number>& coeffs, const Container<Number>& X) {
 		Container<Number> result(X.size(), 0);
@@ -32,7 +32,7 @@ namespace alfi::poly {
 		return result;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> lagrange(const Container<Number>& X, const Container<Number>& Y) {
 		if (X.size() != Y.size()) {
 			std::cerr << "Error in function " << __FUNCTION__
@@ -77,7 +77,7 @@ namespace alfi::poly {
 		return P;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> lagrange_vals(const Container<Number>& X, const Container<Number>& Y, const Container<Number>& xx) {
 		const auto nn = xx.size();
 
@@ -122,7 +122,7 @@ namespace alfi::poly {
 		return yy;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> imp_lagrange(const Container<Number>& X, const Container<Number>& Y) {
 		if (X.size() != Y.size()) {
 			std::cerr << "Error in function " << __FUNCTION__
@@ -182,7 +182,7 @@ namespace alfi::poly {
 		return P;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> imp_lagrange_vals(
 			const Container<Number>& X,
 			const Container<Number>& Y,
@@ -245,7 +245,7 @@ namespace alfi::poly {
 		return yy;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> newton(const Container<Number>& X, const Container<Number>& Y) {
 		if (X.size() != Y.size()) {
 			std::cerr << "Error in function " << __FUNCTION__
@@ -298,7 +298,7 @@ namespace alfi::poly {
 		return P;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> newton_vals(const Container<Number>& X, const Container<Number>& Y, const Container<Number>& xx) {
 		const auto nn = xx.size();
 

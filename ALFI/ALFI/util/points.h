@@ -3,7 +3,7 @@
 #include "../config.h"
 
 namespace alfi::points {
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	void lin_map(Container<Number>& points, Number a, Number b, Number c, Number d) {
 		const auto mid1 = (a + b) / 2;
 		const auto mid2 = (c + d) / 2;
@@ -13,14 +13,14 @@ namespace alfi::points {
 		}
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> lin_mapped(const Container<Number>& points, Number a, Number b, Number c, Number d) {
 		auto mapped_points = points;
 		lin_map<Number,Container>(mapped_points, a, b, c, d);
 		return mapped_points;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	void stretch(Container<Number>& points, Number a, Number b) {
 		if (points.empty()) {
 			return;
@@ -34,7 +34,7 @@ namespace alfi::points {
 		points.back() = b;
 	}
 
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> stretched(const Container<Number>& points, Number a, Number b) {
 		auto stretched_points = points;
 		stretch<Number,Container>(stretched_points, a, b);

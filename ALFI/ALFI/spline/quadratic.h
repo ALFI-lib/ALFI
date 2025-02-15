@@ -11,7 +11,7 @@
 #include "../util/spline.h"
 
 namespace alfi::spline {
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	class QuadraticSpline {
 	public:
 		struct Types final {

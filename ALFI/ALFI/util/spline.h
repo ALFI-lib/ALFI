@@ -6,7 +6,7 @@
 #include "../util/linalg.h"
 
 namespace alfi::util::spline {
-	template <typename Number = DefaultNumber, template <typename> class Container = DefaultContainer>
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 		Container<Number> simple_spline(const Container<Number>& X, const Container<Number>& Y, SizeT degree) {
 		if (X.size() != Y.size()) {
 			std::cerr << "Error in function " << __FUNCTION__

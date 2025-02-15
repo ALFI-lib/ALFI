@@ -27,7 +27,7 @@ void test_distribution(const char*const name, const alfi::dist::Type type, doubl
 		mapping_intervals.for_each([&](const toml::array& interval) {
 			const auto c = interval[0].value<double>().value();
 			const auto d = interval[1].value<double>().value();
-			const auto mapped_expected = alfi::points::lin_mapped<double,std::vector>(expected, a, b, c, d);
+			const auto mapped_expected = alfi::points::lin_mapped(expected, a, b, c, d);
 			const auto mapped_generated = of_type(type, n, c, d, parameter);
 			expect_eq(mapped_generated, mapped_expected, epsilon);
 		});
