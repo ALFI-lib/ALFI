@@ -14,6 +14,33 @@ namespace alfi::spline {
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	class CubicSpline {
 	public:
+		struct Conditions final {
+			struct Clamped final {
+				Clamped(SizeT point_idx, Number df) : point_idx(std::move(point_idx)), df(std::move(df)) {}
+				SizeT point_idx;
+				Number df;
+			};
+			struct FixedSecond final {
+				FixedSecond(SizeT point_idx, Number d2f) : point_idx(std::move(point_idx)), d2f(std::move(d2f)) {}
+				SizeT point_idx;
+				Number d2f;
+			};
+			struct FixedThird final {
+				FixedThird(SizeT segment_idx, Number d3f) : segment_idx(std::move(segment_idx)), d3f(std::move(d3f)) {}
+				SizeT segment_idx;
+				Number d3f;
+			};
+			struct NotAKnot final {
+				explicit NotAKnot(SizeT point_idx) : point_idx(std::move(point_idx)) {}
+				SizeT point_idx;
+			};
+		};
+
+		using Condition = std::variant<typename Conditions::Clamped,
+								  typename Conditions::FixedSecond,
+								  typename Conditions::FixedThird,
+								  typename Conditions::NotAKnot>;
+
 		struct Types final {
 			/**
 				Second derivatives at the end points are equal to zero.\n
@@ -73,6 +100,10 @@ namespace alfi::spline {
 				The arithmetic mean of NotAKnotStart and NotAKnotEnd.
 			 */
 			struct SemiNotAKnot final {};
+			struct Custom final {
+				Custom(Condition condition1, Condition condition2) : cond1(std::move(condition1)), cond2(std::move(condition2)) {}
+				Condition cond1, cond2;
+			};
 			using Default = Natural;
 		};
 
