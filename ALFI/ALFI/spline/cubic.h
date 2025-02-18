@@ -273,52 +273,61 @@ namespace alfi::spline {
 					}
 				}
 
-				// check if same conditions on one point and return a somewhat reasonable approximation
+				// check if same conditions on one point and return a somewhat reasonable compromise solution
 				if (const auto c1 = std::get_if<typename Conditions::Clamped>(&custom->cond1),
 							c2 = std::get_if<typename Conditions::Clamped>(&custom->cond2);
 							c1 && c2) {
 					if (c1->point_idx == c2->point_idx) {
 						const auto df = (c1->df + c2->df) / 2;
-						return util::arrays::mean(
-							compute_coeffs(X, Y,
-								typename Types::Custom{typename Conditions::FixedThird{0, 0}, typename Conditions::Clamped{c1->point_idx, df}}),
-							compute_coeffs(X, Y,
-								typename Types::Custom{typename Conditions::Clamped{c1->point_idx, df}, typename Conditions::FixedThird{n - 2, 0}}));
+						if (c1->point_idx < n / 2) {
+							return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::Clamped{c1->point_idx, df}, typename Conditions::NotAKnot{n - 2}});
+						} else {
+							return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{1}, typename Conditions::Clamped{c1->point_idx, df}});
+						}
 					}
 				} else if (const auto fs1 = std::get_if<typename Conditions::FixedSecond>(&custom->cond1),
 							fs2 = std::get_if<typename Conditions::FixedSecond>(&custom->cond2);
 							fs1 && fs2) {
 					if (fs1->point_idx == fs2->point_idx) {
 						const auto d2f = (fs1->d2f + fs2->d2f) / 2;
-						return util::arrays::mean(
-							compute_coeffs(X, Y,
-								typename Types::Custom{typename Conditions::FixedThird{0, 0}, typename Conditions::FixedSecond{fs1->point_idx, d2f}}),
-							compute_coeffs(X, Y,
-								typename Types::Custom{typename Conditions::FixedSecond{fs1->point_idx, d2f}, typename Conditions::FixedThird{n - 2, 0}}));
-					}
-				} else if (const auto nak1 = std::get_if<typename Conditions::NotAKnot>(&custom->cond1),
-							nak2 = std::get_if<typename Conditions::NotAKnot>(&custom->cond2);
-							nak1 && nak2) {
-					if (nak1->point_idx == nak2->point_idx) {
-						return util::arrays::mean(
-							compute_coeffs(X, Y,
-								typename Types::Custom{typename Conditions::FixedThird{0, 0}, typename Conditions::NotAKnot{nak1->point_idx}}),
-							compute_coeffs(X, Y,
-								typename Types::Custom{typename Conditions::NotAKnot{nak1->point_idx}, typename Conditions::FixedThird{n - 2, 0}}));
+						if (fs1->point_idx < n / 2) {
+							return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::FixedSecond{fs1->point_idx, d2f}, typename Conditions::NotAKnot{n - 2}});
+						} else {
+							return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{1}, typename Conditions::FixedSecond{fs1->point_idx, d2f}});
+						}
 					}
 				} else if (const auto ft1 = std::get_if<typename Conditions::FixedThird>(&custom->cond1),
 							ft2 = std::get_if<typename Conditions::FixedThird>(&custom->cond2);
 							ft1 && ft2) {
 					if (ft1->segment_idx == ft2->segment_idx) {
-						const auto i = ft1->segment_idx;
-						const auto c = -dX[i] * (ft1->d3f + ft2->d3f) / 8;
-						coeffs[4*i] = -2*c / (3*dX[i]);
-						coeffs[4*i+1] = c;
-						coeffs[4*i+2] = dY[i]/dX[i] - dX[i] * c / 3;
-						coeffs[4*i+3] = Y[i];
-						i1 = i;
-						i2 = i + 1;
-						goto post_main_block;
+						if (n == 2) {
+							const auto i = ft1->segment_idx;
+							const auto c = -dX[i] * (ft1->d3f + ft2->d3f) / 8;
+							coeffs[4*i] = -2*c / (3*dX[i]);
+							coeffs[4*i+1] = c;
+							coeffs[4*i+2] = dY[i]/dX[i] - dX[i] * c / 3;
+							coeffs[4*i+3] = Y[i];
+							i1 = i;
+							i2 = i + 1;
+							goto post_main_block;
+						} else {
+							const auto d3f = (ft1->d3f + ft2->d3f) / 2;
+							if (ft1->segment_idx < n / 2) {
+								return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::FixedThird{ft1->segment_idx, d3f}, typename Conditions::NotAKnot{n - 2}});
+							} else {
+								return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{1}, typename Conditions::FixedThird{ft1->segment_idx, d3f}});
+							}
+						}
+					}
+				} else if (const auto nak1 = std::get_if<typename Conditions::NotAKnot>(&custom->cond1),
+							nak2 = std::get_if<typename Conditions::NotAKnot>(&custom->cond2);
+							nak1 && nak2) {
+					if (nak1->point_idx == nak2->point_idx) {
+						if (nak1->point_idx < n / 2) {
+							return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{nak1->point_idx}, typename Conditions::NotAKnot{n - 2}});
+						} else {
+							return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{1}, typename Conditions::NotAKnot{nak1->point_idx}});
+						}
 					}
 				}
 
