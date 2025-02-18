@@ -230,6 +230,7 @@ namespace alfi::spline {
 						&& n <= 4) {
 					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
+
 				// check conditions
 				for (const auto* cond : {&custom->cond1, &custom->cond2}) {
 					if (const auto* c = std::get_if<typename Conditions::Clamped>(cond)) {
@@ -270,6 +271,7 @@ namespace alfi::spline {
 						return {};
 					}
 				}
+
 				// set first segment index
 				std::visit(util::misc::overload{
 					[&](const typename Conditions::Clamped& c) { i1 = c.point_idx; },
@@ -277,7 +279,7 @@ namespace alfi::spline {
 					[&](const typename Conditions::FixedThird& ft) { i1 = ft.segment_idx; },
 					[&](const typename Conditions::NotAKnot& nak) { i1 = nak.point_idx - 1; },
 				}, custom->cond1);
-				// set lasts segment index
+				// set last segment index
 				std::visit(util::misc::overload{
 					[&](const typename Conditions::Clamped& c) { i2 = c.point_idx - 1; },
 					[&](const typename Conditions::FixedSecond& fs) { i2 = fs.point_idx - 1; },
@@ -295,7 +297,7 @@ namespace alfi::spline {
 					[&](const typename Conditions::FixedThird& ft) { i1 = ft.segment_idx; },
 					[&](const typename Conditions::NotAKnot& nak) { i1 = nak.point_idx - 1; },
 				}, custom->cond1);
-				// set lasts segment index again
+				// set last segment index again
 				std::visit(util::misc::overload{
 					[&](const typename Conditions::Clamped& c) { i2 = c.point_idx - 1; },
 					[&](const typename Conditions::FixedSecond& fs) { i2 = fs.point_idx - 1; },
@@ -303,20 +305,27 @@ namespace alfi::spline {
 					[&](const typename Conditions::NotAKnot& nak) { i2 = nak.point_idx; },
 				}, custom->cond2);
 
+				// special case
 				if (i2 < i1) {
-					// special case
 
 				}
 
-				const auto m = i2 - i1 + 1;
+				// number of points in the "subspline"
+				const auto m = i2 - i1 + 2;
 
-				// special case for fixed third: m == 2
-				if (auto* ft1 = std::get_if<typename Conditions::FixedThird>(&custom->cond1),
+				// special case: FixedThird with two points
+				if (auto ft1 = std::get_if<typename Conditions::FixedThird>(&custom->cond1),
 						ft2 = std::get_if<typename Conditions::FixedThird>(&custom->cond2);
 						ft1 && ft2 && m == 2) {
-					ft1->d3f = ft2->d3f = (ft1->d3f + ft2->d3f) / 2;
+					const auto c = -dX[i1] * (ft1->d3f + ft2->d3f) / 8;
+					coeffs[4*i1] = -2*c / (3*dX[i1]);
+					coeffs[4*i1+1] = c;
+					coeffs[4*i1+2] = dY[i1]/dX[i1] - dX[i1] * c / 3;
+					coeffs[4*i1+3] = Y[i1];
+					goto post_main_block;
 				}
 
+				// common equations
 				Container<Number> lower(m), diag(m), upper(m), right(m);
 				for (SizeT i = i1 + 1; i < i1 + m - 1; ++i) {
 					const auto j = i - i1;
@@ -328,34 +337,49 @@ namespace alfi::spline {
 				lower[0] = NAN;
 				upper[m-1] = NAN;
 
-				// уникальные условия
+				// unique equations
 				std::visit(util::misc::overload{
 					[&](const typename Conditions::Clamped& c) {
-
+						diag[0] = 2*dX[i1];
+						upper[0] = dX[i1];
+						right[0] = 3 * (dY[i1]/dX[i1] - c.df_1);
 					},
 					[&](const typename Conditions::FixedSecond& fs) {
-
+						diag[0] = 1;
+						upper[0] = 0;
+						right[0] = fs.d2f_1 / 2;
 					},
 					[&](const typename Conditions::FixedThird& ft) {
-
+						diag[0] = 1;
+						upper[0] = -1;
+						right[0] = -dX[i1] * ft.d3f_1 / 2;
 					},
-					[&](const typename Conditions::NotAKnot& nak) {
-
+					[&](const typename Conditions::NotAKnot&) {
+						diag[0] = dX[i1] - dX[i1+1];
+						upper[0] = 2*dX[i1] + dX[i1+1];
+						right[0] = dX[i1] / (dX[i1]+dX[i1+1]) * right[1];
 					},
 				}, custom->cond1);
-				// set lasts segment index
 				std::visit(util::misc::overload{
 					[&](const typename Conditions::Clamped& c) {
-
+						lower[m-1] = dX[i1+m-2];
+						diag[m-1] = 2*dX[i1+m-2];
+						right[m-1] = 3 * (c.df_n - dY[i1+m-2]/dX[i1+m-2]);
 					},
 					[&](const typename Conditions::FixedSecond& fs) {
-
+						lower[m-1] = 0;
+						diag[m-1] = 1;
+						right[m-1] = fs.d2f_n / 2;
 					},
 					[&](const typename Conditions::FixedThird& ft) {
-
+						lower[m-1] = -1;
+						diag[m-1] = 1;
+						right[m-1] = dX[i1+m-2] * ft.d3f_n / 2;
 					},
-					[&](const typename Conditions::NotAKnot& nak) {
-
+					[&](const typename Conditions::NotAKnot&) {
+						lower[m-1] = 2*dX[i1+m-2] + dX[i1+m-3];
+						diag[m-1] = dX[i1+m-2] - dX[i1+m-3];
+						right[m-1] = dX[i1+m-2] / (dX[i1+m-2]+dX[i1+m-3]) * right[n-2];
 					},
 				}, custom->cond2);
 
@@ -370,14 +394,20 @@ namespace alfi::spline {
 					coeffs[index++] = Y[j];
 				}
 
-				// здесь делаю дополнительные правки
-
+				// additional corrections
+				if (const auto* ft = std::get_if<typename Conditions::FixedThird>(&custom->cond1)) {
+					coeffs[i1] = ft->d3f / 6;
+				}
+				if (const auto* ft = std::get_if<typename Conditions::FixedThird>(&custom->cond2)) {
+					coeffs[i2] = ft->d3f / 6;
+				}
 			} else {
 				std::cerr << "Error in function " << __FUNCTION__ << ": Unknown type. This should not have happened. "
 						  << "Please report this to the developers. Returning an empty array..." << std::endl;
 				return {};
 			}
 
+		post_main_block:
 			for (SizeT iter = 0; iter < i1; ++iter) {
 				const auto i = i1 - 1 - iter;
 				coeffs[4*i] = (coeffs[4*(i+1)+1] - coeffs[4*(i+1)+2]/dX[i] + dY[i]/pow(dX[i], 2)) / dX[i];
@@ -392,64 +422,6 @@ namespace alfi::spline {
 				coeffs[4*i+1] = 3 * coeffs[4*(i-1)] * dX[i-1] + coeffs[4*(i-1)+1];
 				coeffs[4*i] = (dY[i]/dX[i] - coeffs[4*i+1] * dX[i] - coeffs[4*i+2]) / pow(dX[i], 2);
 			}
-
-			// std::visit(util::misc::overload{
-			// 	[&](const typename Types::NotAKnot&) {
-			// 		// diag[0] = dX[0] - dX[1];
-			// 		// upper[0] = 2*dX[0] + dX[1];
-			// 		// right[0] = dX[0] / (dX[0]+dX[1]) * right[1];
-			// 		// lower[n-1] = 2*dX[n-2] + dX[n-3];
-			// 		// diag[n-1] = dX[n-2] - dX[n-3];
-			// 		// right[n-1] = dX[n-2] / (dX[n-2]+dX[n-3]) * right[n-2];
-			// 		// const auto C = util::linalg::tridiag_solve<Number,Container>(
-			// 		// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
-			// 	},
-			// 	[&](const typename Types::Clamped& c) {
-			// 		// diag[0] = 2*dX[0];
-			// 		// upper[0] = dX[0];
-			// 		// right[0] = 3 * (dY[0]/dX[0] - c.df_1);
-			// 		// lower[n-1] = dX[n-2];
-			// 		// diag[n-1] = 2*dX[n-2];
-			// 		// right[n-1] = 3 * (c.df_n - dY[n-2]/dX[n-2]);
-			// 		// const auto C = util::linalg::tridiag_solve<Number,Container>(
-			// 		// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
-			// 	},
-			// 	[&](const typename Types::FixedSecond& s) {
-			// 		// diag[0] = 1;
-			// 		// upper[0] = 0;
-			// 		// right[0] = s.d2f_1 / 2;
-			// 		// lower[n-1] = 0;
-			// 		// diag[n-1] = 1;
-			// 		// right[n-1] = s.d2f_n / 2;
-			// 		// const auto C = util::linalg::tridiag_solve<Number,Container>(
-			// 		// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
-			// 	},
-			// 	[&](const typename Types::FixedThird& t) {
-			// 		// if (n == 2) {
-			// 		// 	C[0] = -dX[0] * (t.d3f_1 + t.d3f_n) / 8;
-			// 		// 	C[1] = -C[0];
-			// 		// } else {
-			// 		// 	// diag[0] = 1;
-			// 		// 	// upper[0] = -1;
-			// 		// 	// right[0] = -dX[0] * t.d3f_1 / 2;
-			// 		// 	// lower[n-1] = -1;
-			// 		// 	// diag[n-1] = 1;
-			// 		// 	// right[n-1] = dX[n-2] * t.d3f_n / 2;
-			// 		// 	// C = util::linalg::tridiag_solve<Number,Container>(
-			// 		// 	// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
-			// 		// }
-			// 		// Container<Number> D(n - 1);
-			// 		// for (SizeT i = 1; i < D.size() - 1; ++i) {
-			// 		// 	D[i] = (C[i+1] - C[i]) / (3*dX[i]);
-			// 		// }
-			// 		// if (n == 2) {
-			// 		// 	D[0] = (t.d3f_1 + t.d3f_n) / 12;
-			// 		// } else {
-			// 		// 	D[0] = t.d3f_1 / 6;
-			// 		// 	D[n-2] = t.d3f_n / 6;
-			// 		// }
-			// 	}
-			// }, type);
 
 			return coeffs;
 		}
