@@ -179,6 +179,8 @@ namespace alfi::spline {
 
 			Container<Number> coeffs(3 * (n - 1));
 
+			// i1 - index of first constructed segment
+			// i2 - index of first after last constructed segment
 			SizeT i1 = 0, i2 = n - 1;
 
 			if (const auto* clamped = std::get_if<typename Types::Clamped>(&type)) {
@@ -202,7 +204,7 @@ namespace alfi::spline {
 					coeffs[3*i+2] = Y[i];
 					coeffs[3*i+1] = clamped->df;
 					coeffs[3*i] = dy/dx/dx - coeffs[3*i+1]/dx;
-					i2 = i;
+					i2 = i + 1;
 				}
 			} else if (const auto* fixed_second = std::get_if<typename Types::FixedSecond>(&type)) {
 				const auto i = fixed_second->segment_idx;
@@ -216,7 +218,8 @@ namespace alfi::spline {
 				coeffs[3*i] = fixed_second->d2f / 2;
 				coeffs[3*i+1] = (Y[i+1]-Y[i])/(X[i+1]-X[i]) - coeffs[3*i]*(X[i+1]-X[i]);
 				coeffs[3*i+2] = Y[i];
-				i1 = i2 = i;
+				i1 = i;
+				i2 = i + 1;
 			} else if (const auto* not_a_knot = std::get_if<typename Types::NotAKnot>(&type)) {
 				if (n <= 2) {
 					return util::spline::simple_spline<Number,Container>(X, Y, 2);
@@ -237,7 +240,7 @@ namespace alfi::spline {
 				coeffs[3*(i-1)+1] = dy1/dx1 - coeffs[3*(i-1)]*dx1;
 				coeffs[3*i+1] = dy/dx - coeffs[3*i]*dx;
 				i1 = i - 1;
-				i2 = i;
+				i2 = i + 1;
 			} else {
 				std::cerr << "Error in function " << __FUNCTION__ << ": Unknown type. This should not have happened. "
 						  << "Please report this to the developers. Returning an empty array..." << std::endl;
@@ -252,7 +255,7 @@ namespace alfi::spline {
 				coeffs[3*i+2] = Y[i];
 			}
 
-			for (SizeT i = i2 + 1; i < n - 1; ++i) {
+			for (SizeT i = i2; i < n - 1; ++i) {
 				const auto dx = X[i+1] - X[i], dy = Y[i+1] - Y[i];
 				coeffs[3*i+2] = Y[i];
 				coeffs[3*i+1] = coeffs[3*(i-1)+1] + 2*coeffs[3*(i-1)]*(X[i]-X[i-1]);
