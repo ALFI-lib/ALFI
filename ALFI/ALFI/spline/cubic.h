@@ -354,14 +354,27 @@ namespace alfi::spline {
 				// only possible for Clamped and FixedSecond
 				if (i2 < i1) {
 					const auto i = i1; // ignoring i2
+					const auto* c
+						= std::holds_alternative<typename Conditions::Clamped>(custom->cond1)
+						? std::get_if<typename Conditions::Clamped>(&custom->cond1)
+						: std::get_if<typename Conditions::Clamped>(&custom->cond2);
+					const auto* fs
+						= std::holds_alternative<typename Conditions::FixedSecond>(custom->cond1)
+						? std::get_if<typename Conditions::FixedSecond>(&custom->cond1)
+						: std::get_if<typename Conditions::FixedSecond>(&custom->cond2);
+					assert(c && fs);
 					if (i > 0) {
+						coeffs[4*(i-1)] = (fs->d2f/2 - c->df/dX[i-1] + dY[i-1]/dX[i-1]/dX[i-1]) / dX[i-1];
+						coeffs[4*(i-1)+1] = 3*c->df/dX[i-1] - 3*dY[i-1]/dX[i-1]/dX[i-1] - fs->d2f;
+						coeffs[4*(i-1)+2] = 3*dY[i-1]/dX[i-1] + fs->d2f*dX[i-1]/2 - 2*c->df;
 						coeffs[4*(i-1)+3] = Y[i-1];
-
 						i1 = i - 1;
 					}
 					if (i < n - 1) {
+						coeffs[4*i] = (dY[i]/dX[i]/dX[i] - c->df/dX[i] - fs->d2f/2) / dX[i];
+						coeffs[4*i+1] = c->df;
+						coeffs[4*i+2] = fs->d2f/2;
 						coeffs[4*i+3] = Y[i];
-
 						i2 = i;
 					}
 				}
