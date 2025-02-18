@@ -426,7 +426,7 @@ namespace alfi::spline {
 					[&](const typename Conditions::NotAKnot&) {
 						lower[m-1] = 2*dX[i1+m-2] + dX[i1+m-3];
 						diag[m-1] = dX[i1+m-2] - dX[i1+m-3];
-						right[m-1] = dX[i1+m-2] / (dX[i1+m-2]+dX[i1+m-3]) * right[n-2];
+						right[m-1] = dX[i1+m-2] / (dX[i1+m-2]+dX[i1+m-3]) * right[m-2];
 					},
 				}, custom->cond2);
 
