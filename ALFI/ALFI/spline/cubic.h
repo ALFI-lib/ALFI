@@ -224,100 +224,157 @@ namespace alfi::spline {
 					coeffs[index++] = Y[i];
 				}
 			} else if (auto* custom = std::get_if<typename Types::Custom>(&type)) {
+				// special case
 				if (std::holds_alternative<typename Conditions::NotAKnot>(custom->cond1)
 						&& std::holds_alternative<typename Conditions::NotAKnot>(custom->cond2)
 						&& n <= 4) {
 					return util::spline::simple_spline<Number,Container>(X, Y, 3);
+				}
+				// check conditions
+				for (const auto* cond : {&custom->cond1, &custom->cond2}) {
+					if (const auto* c = std::get_if<typename Conditions::Clamped>(cond)) {
+						if (c->point_idx < 0 || c->point_idx >= n) {
+							std::cerr << "Error in function " << __FUNCTION__
+									  << ": point index for condition 'Clamped' is out of bounds: "
+									  << "expected to be non-negative and less than " << n << ", but got " << c->point_idx
+									  << ". Returning an empty array..." << std::endl;
+							return {};
 						}
-				if (const auto* c = std::get_if<typename Conditions::Clamped>(&custom->cond1)) {
-					const auto i = c->point_idx;
-
-				} else if (const auto* fs = std::get_if<typename Conditions::FixedSecond>(&custom->cond1)) {
-
-				} else if (const auto* ft = std::get_if<typename Conditions::FixedThird>(&custom->cond1)) {
-
-				} else if (const auto* nak = std::get_if<typename Conditions::NotAKnot>(&custom->cond1)) {
-
-				} else {
-					std::cerr << "Error in function " << __FUNCTION__ << ": Unknown first condition of 'Custom' type. This should not have happened."
-							  << " Please report this to the developers. Returning an empty array..." << std::endl;
-					return {};
-				}
-				if (const auto* c = std::get_if<typename Conditions::Clamped>(&custom->cond2)) {
-
-				} else if (const auto* fs = std::get_if<typename Conditions::FixedSecond>(&custom->cond2)) {
-
-				} else if (const auto* ft = std::get_if<typename Conditions::FixedThird>(&custom->cond2)) {
-
-				} else if (const auto* nak = std::get_if<typename Conditions::NotAKnot>(&custom->cond2)) {
-
-				} else {
-					std::cerr << "Error in function " << __FUNCTION__ << ": Unknown second condition of 'Custom' type. This should not have happened."
-							  << " Please report this to the developers. Returning an empty array..." << std::endl;
-					return {};
-				}
-				if (auto c1 = std::get_if<typename Conditions::Clamped>(&custom->cond1),
-						c2 = std::get_if<typename Conditions::Clamped>(&custom->cond2);
-						c1 && c2) {
-					if (c2->point_idx < c1->point_idx) {
-						std::swap(custom->cond1, custom->cond2);
+					} else if (const auto* fs = std::get_if<typename Conditions::FixedSecond>(cond)) {
+						if (fs->point_idx < 0 || fs->point_idx >= n) {
+							std::cerr << "Error in function " << __FUNCTION__
+									  << ": point index for condition 'FixedSecond' is out of bounds: "
+									  << "expected to be non-negative and less than " << n << ", but got " << fs->point_idx
+									  << ". Returning an empty array..." << std::endl;
+							return {};
+						}
+					} else if (const auto* ft = std::get_if<typename Conditions::FixedThird>(cond)) {
+						if (ft->segment_idx < 0 || ft->segment_idx >= n - 1) {
+							std::cerr << "Error in function " << __FUNCTION__
+									  << ": segment index for condition 'FixedThird' is out of bounds: "
+									  << "expected to be non-negative and less than " << n - 1 << ", but got " << ft->segment_idx
+									  << ". Returning an empty array..." << std::endl;
+							return {};
+						}
+					} else if (const auto* nak = std::get_if<typename Conditions::NotAKnot>(cond)) {
+						if (nak->point_idx < 1 || nak->point_idx >= n - 1) {
+							std::cerr << "Error in function " << __FUNCTION__
+									  << ": point index for condition 'NotAKnot' is out of bounds: "
+									  << "expected to be positive and less than " << n - 1 << ", but got " << nak->point_idx
+									  << ". Returning an empty array..." << std::endl;
+							return {};
+						}
+					} else {
+						std::cerr << "Error in function " << __FUNCTION__ << ": Unknown condition of 'Custom' type. This should not have happened. "
+								  << "Please report this to the developers. Returning an empty array..." << std::endl;
+						return {};
 					}
 				}
-				if (auto fs1 = std::get_if<typename Conditions::FixedSecond>(&custom->cond1),
-						fs2 = std::get_if<typename Conditions::FixedSecond>(&custom->cond2);
-						fs1 && fs2) {
-					if (fs2->point_idx < fs1->point_idx) {
-						std::swap(custom->cond1, custom->cond2);
-					}
+				// set first segment index
+				std::visit(util::misc::overload{
+					[&](const typename Conditions::Clamped& c) { i1 = c.point_idx; },
+					[&](const typename Conditions::FixedSecond& fs) { i1 = fs.point_idx; },
+					[&](const typename Conditions::FixedThird& ft) { i1 = ft.segment_idx; },
+					[&](const typename Conditions::NotAKnot& nak) { i1 = nak.point_idx - 1; },
+				}, custom->cond1);
+				// set lasts segment index
+				std::visit(util::misc::overload{
+					[&](const typename Conditions::Clamped& c) { i2 = c.point_idx - 1; },
+					[&](const typename Conditions::FixedSecond& fs) { i2 = fs.point_idx - 1; },
+					[&](const typename Conditions::FixedThird& ft) { i2 = ft.segment_idx; },
+					[&](const typename Conditions::NotAKnot& nak) { i2 = nak.point_idx; },
+				}, custom->cond2);
+				// swap if wrong order
+				if (i2 < i1) {
+					std::swap(custom->cond1, custom->cond2);
 				}
-				if (auto ft1 = std::get_if<typename Conditions::FixedThird>(&custom->cond1),
+				// set first segment index again
+				std::visit(util::misc::overload{
+					[&](const typename Conditions::Clamped& c) { i1 = c.point_idx; },
+					[&](const typename Conditions::FixedSecond& fs) { i1 = fs.point_idx; },
+					[&](const typename Conditions::FixedThird& ft) { i1 = ft.segment_idx; },
+					[&](const typename Conditions::NotAKnot& nak) { i1 = nak.point_idx - 1; },
+				}, custom->cond1);
+				// set lasts segment index again
+				std::visit(util::misc::overload{
+					[&](const typename Conditions::Clamped& c) { i2 = c.point_idx - 1; },
+					[&](const typename Conditions::FixedSecond& fs) { i2 = fs.point_idx - 1; },
+					[&](const typename Conditions::FixedThird& ft) { i2 = ft.segment_idx; },
+					[&](const typename Conditions::NotAKnot& nak) { i2 = nak.point_idx; },
+				}, custom->cond2);
+
+				if (i2 < i1) {
+					// special case
+
+				}
+
+				const auto m = i2 - i1 + 1;
+
+				// special case for fixed third: m == 2
+				if (auto* ft1 = std::get_if<typename Conditions::FixedThird>(&custom->cond1),
 						ft2 = std::get_if<typename Conditions::FixedThird>(&custom->cond2);
-						ft1 && ft2) {
-					if (ft2->segment_idx < ft1->segment_idx) {
-						std::swap(custom->cond1, custom->cond2);
-					}
-				}
-				if (auto n1 = std::get_if<typename Conditions::NotAKnot>(&custom->cond1),
-						n2 = std::get_if<typename Conditions::NotAKnot>(&custom->cond2);
-						n1 && n2) {
-					if (n2->point_idx < n1->point_idx) {
-						std::swap(custom->cond1, custom->cond2);
-					}
+						ft1 && ft2 && m == 2) {
+					ft1->d3f = ft2->d3f = (ft1->d3f + ft2->d3f) / 2;
 				}
 
-				if (std::holds_alternative<typename Conditions::FixedThird>(custom->cond1)
-					&& std::holds_alternative<typename Conditions::FixedThird>(custom->cond2)
-					&& n == 2) {
-					// проверить индексы и приравнять третьи производные их среднему арифметическому
-				}
-
-				Container<Number> lower(n), diag(n), upper(n), right(n);
-				for (SizeT i = 1; i < n - 1; ++i) {
-					lower[i] = dX[i-1];
-					diag[i] = 2 * (dX[i-1] + dX[i]);
-					upper[i] = dX[i];
-					right[i] = 3 * (dY[i]/dX[i] - dY[i-1]/dX[i-1]);
+				Container<Number> lower(m), diag(m), upper(m), right(m);
+				for (SizeT i = i1 + 1; i < i1 + m - 1; ++i) {
+					const auto j = i - i1;
+					lower[j] = dX[i-1];
+					diag[j] = 2 * (dX[i-1] + dX[i]);
+					upper[j] = dX[i];
+					right[j] = 3 * (dY[i]/dX[i] - dY[i-1]/dX[i-1]);
 				}
 				lower[0] = NAN;
-				upper[n-1] = NAN;
+				upper[m-1] = NAN;
 
 				// уникальные условия
+				std::visit(util::misc::overload{
+					[&](const typename Conditions::Clamped& c) {
+
+					},
+					[&](const typename Conditions::FixedSecond& fs) {
+
+					},
+					[&](const typename Conditions::FixedThird& ft) {
+
+					},
+					[&](const typename Conditions::NotAKnot& nak) {
+
+					},
+				}, custom->cond1);
+				// set lasts segment index
+				std::visit(util::misc::overload{
+					[&](const typename Conditions::Clamped& c) {
+
+					},
+					[&](const typename Conditions::FixedSecond& fs) {
+
+					},
+					[&](const typename Conditions::FixedThird& ft) {
+
+					},
+					[&](const typename Conditions::NotAKnot& nak) {
+
+					},
+				}, custom->cond2);
 
 				const auto C = util::linalg::tridiag_solve<Number,Container>(
 					std::move(lower), std::move(diag), std::move(upper), std::move(right));
 
-				for (SizeT i = 0, index = 0; i < n - 1; ++i) {
-					coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
+				for (SizeT i = 0, index = 4 * i1; i < m - 1; ++i) {
+					const auto j = i + i1;
+					coeffs[index++] = (C[i+1] - C[i]) / (3*dX[j]);
 					coeffs[index++] = C[i];
-					coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
-					coeffs[index++] = Y[i];
+					coeffs[index++] = dY[j]/dX[j] - dX[j] * ((2*C[i] + C[i+1]) / 3);
+					coeffs[index++] = Y[j];
 				}
 
 				// здесь делаю дополнительные правки
 
 			} else {
-				std::cerr << "Error in function " << __FUNCTION__ << ": Unknown type. This should not have happened."
-						  << " Please report this to the developers. Returning an empty array..." << std::endl;
+				std::cerr << "Error in function " << __FUNCTION__ << ": Unknown type. This should not have happened. "
+						  << "Please report this to the developers. Returning an empty array..." << std::endl;
 				return {};
 			}
 
@@ -336,88 +393,63 @@ namespace alfi::spline {
 				coeffs[4*i] = (dY[i]/dX[i] - coeffs[4*i+1] * dX[i] - coeffs[4*i+2]) / pow(dX[i], 2);
 			}
 
-			std::visit(util::misc::overload{
-				[&](const typename Types::NotAKnot&) {
-					// diag[0] = dX[0] - dX[1];
-					// upper[0] = 2*dX[0] + dX[1];
-					// right[0] = dX[0] / (dX[0]+dX[1]) * right[1];
-					// lower[n-1] = 2*dX[n-2] + dX[n-3];
-					// diag[n-1] = dX[n-2] - dX[n-3];
-					// right[n-1] = dX[n-2] / (dX[n-2]+dX[n-3]) * right[n-2];
-					// const auto C = util::linalg::tridiag_solve<Number,Container>(
-					// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
-					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
-						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
-						coeffs[index++] = C[i];
-						coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
-						coeffs[index++] = Y[i];
-					}
-				},
-				[&](const typename Types::Clamped& c) {
-					// diag[0] = 2*dX[0];
-					// upper[0] = dX[0];
-					// right[0] = 3 * (dY[0]/dX[0] - c.df_1);
-					// lower[n-1] = dX[n-2];
-					// diag[n-1] = 2*dX[n-2];
-					// right[n-1] = 3 * (c.df_n - dY[n-2]/dX[n-2]);
-					// const auto C = util::linalg::tridiag_solve<Number,Container>(
-					// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
-					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
-						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
-						coeffs[index++] = C[i];
-						coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
-						coeffs[index++] = Y[i];
-					}
-				},
-				[&](const typename Types::FixedSecond& s) {
-					// diag[0] = 1;
-					// upper[0] = 0;
-					// right[0] = s.d2f_1 / 2;
-					// lower[n-1] = 0;
-					// diag[n-1] = 1;
-					// right[n-1] = s.d2f_n / 2;
-					// const auto C = util::linalg::tridiag_solve<Number,Container>(
-					// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
-					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
-						coeffs[index++] = (C[i+1] - C[i]) / (3*dX[i]);
-						coeffs[index++] = C[i];
-						coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
-						coeffs[index++] = Y[i];
-					}
-				},
-				[&](const typename Types::FixedThird& t) {
-					Container<Number> C(n);
-					if (n == 2) {
-						C[0] = -dX[0] * (t.d3f_1 + t.d3f_n) / 8;
-						C[1] = -C[0];
-					} else {
-						// diag[0] = 1;
-						// upper[0] = -1;
-						// right[0] = -dX[0] * t.d3f_1 / 2;
-						// lower[n-1] = -1;
-						// diag[n-1] = 1;
-						// right[n-1] = dX[n-2] * t.d3f_n / 2;
-						// C = util::linalg::tridiag_solve<Number,Container>(
-						// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
-					}
-					Container<Number> D(n - 1);
-					for (SizeT i = 1; i < D.size() - 1; ++i) {
-						D[i] = (C[i+1] - C[i]) / (3*dX[i]);
-					}
-					if (n == 2) {
-						D[0] = (t.d3f_1 + t.d3f_n) / 12;
-					} else {
-						D[0] = t.d3f_1 / 6;
-						D[n-2] = t.d3f_n / 6;
-					}
-					for (SizeT i = 0, index = 0; i < n - 1; ++i) {
-						coeffs[index++] = D[i];
-						coeffs[index++] = C[i];
-						coeffs[index++] = dY[i]/dX[i] - dX[i] * ((2*C[i] + C[i+1]) / 3);
-						coeffs[index++] = Y[i];
-					}
-				}
-			}, type);
+			// std::visit(util::misc::overload{
+			// 	[&](const typename Types::NotAKnot&) {
+			// 		// diag[0] = dX[0] - dX[1];
+			// 		// upper[0] = 2*dX[0] + dX[1];
+			// 		// right[0] = dX[0] / (dX[0]+dX[1]) * right[1];
+			// 		// lower[n-1] = 2*dX[n-2] + dX[n-3];
+			// 		// diag[n-1] = dX[n-2] - dX[n-3];
+			// 		// right[n-1] = dX[n-2] / (dX[n-2]+dX[n-3]) * right[n-2];
+			// 		// const auto C = util::linalg::tridiag_solve<Number,Container>(
+			// 		// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
+			// 	},
+			// 	[&](const typename Types::Clamped& c) {
+			// 		// diag[0] = 2*dX[0];
+			// 		// upper[0] = dX[0];
+			// 		// right[0] = 3 * (dY[0]/dX[0] - c.df_1);
+			// 		// lower[n-1] = dX[n-2];
+			// 		// diag[n-1] = 2*dX[n-2];
+			// 		// right[n-1] = 3 * (c.df_n - dY[n-2]/dX[n-2]);
+			// 		// const auto C = util::linalg::tridiag_solve<Number,Container>(
+			// 		// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
+			// 	},
+			// 	[&](const typename Types::FixedSecond& s) {
+			// 		// diag[0] = 1;
+			// 		// upper[0] = 0;
+			// 		// right[0] = s.d2f_1 / 2;
+			// 		// lower[n-1] = 0;
+			// 		// diag[n-1] = 1;
+			// 		// right[n-1] = s.d2f_n / 2;
+			// 		// const auto C = util::linalg::tridiag_solve<Number,Container>(
+			// 		// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
+			// 	},
+			// 	[&](const typename Types::FixedThird& t) {
+			// 		// if (n == 2) {
+			// 		// 	C[0] = -dX[0] * (t.d3f_1 + t.d3f_n) / 8;
+			// 		// 	C[1] = -C[0];
+			// 		// } else {
+			// 		// 	// diag[0] = 1;
+			// 		// 	// upper[0] = -1;
+			// 		// 	// right[0] = -dX[0] * t.d3f_1 / 2;
+			// 		// 	// lower[n-1] = -1;
+			// 		// 	// diag[n-1] = 1;
+			// 		// 	// right[n-1] = dX[n-2] * t.d3f_n / 2;
+			// 		// 	// C = util::linalg::tridiag_solve<Number,Container>(
+			// 		// 	// 	std::move(lower), std::move(diag), std::move(upper), std::move(right));
+			// 		// }
+			// 		// Container<Number> D(n - 1);
+			// 		// for (SizeT i = 1; i < D.size() - 1; ++i) {
+			// 		// 	D[i] = (C[i+1] - C[i]) / (3*dX[i]);
+			// 		// }
+			// 		// if (n == 2) {
+			// 		// 	D[0] = (t.d3f_1 + t.d3f_n) / 12;
+			// 		// } else {
+			// 		// 	D[0] = t.d3f_1 / 6;
+			// 		// 	D[n-2] = t.d3f_n / 6;
+			// 		// }
+			// 	}
+			// }, type);
 
 			return coeffs;
 		}
