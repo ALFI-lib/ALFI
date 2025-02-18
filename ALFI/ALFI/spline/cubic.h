@@ -116,7 +116,8 @@ namespace alfi::spline {
 								  typename Types::FixedThird,
 								  typename Types::NotAKnotStart,
 								  typename Types::NotAKnotEnd,
-								  typename Types::SemiNotAKnot>;
+								  typename Types::SemiNotAKnot,
+								  typename Types::Custom>;
 
 		static Container<Number> compute_coeffs(const Container<Number>& X, const Container<Number>& Y, Type type = typename Types::Default{}) {
 			if (X.size() != Y.size()) {
@@ -399,17 +400,17 @@ namespace alfi::spline {
 					[&](const typename Conditions::Clamped& c) {
 						diag[0] = 2*dX[i1];
 						upper[0] = dX[i1];
-						right[0] = 3 * (dY[i1]/dX[i1] - c.df_1);
+						right[0] = 3 * (dY[i1]/dX[i1] - c.df);
 					},
 					[&](const typename Conditions::FixedSecond& fs) {
 						diag[0] = 1;
 						upper[0] = 0;
-						right[0] = fs.d2f_1 / 2;
+						right[0] = fs.d2f / 2;
 					},
 					[&](const typename Conditions::FixedThird& ft) {
 						diag[0] = 1;
 						upper[0] = -1;
-						right[0] = -dX[i1] * ft.d3f_1 / 2;
+						right[0] = -dX[i1] * ft.d3f / 2;
 					},
 					[&](const typename Conditions::NotAKnot&) {
 						diag[0] = dX[i1] - dX[i1+1];
@@ -421,17 +422,17 @@ namespace alfi::spline {
 					[&](const typename Conditions::Clamped& c) {
 						lower[m-1] = dX[i1+m-2];
 						diag[m-1] = 2*dX[i1+m-2];
-						right[m-1] = 3 * (c.df_n - dY[i1+m-2]/dX[i1+m-2]);
+						right[m-1] = 3 * (c.df - dY[i1+m-2]/dX[i1+m-2]);
 					},
 					[&](const typename Conditions::FixedSecond& fs) {
 						lower[m-1] = 0;
 						diag[m-1] = 1;
-						right[m-1] = fs.d2f_n / 2;
+						right[m-1] = fs.d2f / 2;
 					},
 					[&](const typename Conditions::FixedThird& ft) {
 						lower[m-1] = -1;
 						diag[m-1] = 1;
-						right[m-1] = dX[i1+m-2] * ft.d3f_n / 2;
+						right[m-1] = dX[i1+m-2] * ft.d3f / 2;
 					},
 					[&](const typename Conditions::NotAKnot&) {
 						lower[m-1] = 2*dX[i1+m-2] + dX[i1+m-3];
