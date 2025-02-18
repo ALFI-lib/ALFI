@@ -408,7 +408,7 @@ namespace alfi::spline {
 					[&](const typename Conditions::NotAKnot&) {
 						diag[0] = dX[i1] - dX[i1+1];
 						upper[0] = 2*dX[i1] + dX[i1+1];
-						right[0] = dX[i1] / (dX[i1]+dX[i1+1]) * right[1];
+						right[0] = dX[i1] / (dX[i1]+dX[i1+1]) * 3 * (dY[i1+1]/dX[i1+1] - dY[i1]/dX[i1]);
 					},
 				}, custom->cond1);
 				std::visit(util::misc::overload{
@@ -430,7 +430,7 @@ namespace alfi::spline {
 					[&](const typename Conditions::NotAKnot&) {
 						lower[m-1] = 2*dX[i1+m-2] + dX[i1+m-3];
 						diag[m-1] = dX[i1+m-2] - dX[i1+m-3];
-						right[m-1] = dX[i1+m-2] / (dX[i1+m-2]+dX[i1+m-3]) * right[m-2];
+						right[m-1] = dX[i1+m-2] / (dX[i1+m-2]+dX[i1+m-3]) * 3 * (dY[i1+m-2]/dX[i1+m-2] - dY[i1+m-3]/dX[i1+m-3]);
 					},
 				}, custom->cond2);
 
