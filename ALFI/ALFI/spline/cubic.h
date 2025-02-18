@@ -269,6 +269,37 @@ namespace alfi::spline {
 						return {};
 					}
 				}
+				// check if same conditions on one point
+				if (const auto* c1 = std::get_if<typename Conditions::Clamped>(&custom->cond1),
+							c2 = std::get_if<typename Conditions::Clamped>(&custom->cond2);
+							c1 && c2) {
+					if (c1->point_idx == c2->point_idx) {
+						std::cerr << "Error in function " << __FUNCTION__
+								  << ": both 'Clamped' conditions are applied to the same point: " << c1->point_idx
+								  << ". Returning an empty array..." << std::endl;
+						return {};
+					}
+				} else if (const auto* fs1 = std::get_if<typename Conditions::FixedSecond>(&custom->cond1),
+							fs2 = std::get_if<typename Conditions::FixedSecond>(&custom->cond2);
+							fs1 && fs2) {
+					if (fs1->point_idx == fs2->point_idx) {
+						std::cerr << "Error in function " << __FUNCTION__
+								  << ": both 'FixedSecond' conditions are applied to the same point: " << fs1->point_idx
+								  << ". Returning an empty array..." << std::endl;
+						return {};
+					}
+				} else if (const auto* nak1 = std::get_if<typename Conditions::NotAKnot>(&custom->cond1),
+							nak2 = std::get_if<typename Conditions::NotAKnot>(&custom->cond2);
+							nak1 && nak2) {
+					if (nak1->point_idx == nak2->point_idx) {
+						std::cerr << "Error in function " << __FUNCTION__
+								  << ": both 'NotAKnot' conditions are applied to the same point: " << nak1->point_idx
+								  << ". Returning an empty array..." << std::endl;
+						return {};
+					}
+				} else {
+					// same FixedThird conditions do not lead to error and are processed below
+				}
 
 				// set first segment index
 				std::visit(util::misc::overload{
@@ -304,8 +335,19 @@ namespace alfi::spline {
 				}, custom->cond2);
 
 				// special case: both conditions on one point
+				// only possible for Clamped and FixedSecond
 				if (i2 < i1) {
-					
+					const auto i = i1; // ignoring i2
+					if (i > 0) {
+						coeffs[4*(i-1)+3] = Y[i-1];
+
+						i1 = i - 1;
+					}
+					if (i < n - 1) {
+						coeffs[4*i+3] = Y[i];
+
+						i2 = i;
+					}
 				}
 
 				// number of points in the "subspline"
