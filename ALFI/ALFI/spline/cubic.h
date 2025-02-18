@@ -272,6 +272,7 @@ namespace alfi::spline {
 						return {};
 					}
 				}
+
 				// check if same conditions on one point and return a somewhat reasonable approximation
 				if (const auto c1 = std::get_if<typename Conditions::Clamped>(&custom->cond1),
 							c2 = std::get_if<typename Conditions::Clamped>(&custom->cond2);
