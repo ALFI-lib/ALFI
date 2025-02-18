@@ -137,8 +137,8 @@ namespace alfi::spline {
 			if (std::holds_alternative<typename Types::Natural>(type)) {
 				return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::FixedSecond{0, 0}, typename Conditions::FixedSecond{n - 1, 0}});
 			} else if (std::holds_alternative<typename Types::NotAKnot>(type)) {
-				if (n == 2) {
-					return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{0}, typename Conditions::NotAKnot{1}});
+				if (n <= 4) {
+					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
 				return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{1}, typename Conditions::NotAKnot{n - 2}});
 			} else if (std::holds_alternative<typename Types::ParabolicEnds>(type)) {
@@ -150,13 +150,13 @@ namespace alfi::spline {
 			} else if (const auto* ft = std::get_if<typename Types::FixedThird>(&type)) {
 				return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::FixedThird{0, ft->d3f_1}, typename Conditions::FixedThird{n - 2, ft->d3f_n}});
 			} else if (std::holds_alternative<typename Types::NotAKnotStart>(type)) {
-				if (n == 2) {
-					return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{0}, typename Conditions::NotAKnot{1}});
+				if (n <= 4) {
+					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
 				return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{1}, typename Conditions::NotAKnot{2}});
 			} else if (std::holds_alternative<typename Types::NotAKnotEnd>(type)) {
-				if (n == 2) {
-					return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{0}, typename Conditions::NotAKnot{1}});
+				if (n <= 4) {
+					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
 				return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{n - 3}, typename Conditions::NotAKnot{n - 2}});
 			} else if (std::holds_alternative<typename Types::SemiNotAKnot>(type)) {
@@ -226,7 +226,7 @@ namespace alfi::spline {
 				// special case
 				if (std::holds_alternative<typename Conditions::NotAKnot>(custom->cond1)
 						&& std::holds_alternative<typename Conditions::NotAKnot>(custom->cond2)
-						&& n <= 4) {
+						&& n <= 3) {
 					return util::spline::simple_spline<Number,Container>(X, Y, 3);
 				}
 
