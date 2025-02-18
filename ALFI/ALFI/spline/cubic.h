@@ -318,43 +318,32 @@ namespace alfi::spline {
 					}
 				}
 
-				// set first segment index
-				std::visit(util::misc::overload{
-					[&](const typename Conditions::Clamped& c) { i1 = c.point_idx; },
-					[&](const typename Conditions::FixedSecond& fs) { i1 = fs.point_idx; },
-					[&](const typename Conditions::FixedThird& ft) { i1 = ft.segment_idx; },
-					[&](const typename Conditions::NotAKnot& nak) { i1 = nak.point_idx - 1; },
-				}, custom->cond1);
-				// set last segment index
-				std::visit(util::misc::overload{
-					[&](const typename Conditions::Clamped& c) { i2 = c.point_idx - 1; },
-					[&](const typename Conditions::FixedSecond& fs) { i2 = fs.point_idx - 1; },
-					[&](const typename Conditions::FixedThird& ft) { i2 = ft.segment_idx; },
-					[&](const typename Conditions::NotAKnot& nak) { i2 = nak.point_idx; },
-				}, custom->cond2);
-				// swap if wrong order
+				const auto set_segment_indices = [&]() {
+					std::visit(util::misc::overload{
+						[&](const typename Conditions::Clamped& c) { i1 = c.point_idx; },
+						[&](const typename Conditions::FixedSecond& fs) { i1 = fs.point_idx; },
+						[&](const typename Conditions::FixedThird& ft) { i1 = ft.segment_idx; },
+						[&](const typename Conditions::NotAKnot& nak) { i1 = nak.point_idx - 1; },
+					}, custom->cond1);
+					std::visit(util::misc::overload{
+						[&](const typename Conditions::Clamped& c) { i2 = c.point_idx - 1; },
+						[&](const typename Conditions::FixedSecond& fs) { i2 = fs.point_idx - 1; },
+						[&](const typename Conditions::FixedThird& ft) { i2 = ft.segment_idx; },
+						[&](const typename Conditions::NotAKnot& nak) { i2 = nak.point_idx; },
+					}, custom->cond2);
+				};
+				set_segment_indices();
+				// swap if wrong order and set again
 				if (i2 < i1) {
 					std::swap(custom->cond1, custom->cond2);
+					set_segment_indices();
 				}
-				// set first segment index again
-				std::visit(util::misc::overload{
-					[&](const typename Conditions::Clamped& c) { i1 = c.point_idx; },
-					[&](const typename Conditions::FixedSecond& fs) { i1 = fs.point_idx; },
-					[&](const typename Conditions::FixedThird& ft) { i1 = ft.segment_idx; },
-					[&](const typename Conditions::NotAKnot& nak) { i1 = nak.point_idx - 1; },
-				}, custom->cond1);
-				// set last segment index again
-				std::visit(util::misc::overload{
-					[&](const typename Conditions::Clamped& c) { i2 = c.point_idx - 1; },
-					[&](const typename Conditions::FixedSecond& fs) { i2 = fs.point_idx - 1; },
-					[&](const typename Conditions::FixedThird& ft) { i2 = ft.segment_idx; },
-					[&](const typename Conditions::NotAKnot& nak) { i2 = nak.point_idx; },
-				}, custom->cond2);
 
 				// special case: both conditions on one point
 				// only possible for Clamped and FixedSecond
 				if (i2 < i1) {
-					const auto i = i1; // ignoring i2
+					assert(i1 - i2 == 1);
+					const auto i = i1;
 					const auto* c
 						= std::holds_alternative<typename Conditions::Clamped>(custom->cond1)
 						? std::get_if<typename Conditions::Clamped>(&custom->cond1)
@@ -454,10 +443,10 @@ namespace alfi::spline {
 
 				// additional corrections
 				if (const auto* ft = std::get_if<typename Conditions::FixedThird>(&custom->cond1)) {
-					coeffs[i1] = ft->d3f / 6;
+					coeffs[4*i1] = ft->d3f / 6;
 				}
 				if (const auto* ft = std::get_if<typename Conditions::FixedThird>(&custom->cond2)) {
-					coeffs[i2] = ft->d3f / 6;
+					coeffs[4*i2] = ft->d3f / 6;
 				}
 			} else {
 				std::cerr << "Error in function " << __FUNCTION__ << ": Unknown type. This should not have happened. "
