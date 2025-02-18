@@ -165,6 +165,8 @@ namespace alfi::spline {
 
 			Container<Number> coeffs(4 * (n - 1));
 
+			// i1 - index of first constructed segment
+			// i2 - index of first after last constructed segment
 			SizeT i1 = 0, i2 = n - 1;
 
 			const auto dX = util::arrays::diff(X), dY = util::arrays::diff(Y);
@@ -313,7 +315,8 @@ namespace alfi::spline {
 						coeffs[4*i+1] = c;
 						coeffs[4*i+2] = dY[i]/dX[i] - dX[i] * c / 3;
 						coeffs[4*i+3] = Y[i];
-						i1 = i2 = i;
+						i1 = i;
+						i2 = i + 1;
 						goto post_main_block;
 					}
 				}
@@ -326,23 +329,23 @@ namespace alfi::spline {
 						[&](const typename Conditions::NotAKnot& nak) { i1 = nak.point_idx - 1; },
 					}, custom->cond1);
 					std::visit(util::misc::overload{
-						[&](const typename Conditions::Clamped& c) { i2 = c.point_idx - 1; },
-						[&](const typename Conditions::FixedSecond& fs) { i2 = fs.point_idx - 1; },
-						[&](const typename Conditions::FixedThird& ft) { i2 = ft.segment_idx; },
-						[&](const typename Conditions::NotAKnot& nak) { i2 = nak.point_idx; },
+						[&](const typename Conditions::Clamped& c) { i2 = c.point_idx; },
+						[&](const typename Conditions::FixedSecond& fs) { i2 = fs.point_idx; },
+						[&](const typename Conditions::FixedThird& ft) { i2 = ft.segment_idx + 1; },
+						[&](const typename Conditions::NotAKnot& nak) { i2 = nak.point_idx + 1; },
 					}, custom->cond2);
 				};
 				set_segment_indices();
 				// swap if wrong order and set again
-				if (i2 < i1) {
+				if (i2 <= i1) {
 					std::swap(custom->cond1, custom->cond2);
 					set_segment_indices();
 				}
 
 				// special case: both conditions on one point
 				// only possible for Clamped and FixedSecond
-				if (i2 < i1) {
-					assert(i1 - i2 == 1);
+				if (i2 <= i1) {
+					assert(i1 == i2);
 					const auto i = i1;
 					const auto* c
 						= std::holds_alternative<typename Conditions::Clamped>(custom->cond1)
@@ -362,15 +365,16 @@ namespace alfi::spline {
 					}
 					if (i < n - 1) {
 						coeffs[4*i] = (dY[i]/dX[i]/dX[i] - c->df/dX[i] - fs->d2f/2) / dX[i];
-						coeffs[4*i+1] = c->df;
-						coeffs[4*i+2] = fs->d2f/2;
+						coeffs[4*i+1] = fs->d2f/2;
+						coeffs[4*i+2] = c->df;
 						coeffs[4*i+3] = Y[i];
-						i2 = i;
+						i2 = i + 1;
 					}
+					goto post_main_block;
 				}
 
 				// number of points in the "subspline"
-				const auto m = i2 - i1 + 2;
+				const auto m = i2 - i1 + 1;
 
 				// common equations
 				Container<Number> lower(m), diag(m), upper(m), right(m);
@@ -446,7 +450,7 @@ namespace alfi::spline {
 					coeffs[4*i1] = ft->d3f / 6;
 				}
 				if (const auto* ft = std::get_if<typename Conditions::FixedThird>(&custom->cond2)) {
-					coeffs[4*i2] = ft->d3f / 6;
+					coeffs[4*(i2-1)] = ft->d3f / 6;
 				}
 			} else {
 				std::cerr << "Error in function " << __FUNCTION__ << ": Unknown type. This should not have happened. "
@@ -463,7 +467,7 @@ namespace alfi::spline {
 				coeffs[4*i+3] = Y[i];
 			}
 
-			for (SizeT i = i2 + 1; i < n - 1; ++i) {
+			for (SizeT i = i2; i < n - 1; ++i) {
 				coeffs[4*i+3] = Y[i];
 				coeffs[4*i+2] = 3 * coeffs[4*(i-1)]*dX[i-1]*dX[i-1] + 2 * coeffs[4*(i-1)+1]*dX[i-1] + coeffs[4*(i-1)+2];
 				coeffs[4*i+1] = 3 * coeffs[4*(i-1)]*dX[i-1] + coeffs[4*(i-1)+1];
