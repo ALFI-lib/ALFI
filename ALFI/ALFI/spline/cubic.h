@@ -119,10 +119,8 @@ namespace alfi::spline {
 								  typename Types::SemiNotAKnot>;
 
 		static Container<Number> compute_coeffs(const Container<Number>& X, const Container<Number>& Y, Type type = typename Types::Default{}) {
-			constexpr auto FUNCTION = __FUNCTION__;
-
 			if (X.size() != Y.size()) {
-				std::cerr << "Error in function " << FUNCTION
+				std::cerr << "Error in function " << __FUNCTION__
 						  << ": Vectors X (of size " << X.size()
 						  << ") and Y (of size " << Y.size()
 						  << ") are not the same size. Returning an empty array..." << std::endl;
@@ -305,9 +303,9 @@ namespace alfi::spline {
 					[&](const typename Conditions::NotAKnot& nak) { i2 = nak.point_idx; },
 				}, custom->cond2);
 
-				// special case
+				// special case: both conditions on one point
 				if (i2 < i1) {
-
+					
 				}
 
 				// number of points in the "subspline"
@@ -410,17 +408,17 @@ namespace alfi::spline {
 		post_main_block:
 			for (SizeT iter = 0; iter < i1; ++iter) {
 				const auto i = i1 - 1 - iter;
-				coeffs[4*i] = (coeffs[4*(i+1)+1] - coeffs[4*(i+1)+2]/dX[i] + dY[i]/pow(dX[i], 2)) / dX[i];
+				coeffs[4*i] = (coeffs[4*(i+1)+1] - coeffs[4*(i+1)+2]/dX[i] + dY[i]/dX[i]/dX[i]) / dX[i];
 				coeffs[4*i+1] = coeffs[4*(i+1)+1] - 3 * coeffs[4*i] * dX[i];
-				coeffs[4*i+2] = dY[i]/dX[i] - coeffs[4*i]*pow(dX[i], 2) - coeffs[4*i+1]*dX[i];
+				coeffs[4*i+2] = dY[i]/dX[i] - coeffs[4*i]*dX[i]*dX[i] - coeffs[4*i+1]*dX[i];
 				coeffs[4*i+3] = Y[i];
 			}
 
 			for (SizeT i = i2 + 1; i < n - 1; ++i) {
 				coeffs[4*i+3] = Y[i];
-				coeffs[4*i+2] = 3 * coeffs[4*(i-1)] * pow(dX[i-1], 2) + 2 * coeffs[4*(i-1)+1] * dX[i-1] + coeffs[4*(i-1)+2];
-				coeffs[4*i+1] = 3 * coeffs[4*(i-1)] * dX[i-1] + coeffs[4*(i-1)+1];
-				coeffs[4*i] = (dY[i]/dX[i] - coeffs[4*i+1] * dX[i] - coeffs[4*i+2]) / pow(dX[i], 2);
+				coeffs[4*i+2] = 3 * coeffs[4*(i-1)]*dX[i-1]*dX[i-1] + 2 * coeffs[4*(i-1)+1]*dX[i-1] + coeffs[4*(i-1)+2];
+				coeffs[4*i+1] = 3 * coeffs[4*(i-1)]*dX[i-1] + coeffs[4*(i-1)+1];
+				coeffs[4*i] = (dY[i]/dX[i]/dX[i] - coeffs[4*i+1] - coeffs[4*i+2]/dX[i]) / dX[i];
 			}
 
 			return coeffs;
