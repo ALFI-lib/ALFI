@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(ALFI VERSION 0.0.0.0)
+project(ALFI
+	VERSION 0.0.0.0
+	DESCRIPTION "Advanced Library for Function Interpolation"
+	HOMEPAGE_URL "https://alfi-lib.github.io/ALFI/"
+	LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
