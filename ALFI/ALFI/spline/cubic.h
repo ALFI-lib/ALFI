@@ -37,9 +37,9 @@ namespace alfi::spline {
 		};
 
 		using Condition = std::variant<typename Conditions::Clamped,
-								  typename Conditions::FixedSecond,
-								  typename Conditions::FixedThird,
-								  typename Conditions::NotAKnot>;
+									   typename Conditions::FixedSecond,
+									   typename Conditions::FixedThird,
+									   typename Conditions::NotAKnot>;
 
 		struct Types final {
 			/**
