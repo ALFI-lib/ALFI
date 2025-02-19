@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <ALFI/dist.h>
 #include <ALFI/spline/cubic.h>
 
 TEST(CubicSplineTest, General) {
@@ -10,6 +11,96 @@ TEST(CubicSplineTest, General) {
 		EXPECT_EQ(spline(X[i]), Y[i]);
 		EXPECT_EQ(spline(X[i+1]), Y[i+1]);
 	}
+}
+
+TEST(CubicSplineTest, BasicConditions) {
+	const size_t n = 10;
+	const double a = -1, b = 1;
+	const auto X = alfi::dist::uniform(n, a, b);
+	const auto dX = alfi::util::arrays::diff(X);
+	const auto Y = alfi::dist::circle_proj(n, a, b);
+	auto spline = alfi::spline::CubicSpline<>(X, Y, alfi::spline::CubicSpline<>::Types::Natural{});
+	EXPECT_NEAR(0, 2*spline.coeffs()[1], 1e-17);
+	EXPECT_NEAR(0, 2*spline.coeffs()[4*8+1] + 6*spline.coeffs()[4*8]*dX[8], 1e-15);
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::NotAKnot{});
+	EXPECT_NEAR(spline.coeffs()[0], spline.coeffs()[4], 1e-15);
+	EXPECT_NEAR(spline.coeffs()[4*7], spline.coeffs()[4*8], 1e-14);
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::Periodic{});
+	EXPECT_NEAR(spline.coeffs()[2], spline.coeffs()[4*8+2] + 2*spline.coeffs()[4*8+1]*dX[8] + 3*spline.coeffs()[4*8]*dX[8]*dX[8], 1e-16);
+	EXPECT_NEAR(2*spline.coeffs()[1], 2*spline.coeffs()[4*8+1] + 6*spline.coeffs()[4*8]*dX[8], 1e-15);
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::ParabolicEnds{});
+	EXPECT_NEAR(0, spline.coeffs()[0], 1e-17);
+	EXPECT_NEAR(0, spline.coeffs()[4*8], 1e-17);
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::Clamped{-10, 10});
+	EXPECT_NEAR(-10, spline.coeffs()[2], 1e-14);
+	EXPECT_NEAR(10, spline.coeffs()[4*8+2] + 2*spline.coeffs()[4*8+1]*dX[8] + 3*spline.coeffs()[4*8]*dX[8]*dX[8], 1e-14);
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::FixedSecond{-10, 10});
+	EXPECT_NEAR(-10, 2*spline.coeffs()[1], 1e-17);
+	EXPECT_NEAR(10, 2*spline.coeffs()[4*8+1] + 6*spline.coeffs()[4*8]*dX[8], 1e-17);
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::FixedThird{-10, 10});
+	EXPECT_NEAR(-10, 6*spline.coeffs()[0], 1e-17);
+	EXPECT_NEAR(10, 6*spline.coeffs()[4*8], 1e-17);
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::NotAKnotStart{});
+	EXPECT_NEAR(spline.coeffs()[0], spline.coeffs()[4], 1e-17);
+	EXPECT_NEAR(spline.coeffs()[4], spline.coeffs()[8], 1e-17);
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::NotAKnotEnd{});
+	EXPECT_NEAR(spline.coeffs()[4*6], spline.coeffs()[4*7], 1e-14);
+	EXPECT_NEAR(spline.coeffs()[4*7], spline.coeffs()[4*8], 1e-15);
+}
+
+TEST(CubicSplineTest, CustomConditions) {
+	const size_t n = 10;
+	const double a = -1, b = 1;
+	const auto X = alfi::dist::uniform(n, a, b);
+	const auto dX = alfi::util::arrays::diff(X);
+	const auto Y = alfi::dist::circle_proj(n, a, b);
+	auto spline = alfi::spline::CubicSpline<>();
+	for (size_t i = 0; i < n; ++i) {
+		spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::Custom{
+			alfi::spline::CubicSpline<>::Conditions::Clamped{i, 10},
+			alfi::spline::CubicSpline<>::Conditions::FixedSecond{i, 10}});
+		if (i < n - 1) {
+			EXPECT_NEAR(10, spline.coeffs()[4*i+2], 1e-17);
+			EXPECT_NEAR(10, 2*spline.coeffs()[4*i+1], 1e-17);
+		}
+		if (i > 0) {
+			EXPECT_NEAR(10, spline.coeffs()[4*(i-1)+2] + 2*spline.coeffs()[4*(i-1)+1]*dX[(i-1)] + 3*spline.coeffs()[4*(i-1)]*dX[(i-1)]*dX[(i-1)], 1e-13);
+			EXPECT_NEAR(10, 2*spline.coeffs()[4*(i-1)+1] + 6*spline.coeffs()[4*(i-1)]*dX[(i-1)], 1e-13);
+		}
+	}
+	for (size_t i = 0, j = 1; j < n; ++i, ++j) {
+		spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::Custom{
+			alfi::spline::CubicSpline<>::Conditions::Clamped{i, 10},
+			alfi::spline::CubicSpline<>::Conditions::FixedSecond{j, 10}});
+		EXPECT_NEAR(10, spline.coeffs()[4*i+2], 1e-14);
+		if (i > 0) {
+			EXPECT_NEAR(10, spline.coeffs()[4*(i-1)+2] + 2*spline.coeffs()[4*(i-1)+1]*dX[(i-1)] + 3*spline.coeffs()[4*(i-1)]*dX[(i-1)]*dX[(i-1)], 1e-13);
+		}
+		if (j < n - 1) {
+			EXPECT_NEAR(10, 2*spline.coeffs()[4*j+1], 1e-13);
+		}
+		EXPECT_NEAR(10, 2*spline.coeffs()[4*(j-1)+1] + 6*spline.coeffs()[4*(j-1)]*dX[(j-1)], 1e-13);
+		spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::Custom{
+			alfi::spline::CubicSpline<>::Conditions::FixedThird{i, 10},
+			alfi::spline::CubicSpline<>::Conditions::Clamped{j, 10}});
+		EXPECT_NEAR(10, 6*spline.coeffs()[4*i], 1e-17);
+		if (j < n - 1) {
+			EXPECT_NEAR(10, spline.coeffs()[4*j+2], 1e-14);
+		}
+		EXPECT_NEAR(10, spline.coeffs()[4*(j-1)+2] + 2*spline.coeffs()[4*(j-1)+1]*dX[(j-1)] + 3*spline.coeffs()[4*(j-1)]*dX[(j-1)]*dX[(j-1)], 1e-13);
+	}
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::Custom{
+		alfi::spline::CubicSpline<>::Conditions::NotAKnot{2},
+		alfi::spline::CubicSpline<>::Conditions::FixedSecond{5, 10}});
+	EXPECT_NEAR(spline.coeffs()[4*1], spline.coeffs()[4*2], 1e-17);
+	EXPECT_NEAR(10, 2*spline.coeffs()[4*5+1], 1e-14);
+	EXPECT_NEAR(10, 2*spline.coeffs()[4*4+1] + 6*spline.coeffs()[4*4]*dX[4], 1e-14);
+	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::Custom{
+		alfi::spline::CubicSpline<>::Conditions::NotAKnot{5},
+		alfi::spline::CubicSpline<>::Conditions::FixedThird{5, 10}});
+	EXPECT_NEAR(spline.coeffs()[4*4], spline.coeffs()[4*5], 1e-14);
+	EXPECT_NEAR(10, 6*spline.coeffs()[4*4], 1e-14);
+	EXPECT_NEAR(10, 6*spline.coeffs()[4*5], 1e-17);
 }
 
 TEST(CubicSplineTest, Moving) {
