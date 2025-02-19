@@ -142,6 +142,9 @@ namespace alfi::spline {
 				}
 				return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{1}, typename Conditions::NotAKnot{n - 2}});
 			} else if (std::holds_alternative<typename Types::ParabolicEnds>(type)) {
+				if (n <= 3) {
+					return util::spline::simple_spline<Number,Container>(X, Y, 3);
+				}
 				return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::FixedThird{0, 0}, typename Conditions::FixedThird{n - 2, 0}});
 			} else if (const auto* c = std::get_if<typename Types::Clamped>(&type)) {
 				return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::Clamped{0, c->df_1}, typename Conditions::Clamped{n - 1, c->df_n}});
@@ -160,6 +163,9 @@ namespace alfi::spline {
 				}
 				return compute_coeffs(X, Y, typename Types::Custom{typename Conditions::NotAKnot{n - 3}, typename Conditions::NotAKnot{n - 2}});
 			} else if (std::holds_alternative<typename Types::SemiNotAKnot>(type)) {
+				if (n <= 4) {
+					return util::spline::simple_spline<Number,Container>(X, Y, 3);
+				}
 				return util::arrays::mean(compute_coeffs(X, Y, typename Types::NotAKnotStart{}), compute_coeffs(X, Y, typename Types::NotAKnotEnd{}));
 			}
 
