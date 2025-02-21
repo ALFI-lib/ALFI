@@ -115,6 +115,7 @@ public:
 		_points_checkbox = new QCheckBox("Points");
 		_poly_checkbox = new QCheckBox("Polynomial");
 		_barycentric_checkbox = new QCheckBox("Barycentric Formula");
+		_poly_eqv_spline_checkbox = new QCheckBox("Poly. Eqv. Spline");
 		_step_spline_checkbox = new QCheckBox("Step Spline");
 		_linear_spline_checkbox = new QCheckBox("Linear Spline");
 		_quadratic_spline_checkbox = new QCheckBox("Quadratic Spline");
@@ -160,9 +161,8 @@ public:
 		connect(_b_spin_box, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &PlotWindow::update_plot);
 
 		for (const auto checkbox : {
-			_function_checkbox, _points_checkbox, _poly_checkbox,
-			_barycentric_checkbox, _step_spline_checkbox,
-			_linear_spline_checkbox, _quadratic_spline_checkbox, _cubic_spline_checkbox}) {
+			_function_checkbox, _points_checkbox, _poly_checkbox, _barycentric_checkbox, _poly_eqv_spline_checkbox,
+			_step_spline_checkbox, _linear_spline_checkbox, _quadratic_spline_checkbox, _cubic_spline_checkbox}) {
 			connect(checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
 		}
 
@@ -211,6 +211,7 @@ public:
 		interpolation_layout->addWidget(_poly_combo);
 		interpolation_layout->addWidget(_barycentric_checkbox);
 		interpolation_layout->addWidget(_barycentric_combo);
+		interpolation_layout->addWidget(_poly_eqv_spline_checkbox);
 		interpolation_layout->addWidget(_step_spline_checkbox);
 		interpolation_layout->addWidget(_step_spline_combo);
 		interpolation_layout->addWidget(_linear_spline_checkbox);
@@ -334,6 +335,9 @@ private:
 			}
 			add_graph("Barycentric", xx, alfi::misc::barycentric(X, Y, xx, static_cast<alfi::dist::Type>(barycentric_dist_type)));
 		}
+		if (_poly_eqv_spline_checkbox->isChecked()) {
+			add_graph("Poly. Eqv. Spline", xx, alfi::spline::PolyEqvSpline<>(X, Y)(xx));
+		}
 		if (_step_spline_checkbox->isChecked()) {
 			add_graph("Step Spline", xx, alfi::spline::StepSpline(X, Y, step_spline_types[_step_spline_combo->currentIndex()].second)(xx));
 		}
@@ -372,6 +376,7 @@ private:
 	QCheckBox* _points_checkbox;
 	QCheckBox* _poly_checkbox;
 	QCheckBox* _barycentric_checkbox;
+	QCheckBox* _poly_eqv_spline_checkbox;
 	QCheckBox* _step_spline_checkbox;
 	QCheckBox* _linear_spline_checkbox;
 	QCheckBox* _quadratic_spline_checkbox;
