@@ -18,6 +18,8 @@ set(CMAKE_CXX_FLAGS_FAST "-g0 -s -Ofast -fno-finite-math-only -flto=auto -DNDEBU
 set(CMAKE_CXX_FLAGS_FASTPARALLEL "-g0 -s -Ofast -fno-finite-math-only -flto=auto -fopenmp -DNDEBUG")
 set(CMAKE_CXX_FLAGS_SANITIZE "-g3 -fsanitize=address,leak,undefined")
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 add_subdirectory(ALFI)
 
 add_subdirectory(examples)

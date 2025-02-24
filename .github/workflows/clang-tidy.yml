@@ -1,0 +1,50 @@
+name: Clang-Tidy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  PROFILE: Debug
+  BUILD_DIR: build/debug
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: ./helper.py -d
+
+      - name: Build
+        run: ./helper.py -b ${{ env.PROFILE }}
+
+      - name: Install clang-tidy and tools
+        run: |
+          sudo apt install -y clang-tidy colorized-logs
+          cargo install clang-tidy-sarif
+
+      - name: Run clang-tidy
+        id: run-clang-tidy
+        run: |
+          set -o pipefail
+          files=$(find ALFI examples tests -path 'ALFI/*.h' -o -path 'examples/*.cpp' -o -path 'tests/*.cpp' ! -path '*deps/*')
+          clang-tidy -p ${{ env.BUILD_DIR }} --use-color $files 2>&1 |
+            sed "s|${{ github.workspace }}/||g" |
+            tee >(ansi2txt | clang-tidy-sarif > results.sarif)
+
+      - name: Upload results
+        if: success() || steps.run-clang-tidy.outcome == 'failure'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
