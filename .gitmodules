@@ -1,3 +1,7 @@
+[submodule "benches/deps/benchmark"]
+	path = benches/deps/benchmark
+	url = https://github.com/google/benchmark
+	shallow = true
 [submodule "tests/deps/toml++"]
 	path = tests/deps/toml++
 	url = https://github.com/pasabanov/tomlpp-min

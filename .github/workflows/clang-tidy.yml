@@ -38,7 +38,7 @@ jobs:
         id: run-clang-tidy
         run: |
           set -o pipefail
-          files=$(find ALFI examples tests -path 'ALFI/*.h' -o -path 'examples/*.cpp' -o -path 'tests/*.cpp' ! -path '*deps/*')
+          files=$(find ALFI examples tests benches -path 'ALFI/*.h' -o -path 'examples/*.cpp' -o -path 'tests/*.cpp' -o -path 'benches/*.cpp' ! -path '*deps/*')
           clang-tidy -p ${{ env.BUILD_DIR }} --use-color $files 2>&1 |
             sed "s|${{ github.workspace }}/||g" |
             tee >(ansi2txt | clang-tidy-sarif > results.sarif)
