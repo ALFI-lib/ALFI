@@ -63,11 +63,11 @@ TEST(DistributionsTest, ChebyshevEllipseStretched) {
 }
 
 TEST(DistributionsTest, CircleProjection) {
-	test_distribution("circle_proj", alfi::dist::Type::CIRCLE_PROJECTION, 1e-11);
+	test_distribution("circle_proj", alfi::dist::Type::CIRCLE_PROJ, 1e-11);
 }
 
 TEST(DistributionsTest, EllipseProjection) {
-	test_distribution("ellipse_proj", alfi::dist::Type::ELLIPSE_PROJECTION, 1e-14);
+	test_distribution("ellipse_proj", alfi::dist::Type::ELLIPSE_PROJ, 1e-14);
 }
 
 TEST(DistributionsTest, Logistic) {

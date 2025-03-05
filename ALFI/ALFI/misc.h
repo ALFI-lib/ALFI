@@ -55,11 +55,28 @@ namespace alfi::misc {
 			// }
 		} else if (dist_type == dist::Type::CHEBYSHEV) {
 			for (SizeT j = 0; j < N; ++j) {
-				W[j] = (j % 2 == 0 ? 1 : -1) * sin(((2 * static_cast<Number>(j) + 1) * M_PI) / (2 * static_cast<Number>(N)));
+				W[j] = (j % 2 == 0 ? 1 : -1) * std::sin(((2 * static_cast<Number>(j) + 1) * M_PI) / (2 * static_cast<Number>(N)));
 			}
-		} else if (dist_type == dist::Type::CIRCLE_PROJECTION) {
+		} else if (dist_type == dist::Type::CIRCLE_PROJ) {
 			for (SizeT j = 0; j < N; ++j) {
-				W[j] = (j % 2 == 0 ? 1 : -1) * (j == 0 || j == N - 1 ? static_cast<Number>(1)/static_cast<Number>(2) : static_cast<Number>(1));
+				W[j] = (j % 2 == 0 ? 1 : -1);
+				if (j == 0 || j == N - 1) {
+					W[j] /= 2;
+				}
+			}
+		} else if (dist_type == dist::Type::CIRCLE_PROJ_NO_LAST) {
+			for (SizeT j = 0; j < N; ++j) {
+				W[j] = (j % 2 == 0 ? 1 : -1) * std::cos((static_cast<Number>(2*j) * M_PI) / static_cast<Number>(2*N - 1) / 2);
+				if (j == 0) {
+					W[j] /= 2;
+				}
+			}
+		} else if (dist_type == dist::Type::CIRCLE_PROJ_NO_FIRST) {
+			for (SizeT j = 0; j < N; ++j) {
+				W[j] = (j % 2 == 0 ? 1 : -1) * std::sin((static_cast<Number>(2*j + 1) * M_PI) / static_cast<Number>(2*N - 1) / 2);
+				if (j == N - 1) {
+					W[j] /= 2;
+				}
 			}
 		} else {
 			// The factor scales the weights to prevent excessive growth or shrinkage, reducing numerical instability.

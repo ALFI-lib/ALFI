@@ -13,10 +13,14 @@ namespace alfi::dist {
 		CUBIC,
 		CHEBYSHEV,
 		CHEBYSHEV_STRETCHED,
+		CIRCLE_PROJ,
+		CIRCLE_PROJ_NO_LAST,
+		CIRCLE_PROJ_NO_FIRST,
 		CHEBYSHEV_ELLIPSE,
 		CHEBYSHEV_ELLIPSE_STRETCHED,
-		CIRCLE_PROJECTION,
-		ELLIPSE_PROJECTION,
+		ELLIPSE_PROJ,
+		ELLIPSE_PROJ_NO_LAST,
+		ELLIPSE_PROJ_NO_FIRST,
 		LOGISTIC,
 		LOGISTIC_STRETCHED,
 		ERF,
@@ -111,6 +115,38 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> circle_proj(SizeT n, Number a, Number b) {
+		if (n == 1)
+			return {(a+b)/2};
+		Container<Number> points(n);
+		for (SizeT i = 0; i < n; ++i) {
+			const Number x = 1 - std::cos(M_PI * static_cast<Number>(i) / (static_cast<Number>(n) - 1));
+			points[i] = a + (b - a) * x / 2;
+		}
+		return points;
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> circle_proj_no_last(SizeT n, Number a, Number b) {
+		Container<Number> points(n);
+		for (SizeT i = 0; i < n; ++i) {
+			const Number x = 1 - std::cos(M_PI * static_cast<Number>(2*i) / static_cast<Number>(2*n - 1));
+			points[i] = a + (b - a) * x / 2;
+		}
+		return points;
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> circle_proj_no_first(SizeT n, Number a, Number b) {
+		Container<Number> points(n);
+		for (SizeT i = 0; i < n; ++i) {
+			const Number x = 1 - std::cos(M_PI * static_cast<Number>(2*i + 1) / static_cast<Number>(2*n - 1));
+			points[i] = a + (b - a) * x / 2;
+		}
+		return points;
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> chebyshev_ellipse(SizeT n, Number a, Number b, Number ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n / 2; ++i) {
@@ -130,18 +166,6 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> circle_proj(SizeT n, Number a, Number b) {
-		if (n == 1)
-			return {(a+b)/2};
-		Container<Number> points(n);
-		for (SizeT i = 0; i < n; ++i) {
-			const Number x = 1 - std::cos(M_PI * static_cast<Number>(i) / (static_cast<Number>(n) - 1));
-			points[i] = a + (b - a) * x / 2;
-		}
-		return points;
-	}
-
-	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> ellipse_proj(SizeT n, Number a, Number b, Number ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n / 2; ++i) {
@@ -152,6 +176,28 @@ namespace alfi::dist {
 		}
 		if (n % 2 == 1)
 			points[n/2] = (a+b)/2;
+		return points;
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> ellipse_proj_no_last(SizeT n, Number a, Number b, Number ratio) {
+		Container<Number> points(n);
+		for (SizeT i = 0; i < n; ++i) {
+			const Number theta = M_PI * static_cast<Number>(2*i) / static_cast<Number>(2*n - 1);
+			const Number x = (theta < M_PI/2 ? 1 : -1) / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
+			points[i] = (1 - x) * (b - a) / 2 + a;
+		}
+		return points;
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> ellipse_proj_no_first(SizeT n, Number a, Number b, Number ratio) {
+		Container<Number> points(n);
+		for (SizeT i = 0; i < n; ++i) {
+			const Number theta = M_PI * static_cast<Number>(2*i + 1) / static_cast<Number>(2*n - 1);
+			const Number x = (theta < M_PI/2 ? 1 : -1) / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
+			points[i] = (1 - x) * (b - a) / 2 + a;
+		}
 		return points;
 	}
 
@@ -264,14 +310,22 @@ namespace alfi::dist {
 			return chebyshev(n, a, b);
 		case Type::CHEBYSHEV_STRETCHED:
 			return chebyshev_stretched(n, a, b);
+		case Type::CIRCLE_PROJ:
+			return circle_proj(n, a, b);
+		case Type::CIRCLE_PROJ_NO_LAST:
+			return circle_proj_no_last(n, a, b);
+		case Type::CIRCLE_PROJ_NO_FIRST:
+			return circle_proj_no_first(n, a, b);
 		case Type::CHEBYSHEV_ELLIPSE:
 			return chebyshev_ellipse(n, a, b, parameter);
 		case Type::CHEBYSHEV_ELLIPSE_STRETCHED:
 			return chebyshev_ellipse_stretched(n, a, b, parameter);
-		case Type::CIRCLE_PROJECTION:
-			return circle_proj(n, a, b);
-		case Type::ELLIPSE_PROJECTION:
+		case Type::ELLIPSE_PROJ:
 			return ellipse_proj(n, a, b, parameter);
+		case Type::ELLIPSE_PROJ_NO_LAST:
+			return ellipse_proj_no_last(n, a, b, parameter);
+		case Type::ELLIPSE_PROJ_NO_FIRST:
+			return ellipse_proj_no_first(n, a, b, parameter);
 		case Type::LOGISTIC:
 			return logistic(n, a, b, parameter);
 		case Type::LOGISTIC_STRETCHED:

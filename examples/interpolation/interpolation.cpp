@@ -85,7 +85,9 @@ public:
 	PlotWindow() {
 		static const QStringList distribution_types {
 			"Uniform", "Quadratic", "Cubic", "Chebyshev", "Stretched Chebyshev",
-			"Chebyshev Ellipse", "Stretched Chebyshev Ellipse", "Circle Projection", "Ellipse Projection",
+			"Circle Projection", "Circle Projection Without Last", "Circle Projection Without First",
+			"Chebyshev Ellipse", "Stretched Chebyshev Ellipse", "Ellipse Projection",
+			"Ellipse Projection Without Last", "Ellipse Projection Without First",
 			"Logistic", "Stretched Logistic", "Error Function", "Stretched Error Function"
 		};
 
@@ -278,10 +280,14 @@ private:
 			case alfi::dist::Type::CUBIC: X = alfi::dist::cubic(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV: X = alfi::dist::chebyshev(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_STRETCHED: X = alfi::dist::chebyshev_stretched(N, a, b); break;
+			case alfi::dist::Type::CIRCLE_PROJ: X = alfi::dist::circle_proj(N, a, b); break;
+			case alfi::dist::Type::CIRCLE_PROJ_NO_LAST: X = alfi::dist::circle_proj_no_last(N, a, b); break;
+			case alfi::dist::Type::CIRCLE_PROJ_NO_FIRST: X = alfi::dist::circle_proj_no_first(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE: X = alfi::dist::chebyshev_ellipse(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_STRETCHED: X = alfi::dist::chebyshev_ellipse_stretched(N, a, b, 2.0); break;
-			case alfi::dist::Type::CIRCLE_PROJECTION: X = alfi::dist::circle_proj(N, a, b); break;
-			case alfi::dist::Type::ELLIPSE_PROJECTION: X = alfi::dist::ellipse_proj(N, a, b, 2.0); break;
+			case alfi::dist::Type::ELLIPSE_PROJ: X = alfi::dist::ellipse_proj(N, a, b, 2.0); break;
+			case alfi::dist::Type::ELLIPSE_PROJ_NO_LAST: X = alfi::dist::ellipse_proj_no_last(N, a, b, 2.0); break;
+			case alfi::dist::Type::ELLIPSE_PROJ_NO_FIRST: X = alfi::dist::ellipse_proj_no_first(N, a, b, 2.0); break;
 			case alfi::dist::Type::LOGISTIC: X = alfi::dist::logistic(N, a, b, 16.0); break;
 			case alfi::dist::Type::LOGISTIC_STRETCHED: X = alfi::dist::logistic_stretched(N, a, b, 16.0); break;
 			case alfi::dist::Type::ERF: X = alfi::dist::erf(N, a, b, 8.0); break;
