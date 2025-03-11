@@ -16,8 +16,8 @@ public:
 	PlotWindow() {
 		static const VariableParams<int> n_params = {7, 1, 40, 1};
 
-		static const VariableParams<double> a_params = {0.0, 0.0, 100.0, 0.01};
-		static const VariableParams<double> b_params = {1.0, 0.0, 100.0, 0.01};
+		static const VariableParams<double> a_params = {0.0, -100.0, 100.0, 0.01};
+		static const VariableParams<double> b_params = {1.0, -100.0, 100.0, 0.01};
 		static const VariableParams<double> ratio_params = {2.0, 0.0, 4.0, 0.01};
 		static const VariableParams<double> steepness_params = {8.0, 0.0, 10.0, 0.01};
 
@@ -178,7 +178,7 @@ private:
 		const size_t n = _n_spin_box->value();
 		const double a = _a_spin_box->value();
 		const double b = _b_spin_box->value();
-		const double B = _ratio_spin_box->value();
+		const double ratio = _ratio_spin_box->value();
 		const double steepness = _steepness_spin_box->value();
 
 		const QVector<std::pair<QString, std::vector<double>>> distributions = {
@@ -187,10 +187,10 @@ private:
 			{"Cubic", alfi::dist::cubic(n, a, b)},
 			{"Chebyshev", alfi::dist::chebyshev(n, a, b)},
 			{"Stretched Chebyshev", alfi::dist::chebyshev_stretched(n, a, b)},
-			{"Circle Projection", alfi::dist::circle_proj(n, a, b)},
-			{"Chebyshev Ellipse", alfi::dist::chebyshev_ellipse(n, a, b, B)},
-			{"Stretched Chebyshev Ellipse", alfi::dist::chebyshev_ellipse_stretched(n, a, b, B)},
-			{"Ellipse Projection", alfi::dist::ellipse_proj(n, a, b, B)},
+			{"Chebyshev Second Kind", alfi::dist::chebyshev_2(n, a, b)},
+			{"Chebyshev Ellipse", alfi::dist::chebyshev_ellipse(n, a, b, ratio)},
+			{"Stretched Chebyshev Ellipse", alfi::dist::chebyshev_ellipse_stretched(n, a, b, ratio)},
+			{"Chebyshev Ellipse Second Kind", alfi::dist::chebyshev_ellipse_2(n, a, b, ratio)},
 			{"Logistic", alfi::dist::logistic(n, a, b, steepness)},
 			{"Stretched Logistic", alfi::dist::logistic_stretched(n, a, b, steepness)},
 			{"Error function", alfi::dist::erf(n, a, b, steepness)},

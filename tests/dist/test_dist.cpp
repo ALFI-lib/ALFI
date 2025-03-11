@@ -54,6 +54,18 @@ TEST(DistributionsTest, ChebyshevStretched) {
 	test_distribution("chebyshev_stretched", alfi::dist::Type::CHEBYSHEV_STRETCHED, 1e-11);
 }
 
+TEST(DistributionsTest, Chebyshev2) {
+	test_distribution("chebyshev_2", alfi::dist::Type::CHEBYSHEV_2, 1e-11);
+}
+
+TEST(DistributionsTest, Chebyshev3) {
+	test_distribution("chebyshev_3", alfi::dist::Type::CHEBYSHEV_3, 1e-15);
+}
+
+TEST(DistributionsTest, Chebyshev4) {
+	test_distribution("chebyshev_4", alfi::dist::Type::CHEBYSHEV_4, 1e-15);
+}
+
 TEST(DistributionsTest, ChebyshevEllipse) {
 	test_distribution("chebyshev_ellipse", alfi::dist::Type::CHEBYSHEV_ELLIPSE, 1e-14);
 }
@@ -62,12 +74,16 @@ TEST(DistributionsTest, ChebyshevEllipseStretched) {
 	test_distribution("chebyshev_ellipse_stretched", alfi::dist::Type::CHEBYSHEV_ELLIPSE_STRETCHED, 1e-11);
 }
 
-TEST(DistributionsTest, CircleProjection) {
-	test_distribution("circle_proj", alfi::dist::Type::CIRCLE_PROJ, 1e-11);
+TEST(DistributionsTest, ChebyshevEllipse2) {
+	test_distribution("chebyshev_ellipse_2", alfi::dist::Type::CHEBYSHEV_ELLIPSE_2, 1e-14);
 }
 
-TEST(DistributionsTest, EllipseProjection) {
-	test_distribution("ellipse_proj", alfi::dist::Type::ELLIPSE_PROJ, 1e-14);
+TEST(DistributionsTest, ChebyshevEllipse3) {
+	test_distribution("chebyshev_ellipse_3", alfi::dist::Type::CHEBYSHEV_ELLIPSE_3, 1e-13);
+}
+
+TEST(DistributionsTest, ChebyshevEllipse4) {
+	test_distribution("chebyshev_ellipse_4", alfi::dist::Type::CHEBYSHEV_ELLIPSE_4, 1e-14);
 }
 
 TEST(DistributionsTest, Logistic) {

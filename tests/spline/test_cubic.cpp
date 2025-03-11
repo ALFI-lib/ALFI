@@ -18,7 +18,7 @@ TEST(CubicSplineTest, BasicConditions) {
 	const double a = -1, b = 1;
 	const auto X = alfi::dist::uniform(n, a, b);
 	const auto dX = alfi::util::arrays::diff(X);
-	const auto Y = alfi::dist::circle_proj(n, a, b);
+	const auto Y = alfi::dist::chebyshev_2(n, a, b);
 	auto spline = alfi::spline::CubicSpline<>(X, Y, alfi::spline::CubicSpline<>::Types::Natural{});
 	EXPECT_NEAR(0, 2*spline.coeffs()[1], 1e-17);
 	EXPECT_NEAR(0, 2*spline.coeffs()[4*8+1] + 6*spline.coeffs()[4*8]*dX[8], 1e-15);
@@ -53,7 +53,7 @@ TEST(CubicSplineTest, CustomConditions) {
 	const double a = -1, b = 1;
 	const auto X = alfi::dist::uniform(n, a, b);
 	const auto dX = alfi::util::arrays::diff(X);
-	const auto Y = alfi::dist::circle_proj(n, a, b);
+	const auto Y = alfi::dist::chebyshev_2(n, a, b);
 	auto spline = alfi::spline::CubicSpline<>();
 	// one point
 	for (size_t i = 0; i < n; ++i) {

@@ -28,7 +28,7 @@ TEST(LagrangeTest, Functions) {
 		[](double x) { return std::exp(x); },
 		1e-6);
 	test_case(
-		alfi::dist::circle_proj(31, -2*M_PI, 2*M_PI),
+		alfi::dist::chebyshev_2(31, -2*M_PI, 2*M_PI),
 		alfi::dist::uniform(10, -2*M_PI, 2*M_PI),
 		[](double x) { return std::sin(x) + std::cos(x); },
 		2e-2);
