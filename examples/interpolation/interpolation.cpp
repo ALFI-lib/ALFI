@@ -84,10 +84,10 @@ public:
 
 	PlotWindow() {
 		static const QStringList distribution_types {
-			"Uniform", "Quadratic", "Cubic", "Chebyshev", "Stretched Chebyshev",
+			"Uniform", "Quadratic", "Cubic", "Chebyshev", "Stretched Chebyshev", "Augmented Chebyshev",
 			"Chebyshev Second Kind", "Chebyshev Third Kind", "Chebyshev Fourth Kind",
-			"Chebyshev Ellipse", "Stretched Chebyshev Ellipse", "Chebyshev Ellipse Second Kind",
-			"Chebyshev Ellipse Third Kind", "Chebyshev Ellipse Fourth Kind",
+			"Chebyshev Ellipse", "Stretched Chebyshev Ellipse", "Augmented Chebyshev Ellipse",
+			"Chebyshev Ellipse Second Kind", "Chebyshev Ellipse Third Kind", "Chebyshev Ellipse Fourth Kind",
 			"Logistic", "Stretched Logistic", "Error Function", "Stretched Error Function"
 		};
 
@@ -280,11 +280,13 @@ private:
 			case alfi::dist::Type::CUBIC: X = alfi::dist::cubic(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV: X = alfi::dist::chebyshev(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_STRETCHED: X = alfi::dist::chebyshev_stretched(N, a, b); break;
+			case alfi::dist::Type::CHEBYSHEV_AUGMENTED: X = alfi::dist::chebyshev_augmented(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_2: X = alfi::dist::chebyshev_2(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_3: X = alfi::dist::chebyshev_3(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_4: X = alfi::dist::chebyshev_4(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE: X = alfi::dist::chebyshev_ellipse(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_STRETCHED: X = alfi::dist::chebyshev_ellipse_stretched(N, a, b, 2.0); break;
+			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_AUGMENTED: X = alfi::dist::chebyshev_ellipse_augmented(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_2: X = alfi::dist::chebyshev_ellipse_2(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_3: X = alfi::dist::chebyshev_ellipse_3(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_4: X = alfi::dist::chebyshev_ellipse_4(N, a, b, 2.0); break;

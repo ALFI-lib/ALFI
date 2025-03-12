@@ -57,6 +57,12 @@ namespace alfi::misc {
 			for (SizeT j = 0; j < N; ++j) {
 				W[j] = (j % 2 == 0 ? 1 : -1) * std::sin(((2 * static_cast<Number>(j) + 1) * M_PI) / (2 * static_cast<Number>(N)));
 			}
+		} else if (dist_type == dist::Type::CHEBYSHEV_AUGMENTED) {
+			W[0] = 1 / static_cast<Number>(2);
+			for (SizeT j = 1; j < N - 1; ++j) {
+				W[j] = (j % 2 == 0 ? 1 : -1) / ((N - 2) * std::sin(((static_cast<Number>(2*j - 1) * M_PI) / static_cast<Number>(2*N - 4))));
+			}
+			W[N-1] = (N % 2 == 0 ? -1 : 1) / static_cast<Number>(2);
 		} else if (dist_type == dist::Type::CHEBYSHEV_2) {
 			for (SizeT j = 0; j < N; ++j) {
 				W[j] = (j % 2 == 0 ? 1 : -1);

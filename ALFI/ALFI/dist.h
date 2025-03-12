@@ -13,11 +13,13 @@ namespace alfi::dist {
 		CUBIC,
 		CHEBYSHEV,
 		CHEBYSHEV_STRETCHED,
+		CHEBYSHEV_AUGMENTED,
 		CHEBYSHEV_2,
 		CHEBYSHEV_3,
 		CHEBYSHEV_4,
 		CHEBYSHEV_ELLIPSE,
 		CHEBYSHEV_ELLIPSE_STRETCHED,
+		CHEBYSHEV_ELLIPSE_AUGMENTED,
 		CHEBYSHEV_ELLIPSE_2,
 		CHEBYSHEV_ELLIPSE_3,
 		CHEBYSHEV_ELLIPSE_4,
@@ -115,6 +117,22 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> chebyshev_augmented(SizeT n, Number a, Number b) {
+		if (n == 0) {
+			return {};
+		}
+		if (n == 1) {
+			return {(a+b)/2};
+		}
+		Container<Number> points(n);
+		Container<Number> c = chebyshev(n - 2, a, b);
+		std::move(c.begin(), c.end(), points.begin() + 1);
+		points[0] = a;
+		points[n-1] = b;
+		return points;
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> chebyshev_2(SizeT n, Number a, Number b) {
 		if (n == 1)
 			return {(a+b)/2};
@@ -163,6 +181,22 @@ namespace alfi::dist {
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> chebyshev_ellipse_stretched(SizeT n, Number a, Number b, Number ratio) {
 		return points::stretched<Number,Container>(chebyshev_ellipse(n, a, b, ratio), a, b);
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> chebyshev_ellipse_augmented(SizeT n, Number a, Number b, Number ratio) {
+		if (n == 0) {
+			return {};
+		}
+		if (n == 1) {
+			return {(a+b)/2};
+		}
+		Container<Number> points(n);
+		Container<Number> c = chebyshev_ellipse(n - 2, a, b, ratio);
+		std::move(c.begin(), c.end(), points.begin() + 1);
+		points[0] = a;
+		points[n-1] = b;
+		return points;
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
@@ -310,6 +344,8 @@ namespace alfi::dist {
 			return chebyshev(n, a, b);
 		case Type::CHEBYSHEV_STRETCHED:
 			return chebyshev_stretched(n, a, b);
+		case Type::CHEBYSHEV_AUGMENTED:
+			return chebyshev_augmented(n, a, b);
 		case Type::CHEBYSHEV_2:
 			return chebyshev_2(n, a, b);
 		case Type::CHEBYSHEV_3:
@@ -320,6 +356,8 @@ namespace alfi::dist {
 			return chebyshev_ellipse(n, a, b, parameter);
 		case Type::CHEBYSHEV_ELLIPSE_STRETCHED:
 			return chebyshev_ellipse_stretched(n, a, b, parameter);
+		case Type::CHEBYSHEV_ELLIPSE_AUGMENTED:
+			return chebyshev_ellipse_augmented(n, a, b, parameter);
 		case Type::CHEBYSHEV_ELLIPSE_2:
 			return chebyshev_ellipse_2(n, a, b, parameter);
 		case Type::CHEBYSHEV_ELLIPSE_3:
