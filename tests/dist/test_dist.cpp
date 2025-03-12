@@ -54,6 +54,10 @@ TEST(DistributionsTest, ChebyshevStretched) {
 	test_distribution("chebyshev_stretched", alfi::dist::Type::CHEBYSHEV_STRETCHED, 1e-11);
 }
 
+TEST(DistributionsTest, ChebyshevAugmented) {
+	test_distribution("chebyshev_augmented", alfi::dist::Type::CHEBYSHEV_AUGMENTED, 1e-15);
+}
+
 TEST(DistributionsTest, Chebyshev2) {
 	test_distribution("chebyshev_2", alfi::dist::Type::CHEBYSHEV_2, 1e-11);
 }
@@ -72,6 +76,10 @@ TEST(DistributionsTest, ChebyshevEllipse) {
 
 TEST(DistributionsTest, ChebyshevEllipseStretched) {
 	test_distribution("chebyshev_ellipse_stretched", alfi::dist::Type::CHEBYSHEV_ELLIPSE_STRETCHED, 1e-11);
+}
+
+TEST(DistributionsTest, ChebyshevEllipseAugmented) {
+	test_distribution("chebyshev_ellipse_augmented", alfi::dist::Type::CHEBYSHEV_ELLIPSE_AUGMENTED, 1e-14);
 }
 
 TEST(DistributionsTest, ChebyshevEllipse2) {
