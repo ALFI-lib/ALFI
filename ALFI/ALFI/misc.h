@@ -53,7 +53,7 @@ namespace alfi::misc {
 			// for (SizeT j = 0; j < N; ++j) {
 			// 	W[j] /= norm_factor;
 			// }
-		} else if (dist_type == dist::Type::CHEBYSHEV) {
+		} else if (dist_type == dist::Type::CHEBYSHEV || dist_type == dist::Type::CHEBYSHEV_STRETCHED) {
 			for (SizeT j = 0; j < N; ++j) {
 				W[j] = (j % 2 == 0 ? 1 : -1) * std::sin(((2 * static_cast<Number>(j) + 1) * M_PI) / (2 * static_cast<Number>(N)));
 			}
