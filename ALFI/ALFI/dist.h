@@ -16,13 +16,17 @@ namespace alfi::dist {
 		CHEBYSHEV_AUGMENTED,
 		CHEBYSHEV_2,
 		CHEBYSHEV_3,
+		CHEBYSHEV_3_STRETCHED,
 		CHEBYSHEV_4,
+		CHEBYSHEV_4_STRETCHED,
 		CHEBYSHEV_ELLIPSE,
 		CHEBYSHEV_ELLIPSE_STRETCHED,
 		CHEBYSHEV_ELLIPSE_AUGMENTED,
 		CHEBYSHEV_ELLIPSE_2,
 		CHEBYSHEV_ELLIPSE_3,
+		CHEBYSHEV_ELLIPSE_3_STRETCHED,
 		CHEBYSHEV_ELLIPSE_4,
+		CHEBYSHEV_ELLIPSE_4_STRETCHED,
 		LOGISTIC,
 		LOGISTIC_STRETCHED,
 		ERF,
@@ -155,6 +159,11 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> chebyshev_3_stretched(SizeT n, Number a, Number b) {
+		return points::stretched<Number,Container>(chebyshev_3(n, a, b), a, b);
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> chebyshev_4(SizeT n, Number a, Number b) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
@@ -162,6 +171,11 @@ namespace alfi::dist {
 			points[i] = a + (b - a) * x / 2;
 		}
 		return points;
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> chebyshev_4_stretched(SizeT n, Number a, Number b) {
+		return points::stretched<Number,Container>(chebyshev_4(n, a, b), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
@@ -225,6 +239,11 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> chebyshev_ellipse_3_stretched(SizeT n, Number a, Number b, Number ratio) {
+		return points::stretched<Number,Container>(chebyshev_ellipse_3(n, a, b, ratio), a, b);
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> chebyshev_ellipse_4(SizeT n, Number a, Number b, Number ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
@@ -233,6 +252,11 @@ namespace alfi::dist {
 			points[i] = (1 - x) * (b - a) / 2 + a;
 		}
 		return points;
+	}
+
+	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
+	Container<Number> chebyshev_ellipse_4_stretched(SizeT n, Number a, Number b, Number ratio) {
+		return points::stretched<Number,Container>(chebyshev_ellipse_4(n, a, b, ratio), a, b);
 	}
 
 	/**
@@ -350,8 +374,12 @@ namespace alfi::dist {
 			return chebyshev_2(n, a, b);
 		case Type::CHEBYSHEV_3:
 			return chebyshev_3(n, a, b);
+		case Type::CHEBYSHEV_3_STRETCHED:
+			return chebyshev_3_stretched(n, a, b);
 		case Type::CHEBYSHEV_4:
 			return chebyshev_4(n, a, b);
+		case Type::CHEBYSHEV_4_STRETCHED:
+			return chebyshev_4_stretched(n, a, b);
 		case Type::CHEBYSHEV_ELLIPSE:
 			return chebyshev_ellipse(n, a, b, parameter);
 		case Type::CHEBYSHEV_ELLIPSE_STRETCHED:
@@ -362,8 +390,12 @@ namespace alfi::dist {
 			return chebyshev_ellipse_2(n, a, b, parameter);
 		case Type::CHEBYSHEV_ELLIPSE_3:
 			return chebyshev_ellipse_3(n, a, b, parameter);
+		case Type::CHEBYSHEV_ELLIPSE_3_STRETCHED:
+			return chebyshev_ellipse_3_stretched(n, a, b, parameter);
 		case Type::CHEBYSHEV_ELLIPSE_4:
 			return chebyshev_ellipse_4(n, a, b, parameter);
+		case Type::CHEBYSHEV_ELLIPSE_4_STRETCHED:
+			return chebyshev_ellipse_4_stretched(n, a, b, parameter);
 		case Type::LOGISTIC:
 			return logistic(n, a, b, parameter);
 		case Type::LOGISTIC_STRETCHED:

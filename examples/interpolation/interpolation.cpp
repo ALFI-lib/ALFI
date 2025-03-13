@@ -84,10 +84,10 @@ public:
 
 	PlotWindow() {
 		static const QStringList distribution_types {
-			"Uniform", "Quadratic", "Cubic", "Chebyshev", "Stretched Chebyshev", "Augmented Chebyshev",
-			"Chebyshev Second Kind", "Chebyshev Third Kind", "Chebyshev Fourth Kind",
-			"Chebyshev Ellipse", "Stretched Chebyshev Ellipse", "Augmented Chebyshev Ellipse",
-			"Chebyshev Ellipse Second Kind", "Chebyshev Ellipse Third Kind", "Chebyshev Ellipse Fourth Kind",
+			"Uniform", "Quadratic", "Cubic", "Chebyshev", "Stretched Chebyshev", "Augmented Chebyshev", "Chebyshev Second Kind",
+			"Chebyshev Third Kind", "Stretched Chebyshev Third Kind", "Chebyshev Fourth Kind", "Stretched Chebyshev Fourth Kind",
+			"Chebyshev Ellipse", "Stretched Chebyshev Ellipse", "Augmented Chebyshev Ellipse", "Chebyshev Ellipse Second Kind",
+			"Chebyshev Ellipse Third Kind", "Stretched Chebyshev Ellipse Third Kind", "Chebyshev Ellipse Fourth Kind", "Stretched Chebyshev Ellipse Fourth Kind",
 			"Logistic", "Stretched Logistic", "Error Function", "Stretched Error Function"
 		};
 
@@ -283,13 +283,17 @@ private:
 			case alfi::dist::Type::CHEBYSHEV_AUGMENTED: X = alfi::dist::chebyshev_augmented(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_2: X = alfi::dist::chebyshev_2(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_3: X = alfi::dist::chebyshev_3(N, a, b); break;
+			case alfi::dist::Type::CHEBYSHEV_3_STRETCHED: X = alfi::dist::chebyshev_3_stretched(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_4: X = alfi::dist::chebyshev_4(N, a, b); break;
+			case alfi::dist::Type::CHEBYSHEV_4_STRETCHED: X = alfi::dist::chebyshev_4_stretched(N, a, b); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE: X = alfi::dist::chebyshev_ellipse(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_STRETCHED: X = alfi::dist::chebyshev_ellipse_stretched(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_AUGMENTED: X = alfi::dist::chebyshev_ellipse_augmented(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_2: X = alfi::dist::chebyshev_ellipse_2(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_3: X = alfi::dist::chebyshev_ellipse_3(N, a, b, 2.0); break;
+			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_3_STRETCHED: X = alfi::dist::chebyshev_ellipse_3_stretched(N, a, b, 2.0); break;
 			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_4: X = alfi::dist::chebyshev_ellipse_4(N, a, b, 2.0); break;
+			case alfi::dist::Type::CHEBYSHEV_ELLIPSE_4_STRETCHED: X = alfi::dist::chebyshev_ellipse_4_stretched(N, a, b, 2.0); break;
 			case alfi::dist::Type::LOGISTIC: X = alfi::dist::logistic(N, a, b, 16.0); break;
 			case alfi::dist::Type::LOGISTIC_STRETCHED: X = alfi::dist::logistic_stretched(N, a, b, 16.0); break;
 			case alfi::dist::Type::ERF: X = alfi::dist::erf(N, a, b, 8.0); break;

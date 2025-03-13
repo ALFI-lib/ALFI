@@ -70,14 +70,14 @@ namespace alfi::misc {
 					W[j] /= 2;
 				}
 			}
-		} else if (dist_type == dist::Type::CHEBYSHEV_3) {
+		} else if (dist_type == dist::Type::CHEBYSHEV_3 || dist_type == dist::Type::CHEBYSHEV_3_STRETCHED) {
 			for (SizeT j = 0; j < N; ++j) {
 				W[j] = (j % 2 == 0 ? 1 : -1) * std::cos((static_cast<Number>(2*j) * M_PI) / static_cast<Number>(2*N - 1) / 2);
 				if (j == 0) {
 					W[j] /= 2;
 				}
 			}
-		} else if (dist_type == dist::Type::CHEBYSHEV_4) {
+		} else if (dist_type == dist::Type::CHEBYSHEV_4 || dist_type == dist::Type::CHEBYSHEV_4_STRETCHED) {
 			for (SizeT j = 0; j < N; ++j) {
 				W[j] = (j % 2 == 0 ? 1 : -1) * std::sin((static_cast<Number>(2*j + 1) * M_PI) / static_cast<Number>(2*N - 1) / 2);
 				if (j == N - 1) {
