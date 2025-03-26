@@ -17,9 +17,7 @@ endmacro()
 
 add_test_executable(test_dist dist/test_dist.cpp)
 
-add_test_executable(test_lagrange poly/test_lagrange.cpp poly/test_case.h)
-add_test_executable(test_imp_lagrange poly/test_imp_lagrange.cpp poly/test_case.h)
-add_test_executable(test_newton poly/test_newton.cpp poly/test_case.h)
+add_test_executable(test_poly poly/test_poly.cpp)
 
 add_test_executable(test_barycentric misc/test_barycentric.cpp)
 
