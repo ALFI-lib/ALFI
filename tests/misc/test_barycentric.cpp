@@ -1,35 +1,39 @@
-#include <gtest/gtest.h>
-
-#include <cmath>
-#include <vector>
-
 #include <ALFI/misc.h>
 
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y,
-			   const std::vector<Number>& xx,
-			   alfi::dist::Type dist_type,
-			   const std::vector<Number>& yy) {
-	EXPECT_EQ(alfi::misc::barycentric(X, Y, xx, dist_type), yy);
+#include "../test_utils.h"
+
+void test_barycentric(const toml::parse_result& test_data, double epsilon) {
+	const auto& test_cases = test_data["test_cases"].ref<toml::array>();
+
+	test_cases.for_each([&](const toml::table& test_case) {
+		const auto& X = to_vector<double>(test_case["X"].ref<toml::array>());
+		const auto& Y = to_vector<double>(test_case["Y"].ref<toml::array>());
+		const auto& xx = to_vector<double>(test_case["xx"].ref<toml::array>());
+		const auto& dist = test_case["dist"].ref<std::string>();
+		const auto& yy = to_vector<double>(test_case["yy"].ref<toml::array>());
+
+		const auto& dist_type
+			= dist == "uniform" ?
+				alfi::dist::Type::UNIFORM
+			: dist == "chebyshev" ?
+				alfi::dist::Type::CHEBYSHEV
+			: dist == "chebyshev_2" ?
+				alfi::dist::Type::CHEBYSHEV_2
+			: alfi::dist::Type::GENERAL;
+
+		expect_eq(alfi::misc::barycentric(X, Y, xx, dist_type), yy, epsilon);
+	});
 }
 
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y, const std::vector<Number>& xx, const std::vector<Number>& yy) {
-	EXPECT_EQ(alfi::misc::barycentric(X, Y, xx), yy);
+// barycentric formula can also be tested on the polynomial data
+TEST(BarycentricTest, PolynomialData) {
+	const auto polynomial_test_data_path = TEST_DATA_DIR "/poly/poly.toml";
+	const auto polynomial_test_data = toml::parse_file(polynomial_test_data_path);
+	test_barycentric(polynomial_test_data, 1e-12);
 }
 
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y, alfi::dist::Type dist_type) {
-	EXPECT_EQ(alfi::misc::barycentric(X, Y, X, dist_type), Y);
-}
-
-template <typename Number>
-void test_case(const std::vector<Number>& X, const std::vector<Number>& Y) {
-	EXPECT_EQ(alfi::misc::barycentric(X, Y, X), Y);
-}
-
-TEST(BarycentricTest, Basic) {
-	test_case<double>({0, 1, 2}, {0, 0, 0});
-	test_case<double>({0, 1, 2}, {1, 1, 1});
-	test_case<double>({0, 1, 2}, {1, 2, 3});
+TEST(BarycentricTest, BarycentricData) {
+	const auto barycentric_test_data_path = TEST_DATA_DIR "/misc/barycentric.toml";
+	const auto barycentric_test_data = toml::parse_file(barycentric_test_data_path);
+	test_barycentric(barycentric_test_data, 1e-13);
 }
