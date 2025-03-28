@@ -1,6 +1,40 @@
-#include <gtest/gtest.h>
-
 #include <ALFI/spline/step.h>
+
+#include "../test_utils.h"
+
+const auto test_data_path = TEST_DATA_DIR "/spline/step.toml";
+
+const auto test_data = toml::parse_file(test_data_path);
+
+void test_step_spline(double epsilon) {
+	const auto& test_cases = test_data["test_cases"].ref<toml::array>();
+
+	test_cases.for_each([&](const toml::table& test_case) {
+		const auto& type = test_case["type"].ref<std::string>();
+		const auto& X = to_vector<double>(test_case["X"].ref<toml::array>());
+		const auto& Y = to_vector<double>(test_case["Y"].ref<toml::array>());
+		const auto& xx = to_vector<double>(test_case["xx"].ref<toml::array>());
+		const auto& yy = to_vector<double>(test_case["yy"].ref<toml::array>());
+
+		const auto t = [&]() -> alfi::spline::StepSpline<>::Type {
+			if (type == "left") {
+				return alfi::spline::StepSpline<>::Types::Left{};
+			} else if (type == "middle") {
+				return alfi::spline::StepSpline<>::Types::Middle{};
+			} else if (type == "right") {
+				return alfi::spline::StepSpline<>::Types::Right{};
+			} else {
+				throw std::runtime_error{"Unexpected type:" + type};
+			}
+		}();
+
+		expect_eq(alfi::spline::StepSpline<>(X, Y, t).eval(xx), yy, epsilon);
+	});
+}
+
+TEST(StepSplineTest, TestData) {
+	test_step_spline(1e-15);
+}
 
 TEST(StepSplineTest, General) {
 	const std::vector<double> X = {0, 1, 2, 3};

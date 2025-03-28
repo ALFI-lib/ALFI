@@ -1,5 +1,3 @@
-#include <gtest/gtest.h>
-
 #include <ALFI/dist.h>
 
 #include "../test_utils.h"

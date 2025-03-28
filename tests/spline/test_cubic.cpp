@@ -1,7 +1,41 @@
-#include <gtest/gtest.h>
-
-#include <ALFI/dist.h>
 #include <ALFI/spline/cubic.h>
+#include <ALFI/dist.h>
+
+#include "../test_utils.h"
+
+const auto test_data_path = TEST_DATA_DIR "/spline/cubic.toml";
+
+const auto test_data = toml::parse_file(test_data_path);
+
+void test_cubic_spline(double epsilon_coeffs, double epsilon_values) {
+	const auto& test_cases = test_data["test_cases"].ref<toml::array>();
+
+	test_cases.for_each([&](const toml::table& test_case) {
+		const auto& type = test_case["type"].ref<std::string>();
+		const auto& X = to_vector<double>(test_case["X"].ref<toml::array>());
+		const auto& Y = to_vector<double>(test_case["Y"].ref<toml::array>());
+		const auto& coeffs = to_vector<double>(test_case["coeffs"].ref<toml::array>());
+		const auto& xx = to_vector<double>(test_case["xx"].ref<toml::array>());
+		const auto& yy = to_vector<double>(test_case["yy"].ref<toml::array>());
+
+		const auto t = [&]() {
+			if (type == "not-a-knot") {
+				return alfi::spline::CubicSpline<>::Types::NotAKnot{};
+			} else {
+				throw std::runtime_error{"Unexpected type:" + type};
+			}
+		}();
+
+		const auto spline = alfi::spline::CubicSpline<>(X, Y, t);
+		expect_eq(spline.coeffs(), coeffs, epsilon_coeffs);
+		const auto values = spline.eval(xx);
+		expect_eq(values, yy, epsilon_values);
+	});
+}
+
+TEST(CubicSplineTest, TestData) {
+	test_cubic_spline(1e-10, 1e-14);
+}
 
 TEST(CubicSplineTest, General) {
 	const std::vector<double> X = {0, 1, 2, 3};

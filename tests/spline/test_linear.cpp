@@ -1,6 +1,31 @@
-#include <gtest/gtest.h>
-
 #include <ALFI/spline/linear.h>
+
+#include "../test_utils.h"
+
+const auto test_data_path = TEST_DATA_DIR "/spline/linear.toml";
+
+const auto test_data = toml::parse_file(test_data_path);
+
+void test_linear_spline(double epsilon_coeffs, double epsilon_values) {
+	const auto& test_cases = test_data["test_cases"].ref<toml::array>();
+
+	test_cases.for_each([&](const toml::table& test_case) {
+		const auto& X = to_vector<double>(test_case["X"].ref<toml::array>());
+		const auto& Y = to_vector<double>(test_case["Y"].ref<toml::array>());
+		const auto& coeffs = to_vector<double>(test_case["coeffs"].ref<toml::array>());
+		const auto& xx = to_vector<double>(test_case["xx"].ref<toml::array>());
+		const auto& yy = to_vector<double>(test_case["yy"].ref<toml::array>());
+
+		const auto spline = alfi::spline::LinearSpline<>(X, Y);
+		expect_eq(spline.coeffs(), coeffs, epsilon_coeffs);
+		const auto values = spline.eval(xx);
+		expect_eq(values, yy, epsilon_values);
+	});
+}
+
+TEST(LinearSplineTest, TestData) {
+	test_linear_spline(1e-14, 1e-14);
+}
 
 TEST(LinearSplineTest, General) {
 	const std::vector<double> X = {0, 1, 2, 3};
