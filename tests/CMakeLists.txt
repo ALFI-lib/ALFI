@@ -21,6 +21,8 @@ add_test_executable(test_poly poly/test_poly.cpp)
 
 add_test_executable(test_barycentric misc/test_barycentric.cpp)
 
+add_test_executable(test_polyeqv spline/test_polyeqv.cpp)
+
 add_test_executable(test_step spline/test_step.cpp)
 add_test_executable(test_linear spline/test_linear.cpp)
 add_test_executable(test_quadratic spline/test_quadratic.cpp)
