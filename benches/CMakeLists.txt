@@ -15,6 +15,7 @@ endmacro()
 
 add_bench_executable(bench_poly poly/bench_poly.cpp)
 add_bench_executable(bench_barycentric misc/bench_barycentric.cpp)
+add_bench_executable(bench_polyeqv spline/bench_polyeqv.cpp)
 add_bench_executable(bench_step spline/bench_step.cpp)
 add_bench_executable(bench_linear spline/bench_linear.cpp)
 add_bench_executable(bench_quadratic spline/bench_quadratic.cpp)
