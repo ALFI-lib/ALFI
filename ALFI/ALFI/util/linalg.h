@@ -45,7 +45,7 @@ namespace alfi::util::linalg {
 					i_max = k;
 				}
 			}
-			if (max_a < epsilon) {
+			if (max_a <= epsilon) {
 				std::cerr << "Error in function " << __FUNCTION__ << ": Matrix A is degenerate. Returning an empty array..." << std::endl;
 				return {};
 			}
