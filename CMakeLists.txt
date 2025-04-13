@@ -20,11 +20,21 @@ set(CMAKE_CXX_FLAGS_SANITIZE "-g3 -fsanitize=address,leak,undefined")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(ALFI_ENABLE_EXAMPLES "Enable examples subdirectory for the ALFI library" ${PROJECT_IS_TOP_LEVEL})
+option(ALFI_ENABLE_TESTS "Enable tests subdirectory for the ALFI library" ${PROJECT_IS_TOP_LEVEL})
+option(ALFI_ENABLE_BENCHES "Enable benches subdirectory for the ALFI library" ${PROJECT_IS_TOP_LEVEL})
+
 add_subdirectory(ALFI)
 
-add_subdirectory(examples)
+if(ALFI_ENABLE_EXAMPLES)
+	add_subdirectory(examples)
+endif()
 
-enable_testing()
-add_subdirectory(tests)
+if(ALFI_ENABLE_TESTS)
+	enable_testing()
+	add_subdirectory(tests)
+endif()
 
-add_subdirectory(benches)
+if(ALFI_ENABLE_BENCHES)
+	add_subdirectory(benches)
+endif()
