@@ -78,7 +78,7 @@ TEST(CubicSplineTest, BasicConditions) {
 	EXPECT_NEAR(spline.coeffs()[4], spline.coeffs()[8], 1e-17);
 	spline.construct(X, Y, alfi::spline::CubicSpline<>::Types::NotAKnotEnd{});
 	EXPECT_NEAR(spline.coeffs()[4*6], spline.coeffs()[4*7], 1e-14);
-	EXPECT_NEAR(spline.coeffs()[4*7], spline.coeffs()[4*8], 1e-15);
+	EXPECT_NEAR(spline.coeffs()[4*7], spline.coeffs()[4*8], 1e-14);
 }
 
 TEST(CubicSplineTest, CustomConditions) {

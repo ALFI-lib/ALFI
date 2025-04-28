@@ -161,10 +161,10 @@ namespace alfi::spline {
 			_coeffs = std::move(coeffs);
 		}
 
-		Number eval(Number x) const {
+		Number eval(const Number& x) const {
 			return eval(x, std::distance(_X.begin(), util::misc::first_leq_or_begin(_X.begin(), _X.end(), x)));
 		}
-		Number eval(Number x, SizeT segment) const {
+		Number eval(const Number& x, SizeT segment) const {
 			if (_coeffs.empty()) {
 				return NAN;
 			} else if (_coeffs.size() == 1) {
@@ -173,7 +173,7 @@ namespace alfi::spline {
 
 			segment = std::clamp(segment, static_cast<SizeT>(0), static_cast<SizeT>(_X.size() - 2));
 
-			x = x - _X[segment];
+			const Number x_seg = x - _X[segment];
 
 			const SizeT n = _X.size();
 
@@ -191,7 +191,7 @@ namespace alfi::spline {
 			}
 
 			for (SizeT i = 1; i < n; ++i) {
-				result *= x;
+				result *= x_seg;
 				Number current = _coeffs[segment*n+i];
 				if (std::isnan(current)) {
 					switch (_evaluation_type) {
@@ -215,7 +215,7 @@ namespace alfi::spline {
 			Container<Number> result(xx.size());
 			if (sorted) {
 				for (SizeT i = 0, i_x = 0; i < xx.size(); ++i) {
-					const Number x = xx[i];
+					const Number& x = xx[i];
 					while (i_x + 1 < _X.size() && x >= _X[i_x+1])
 						++i_x;
 					result[i] = eval(x, i_x);
@@ -228,7 +228,7 @@ namespace alfi::spline {
 			return result;
 		}
 
-		Number operator()(Number x) const {
+		Number operator()(const Number& x) const {
 			return eval(x);
 		}
 		Container<Number> operator()(const Container<Number>& xx) const {

@@ -35,7 +35,7 @@ namespace alfi::ratf {
 	*/
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	std::enable_if_t<!traits::has_size<Number>::value, Number>
-	val_mul(const RationalFunction<Number, Container>& rf, Number x) {
+	val_mul(const RationalFunction<Number, Container>& rf, const Number& x) {
 		Number n = 0;
 		for (const auto& c : rf.first) {
 			n = n * x + c;
@@ -73,7 +73,7 @@ namespace alfi::ratf {
 	*/
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	std::enable_if_t<!traits::has_size<Number>::value, Number>
-	val_div(const RationalFunction<Number, Container>& rf, Number x) {
+	val_div(const RationalFunction<Number, Container>& rf, const Number& x) {
 		const auto& numerator = rf.first;
 		const auto& denominator = rf.second;
 		Number n = 0;
@@ -116,7 +116,7 @@ namespace alfi::ratf {
 	*/
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	std::enable_if_t<!traits::has_size<Number>::value, Number>
-	val(const RationalFunction<Number, Container>& rf, Number x) {
+	val(const RationalFunction<Number, Container>& rf, const Number& x) {
 		if (std::abs(x) <= 1) {
 			return val_mul(rf, x);
 		} else {
@@ -167,7 +167,7 @@ namespace alfi::ratf {
 		@return a pair `{numerator, denominator}` representing the Pade approximant; if an approximant does not exist, an empty pair is returned
 	 */
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	RationalFunction<Number,Container> pade(Container<Number> P, SizeT n, SizeT m, Number epsilon = std::numeric_limits<Number>::epsilon()) {
+	RationalFunction<Number,Container> pade(Container<Number> P, SizeT n, SizeT m, const Number& epsilon = std::numeric_limits<Number>::epsilon()) {
 		if constexpr (std::is_signed_v<SizeT>) {
 			if (n < 0 || m < 0) {
 				return {{}, {}};

@@ -13,7 +13,7 @@ namespace alfi::misc {
 			const Container<Number>& Y,
 			const Container<Number>& xx,
 			dist::Type dist_type = dist::Type::GENERAL,
-			Number epsilon = std::numeric_limits<Number>::epsilon()
+			const Number& epsilon = std::numeric_limits<Number>::epsilon()
 	) {
 		if (X.size() != Y.size()) {
 			std::cerr << "Error in function " << __FUNCTION__

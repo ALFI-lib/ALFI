@@ -31,7 +31,7 @@ namespace alfi::util::linalg {
 		@return the solution vector or an empty container if the matrix is degenerate
 	 */
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> lup_solve(Container<Container<Number>>&& A, Container<Number>&& B, Number epsilon = std::numeric_limits<Number>::epsilon()) {
+	Container<Number> lup_solve(Container<Container<Number>>&& A, Container<Number>&& B, const Number& epsilon = std::numeric_limits<Number>::epsilon()) {
 		const auto n = B.size();
 		assert(n == A.size());
 		for (SizeT i = 0; i < n; ++i) {

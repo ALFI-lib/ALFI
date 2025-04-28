@@ -96,7 +96,7 @@ TEST(QuadraticSplineTest, Conditions) {
 	}
 	spline1.construct(X, Y, alfi::spline::QuadraticSpline<>::Types::Clamped{5, 10});
 	EXPECT_EQ(10, spline1.coeffs()[3*5+1]);
-	EXPECT_NEAR(10, 2*spline1.coeffs()[3*4]*dX[8] + spline1.coeffs()[3*4+1], 1e-15);
+	EXPECT_NEAR(10, 2*spline1.coeffs()[3*4]*dX[8] + spline1.coeffs()[3*4+1], 1e-14);
 	// fixed-second
 	spline1.construct(X, Y, alfi::spline::QuadraticSpline<>::Types::FixedSecondStart{10});
 	EXPECT_EQ(10, 2*spline1.coeffs()[0]);

@@ -34,7 +34,7 @@ namespace alfi::dist {
 	};
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> uniform(SizeT n, Number a, Number b) {
+	Container<Number> uniform(SizeT n, const Number& a, const Number& b) {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
@@ -63,7 +63,7 @@ namespace alfi::dist {
 		@return a container with \p n points distributed on the segment `[a, b]` according to the transform function
 	*/
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> quadratic(SizeT n, Number a, Number b) {
+	Container<Number> quadratic(SizeT n, const Number& a, const Number& b) {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
@@ -91,7 +91,7 @@ namespace alfi::dist {
 		@return a container with \p n points distributed on the segment `[a, b]` according to the transform function
 	*/
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> cubic(SizeT n, Number a, Number b) {
+	Container<Number> cubic(SizeT n, const Number& a, const Number& b) {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
@@ -104,7 +104,7 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev(SizeT n, Number a, Number b) {
+	Container<Number> chebyshev(SizeT n, const Number& a, const Number& b) {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
@@ -116,12 +116,12 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_stretched(SizeT n, Number a, Number b) {
+	Container<Number> chebyshev_stretched(SizeT n, const Number& a, const Number& b) {
 		return points::stretched<Number,Container>(chebyshev(n, a, b), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_augmented(SizeT n, Number a, Number b) {
+	Container<Number> chebyshev_augmented(SizeT n, const Number& a, const Number& b) {
 		if (n == 0) {
 			return {};
 		}
@@ -137,7 +137,7 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_2(SizeT n, Number a, Number b) {
+	Container<Number> chebyshev_2(SizeT n, const Number& a, const Number& b) {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
@@ -149,7 +149,7 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_3(SizeT n, Number a, Number b) {
+	Container<Number> chebyshev_3(SizeT n, const Number& a, const Number& b) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
 			const Number x = 1 - std::cos(M_PI * static_cast<Number>(2*i) / static_cast<Number>(2*n - 1));
@@ -159,12 +159,12 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_3_stretched(SizeT n, Number a, Number b) {
+	Container<Number> chebyshev_3_stretched(SizeT n, const Number& a, const Number& b) {
 		return points::stretched<Number,Container>(chebyshev_3(n, a, b), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_4(SizeT n, Number a, Number b) {
+	Container<Number> chebyshev_4(SizeT n, const Number& a, const Number& b) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
 			const Number x = 1 - std::cos(M_PI * static_cast<Number>(2*i + 1) / static_cast<Number>(2*n - 1));
@@ -174,12 +174,12 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_4_stretched(SizeT n, Number a, Number b) {
+	Container<Number> chebyshev_4_stretched(SizeT n, const Number& a, const Number& b) {
 		return points::stretched<Number,Container>(chebyshev_4(n, a, b), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_ellipse(SizeT n, Number a, Number b, Number ratio) {
+	Container<Number> chebyshev_ellipse(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n / 2; ++i) {
 			const Number theta = M_PI * (2 * static_cast<Number>(i) + 1) / (2 * static_cast<Number>(n));
@@ -193,12 +193,12 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_ellipse_stretched(SizeT n, Number a, Number b, Number ratio) {
+	Container<Number> chebyshev_ellipse_stretched(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		return points::stretched<Number,Container>(chebyshev_ellipse(n, a, b, ratio), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_ellipse_augmented(SizeT n, Number a, Number b, Number ratio) {
+	Container<Number> chebyshev_ellipse_augmented(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		if (n == 0) {
 			return {};
 		}
@@ -214,7 +214,7 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_ellipse_2(SizeT n, Number a, Number b, Number ratio) {
+	Container<Number> chebyshev_ellipse_2(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n / 2; ++i) {
 			const Number theta = M_PI * static_cast<Number>(i) / (static_cast<Number>(n) - 1);
@@ -228,7 +228,7 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_ellipse_3(SizeT n, Number a, Number b, Number ratio) {
+	Container<Number> chebyshev_ellipse_3(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
 			const Number theta = M_PI * static_cast<Number>(2*i) / static_cast<Number>(2*n - 1);
@@ -239,12 +239,12 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_ellipse_3_stretched(SizeT n, Number a, Number b, Number ratio) {
+	Container<Number> chebyshev_ellipse_3_stretched(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		return points::stretched<Number,Container>(chebyshev_ellipse_3(n, a, b, ratio), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_ellipse_4(SizeT n, Number a, Number b, Number ratio) {
+	Container<Number> chebyshev_ellipse_4(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
 			const Number theta = M_PI * static_cast<Number>(2*i + 1) / static_cast<Number>(2*n - 1);
@@ -255,7 +255,7 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> chebyshev_ellipse_4_stretched(SizeT n, Number a, Number b, Number ratio) {
+	Container<Number> chebyshev_ellipse_4_stretched(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		return points::stretched<Number,Container>(chebyshev_ellipse_4(n, a, b, ratio), a, b);
 	}
 
@@ -283,7 +283,7 @@ namespace alfi::dist {
 		@return a container with \p n points distributed on the interval `(a, b)` according to the transform function
 	*/
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> logistic(SizeT n, Number a, Number b, Number steepness) {
+	Container<Number> logistic(SizeT n, const Number& a, const Number& b, const Number& steepness) {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
@@ -296,7 +296,7 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> logistic_stretched(SizeT n, Number a, Number b, Number steepness) {
+	Container<Number> logistic_stretched(SizeT n, const Number& a, const Number& b, const Number& steepness) {
 		if (n == 0)
 			return {};
 		if (n == 1)
@@ -338,7 +338,7 @@ namespace alfi::dist {
 		@return a container with \p n points distributed on the interval `(a, b)` according to the transform function
 	*/
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> erf(SizeT n, Number a, Number b, Number steepness) {
+	Container<Number> erf(SizeT n, const Number& a, const Number& b, const Number& steepness) {
 		if (n == 0)
 			return {};
 		if (n == 1)
@@ -353,12 +353,12 @@ namespace alfi::dist {
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> erf_stretched(SizeT n, Number a, Number b, Number steepness) {
+	Container<Number> erf_stretched(SizeT n, const Number& a, const Number& b, const Number& steepness) {
 		return points::stretched<Number,Container>(erf(n, a, b, steepness), a, b);
 	}
 
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	Container<Number> of_type(Type type, SizeT n, Number a, Number b, Number parameter = NAN) {
+	Container<Number> of_type(Type type, SizeT n, const Number& a, const Number& b, const Number& parameter = NAN) {
 		switch (type) {
 		case Type::QUADRATIC:
 			return quadratic(n, a, b);

@@ -298,25 +298,25 @@ namespace alfi::spline {
 			_coeffs = std::move(coeffs);
 		}
 
-		Number eval(Number x) const {
+		Number eval(const Number& x) const {
 			return eval(x, std::distance(_X.begin(), util::misc::first_leq_or_begin(_X.begin(), _X.end(), x)));
 		}
-		Number eval(Number x, SizeT segment) const {
+		Number eval(const Number& x, SizeT segment) const {
 			if (_coeffs.empty()) {
 				return NAN;
 			} else if (_coeffs.size() == 1) {
 				return _coeffs[0];
 			}
 			segment = std::clamp(segment, static_cast<SizeT>(0), static_cast<SizeT>(_X.size() - 2));
-			x = x - _X[segment];
-			return (_coeffs[3*segment] * x + _coeffs[3*segment+1]) * x + _coeffs[3*segment+2];
+			const Number x_seg = x - _X[segment];
+			return (_coeffs[3*segment] * x_seg + _coeffs[3*segment+1]) * x_seg + _coeffs[3*segment+2];
 		}
 
 		Container<Number> eval(const Container<Number>& xx, bool sorted = true) const {
 			Container<Number> result(xx.size());
 			if (sorted) {
 				for (SizeT i = 0, i_x = 0; i < xx.size(); ++i) {
-					const Number x = xx[i];
+					const Number& x = xx[i];
 					while (i_x + 1 < _X.size() && x >= _X[i_x+1])
 						++i_x;
 					result[i] = eval(x, i_x);
@@ -329,7 +329,7 @@ namespace alfi::spline {
 			return result;
 		}
 
-		Number operator()(Number x) const {
+		Number operator()(const Number& x) const {
 			return eval(x);
 		}
 		Container<Number> operator()(const Container<Number>& xx) const {

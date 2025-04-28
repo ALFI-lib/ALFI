@@ -9,7 +9,7 @@
 namespace alfi::poly {
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	std::enable_if_t<!traits::has_size<Number>::value, Number>
-	val(const Container<Number>& coeffs, Number x) {
+	val(const Container<Number>& coeffs, const Number& x) {
 		Number result = 0;
 		for (const Number& c : coeffs) {
 			result = result * x + c;
@@ -187,7 +187,7 @@ namespace alfi::poly {
 			const Container<Number>& X,
 			const Container<Number>& Y,
 			const Container<Number>& xx,
-			Number epsilon = std::numeric_limits<Number>::epsilon()
+			const Number& epsilon = std::numeric_limits<Number>::epsilon()
 	) {
 		const auto nn = xx.size();
 

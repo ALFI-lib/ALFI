@@ -24,7 +24,7 @@ namespace alfi::util::poly {
 		@param epsilon the tolerance used to determine whether a coefficient is considered zero (default is machine epsilon)
 	 */
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	void normalize(Container<Number>& p, Number epsilon = std::numeric_limits<Number>::epsilon()) {
+	void normalize(Container<Number>& p, const Number& epsilon = std::numeric_limits<Number>::epsilon()) {
 		if (p.empty()) {
 			return p.push_back(0);
 		}
@@ -87,7 +87,7 @@ namespace alfi::util::poly {
 		@return a pair `{quotient, remainder}`
 	 */
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
-	std::pair<Container<Number>,Container<Number>> div(const Container<Number>& dividend, const Container<Number>& divisor, Number epsilon = std::numeric_limits<Number>::epsilon()) {
+	std::pair<Container<Number>,Container<Number>> div(const Container<Number>& dividend, const Container<Number>& divisor, const Number& epsilon = std::numeric_limits<Number>::epsilon()) {
 		const auto divisor_start = std::find_if(divisor.begin(), divisor.end(), [&epsilon](Number v) { return std::abs(v) > epsilon; });
 
 		if (divisor_start == divisor.end() || dividend.size() < divisor.size()) {
