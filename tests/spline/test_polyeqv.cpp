@@ -6,7 +6,7 @@ const auto test_data_path = TEST_DATA_DIR "/poly/poly.toml";
 
 const auto test_data = toml::parse_file(test_data_path);
 
-void test_polyeqv_spline(double epsilon) {
+void test_polyeqv_spline(double epsilon_accuracy, double epsilon_speed) {
 	const auto& test_cases = test_data["test_cases"].ref<toml::array>();
 
 	test_cases.for_each([&](const toml::table& test_case) {
@@ -15,12 +15,13 @@ void test_polyeqv_spline(double epsilon) {
 		const auto& xx = to_vector<double>(test_case["xx"].ref<toml::array>());
 		const auto& yy = to_vector<double>(test_case["yy"].ref<toml::array>());
 
-		expect_eq(alfi::spline::PolyEqvSpline<>(X, Y).eval(xx), yy, epsilon);
+		expect_eq(alfi::spline::PolyEqvSpline<>(X, Y, alfi::spline::PolyEqvSpline<>::OptimizationType::ACCURACY).eval(xx), yy, epsilon_accuracy);
+		expect_eq(alfi::spline::PolyEqvSpline<>(X, Y, alfi::spline::PolyEqvSpline<>::OptimizationType::SPEED).eval(xx), yy, epsilon_speed);
 	});
 }
 
 TEST(PolyEqvSplineTest, PolynomialData) {
-	test_polyeqv_spline(1e-10);
+	test_polyeqv_spline(1e-10, 1e-2);
 }
 
 TEST(PolyEqvSplineTest, General) {

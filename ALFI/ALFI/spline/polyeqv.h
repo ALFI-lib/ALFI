@@ -90,33 +90,17 @@ namespace alfi::spline {
 						case PolynomialType::IMPROVED_LAGRANGE: P = poly::imp_lagrange(X, Y); break;
 						case PolynomialType::NEWTON: P = poly::newton(X, Y); break;
 					}
-
-					const static auto binomials = [](SizeT m) {
-						Container<Container<Number>> C(m + 1);
-						for (SizeT i = 0; i <= m; ++i) {
-							C[i].resize(i + 1);
-							C[i][0] = C[i][i] = 1;
-							for (SizeT j = 1; j <= i / 2; ++j) {
-								C[i][j] = C[i][i-j] = C[i-1][j-1] + C[i-1][j];
-							}
-						}
-						return C;
-					};
-
-					const auto C = binomials(n - 1);
-
 #if defined(_OPENMP) && !defined(ALFI_DISABLE_OPENMP)
 #pragma omp parallel for
 #endif
 					for (SizeT i = 0; i < n - 1; ++i) {
-						coeffs[i*n] = P[0];
-						for (SizeT k = 1; k < n - 1; ++k) {
-							Number r = 0;
-							for (SizeT j = 0; j < k; ++j) {
-								r += ((((k - j) & 1) == 0) ? 1 : -1) * coeffs[i*n+j] * C[n-1-j][k-j];
-								r *= X[i];
+						for (SizeT j = 0; j < n; ++j) {
+							coeffs[i*n+j] = P[j];
+						}
+						for (SizeT k = 0; k < n - 1; ++k) {
+							for (SizeT j = 1; j < n - k; ++j) {
+								coeffs[i*n+j] += coeffs[i*n+j-1] * X[i];
 							}
-							coeffs[i*n+k] = P[k] - r;
 						}
 						coeffs[i*n+n-1] = Y[i];
 					}
@@ -129,11 +113,16 @@ namespace alfi::spline {
 		PolyEqvSpline() = default;
 
 		template <typename ContainerXType>
+		PolyEqvSpline(ContainerXType&& X, const Container<Number>& Y, OptimizationType optimization_type)
+			: PolyEqvSpline(std::forward<ContainerXType>(X), Y, PolynomialType::Default, optimization_type) {}
+
+		template <typename ContainerXType>
 		PolyEqvSpline(ContainerXType&& X,
 					  const Container<Number>& Y,
 					  PolynomialType polynomial_type = PolynomialType::Default,
-					  OptimizationType optimization_type = OptimizationType::Default) {
-			construct(std::forward<ContainerXType>(X), Y, polynomial_type, optimization_type);
+					  OptimizationType optimization_type = OptimizationType::Default,
+					  EvaluationType evaluation_type = EvaluationType::Default) {
+			construct(std::forward<ContainerXType>(X), Y, polynomial_type, optimization_type, evaluation_type);
 		}
 
 		PolyEqvSpline(const PolyEqvSpline& other) = default;
