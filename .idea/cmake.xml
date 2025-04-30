@@ -3,12 +3,13 @@
   <component name="CMakeSharedSettings">
     <configurations>
       <configuration PROFILE_NAME="Debug" ENABLED="true" GENERATION_DIR="build/debug" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Sanitize" ENABLED="true" GENERATION_DIR="build/sanitize" CONFIG_NAME="Sanitize" />
+      <configuration PROFILE_NAME="FastBuild" ENABLED="true" GENERATION_DIR="build/fastbuild" CONFIG_NAME="FastBuild" />
       <configuration PROFILE_NAME="Release" ENABLED="true" GENERATION_DIR="build/release" CONFIG_NAME="Release" />
       <configuration PROFILE_NAME="RelWithDebInfo" ENABLED="true" GENERATION_DIR="build/relwithdebinfo" CONFIG_NAME="RelWithDebInfo" />
       <configuration PROFILE_NAME="MinSizeRel" ENABLED="true" GENERATION_DIR="build/minsizerel" CONFIG_NAME="MinSizeRel" />
       <configuration PROFILE_NAME="Fast" ENABLED="true" GENERATION_DIR="build/fast" CONFIG_NAME="Fast" />
       <configuration PROFILE_NAME="FastParallel" ENABLED="true" GENERATION_DIR="build/fastparallel" CONFIG_NAME="FastParallel" />
-      <configuration PROFILE_NAME="Sanitize" ENABLED="true" GENERATION_DIR="build/sanitize" CONFIG_NAME="Sanitize" />
     </configurations>
   </component>
 </project>
