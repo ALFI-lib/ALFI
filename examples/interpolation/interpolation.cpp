@@ -82,6 +82,28 @@ public:
 	};
 	static const inline size_t cubic_spline_default_type_index = 0;
 
+	static const inline std::vector<std::pair<QString,alfi::spline::HermiteSpline<>::Type>> hermite_spline_types = {
+		{"Classic", alfi::spline::HermiteSpline<>::Types::Classic{}},
+		{"Cardinal", alfi::spline::HermiteSpline<>::Types::Cardinal{0.2}},
+		{"CatmullRom", alfi::spline::HermiteSpline<>::Types::CatmullRom{}},
+		{"Akima", alfi::spline::HermiteSpline<>::Types::Akima{}},
+		{"ModifiedAkima", alfi::spline::HermiteSpline<>::Types::ModifiedAkima{}},
+		{"Steffen", alfi::spline::HermiteSpline<>::Types::Steffen{}},
+		{"Zero", alfi::spline::HermiteSpline<>::Types::Zero{}},
+		// No Explicit - X.size() is unknown
+	};
+	static const inline size_t hermite_spline_default_type_index = 0;
+	static const inline std::vector<std::pair<QString,alfi::spline::HermiteSpline<>::BoundariesType>> hermite_spline_boundaries_types = {
+		{"Inherit", alfi::spline::HermiteSpline<>::Boundaries::Inherit{}},
+		{"Linear", alfi::spline::HermiteSpline<>::Boundaries::Linear{}},
+		{"Quadratic", alfi::spline::HermiteSpline<>::Boundaries::Quadratic{}},
+		{"Cubic", alfi::spline::HermiteSpline<>::Boundaries::Cubic{}},
+		{"Polynomial(4)", alfi::spline::HermiteSpline<>::Boundaries::Polynomial{4}},
+		{"Clamped", alfi::spline::HermiteSpline<>::Boundaries::Clamped{10, 0}},
+		{"Periodic", alfi::spline::HermiteSpline<>::Boundaries::Periodic{}},
+	};
+	static const inline size_t hermite_spline_default_boundaries_type_index = 0;
+
 	PlotWindow() {
 		static const QStringList distribution_types {
 			"Uniform", "Quadratic", "Cubic", "Chebyshev", "Stretched Chebyshev", "Augmented Chebyshev", "Chebyshev Second Kind",
@@ -123,6 +145,7 @@ public:
 		_linear_spline_checkbox = new QCheckBox("Linear Spline");
 		_quadratic_spline_checkbox = new QCheckBox("Quadratic Spline");
 		_cubic_spline_checkbox = new QCheckBox("Cubic Spline");
+		_hermite_spline_checkbox = new QCheckBox("Hermite Spline");
 
 		_function_checkbox->setChecked(true);
 		_points_checkbox->setChecked(true);
@@ -155,6 +178,17 @@ public:
 		}
 		_cubic_spline_combo->setCurrentIndex(cubic_spline_default_type_index);
 
+		_hermite_spline_combo = new QComboBox();
+		for (const auto& name : hermite_spline_types | std::views::keys) {
+			_hermite_spline_combo->addItem(name);
+		}
+		_hermite_spline_combo->setCurrentIndex(hermite_spline_default_type_index);
+		_hermite_spline_boundaries_combo = new QComboBox();
+		for (const auto& name : hermite_spline_boundaries_types | std::views::keys) {
+			_hermite_spline_boundaries_combo->addItem(name);
+		}
+		_hermite_spline_boundaries_combo->setCurrentIndex(hermite_spline_default_boundaries_type_index);
+
 		_view_reset_button = new QPushButton("Reset View");
 
 		connect(_n_spin_box, QOverload<int>::of(&QSpinBox::valueChanged), this, &PlotWindow::update_plot);
@@ -165,11 +199,11 @@ public:
 
 		for (const auto checkbox : {
 			_function_checkbox, _points_checkbox, _poly_checkbox, _pade_checkbox, _barycentric_checkbox, _poly_eqv_spline_checkbox,
-			_step_spline_checkbox, _linear_spline_checkbox, _quadratic_spline_checkbox, _cubic_spline_checkbox}) {
+			_step_spline_checkbox, _linear_spline_checkbox, _quadratic_spline_checkbox, _cubic_spline_checkbox, _hermite_spline_checkbox}) {
 			connect(checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
 		}
 
-		for (const auto combo : {_distribution_combo, _poly_combo, _barycentric_combo, _step_spline_combo, _quadratic_spline_combo, _cubic_spline_combo}) {
+		for (const auto combo : {_distribution_combo, _poly_combo, _barycentric_combo, _step_spline_combo, _quadratic_spline_combo, _cubic_spline_combo, _hermite_spline_combo, _hermite_spline_boundaries_combo}) {
 			connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PlotWindow::update_plot);
 		}
 
@@ -223,6 +257,9 @@ public:
 		interpolation_layout->addWidget(_quadratic_spline_combo);
 		interpolation_layout->addWidget(_cubic_spline_checkbox);
 		interpolation_layout->addWidget(_cubic_spline_combo);
+		interpolation_layout->addWidget(_hermite_spline_checkbox);
+		interpolation_layout->addWidget(_hermite_spline_combo);
+		interpolation_layout->addWidget(_hermite_spline_boundaries_combo);
 
 		control_layout->addLayout(n_layout);
 		control_layout->addLayout(a_b_layout);
@@ -367,6 +404,9 @@ private:
 		if (_cubic_spline_checkbox->isChecked()) {
 			add_graph("Cubic Spline", xx, alfi::spline::CubicSpline<>(X, Y, cubic_spline_types[_cubic_spline_combo->currentIndex()].second)(xx));
 		}
+		if (_hermite_spline_checkbox->isChecked()) {
+			add_graph("Hermite Spline", xx, alfi::spline::HermiteSpline<>(X, Y, hermite_spline_types[_hermite_spline_combo->currentIndex()].second, hermite_spline_boundaries_types[_hermite_spline_boundaries_combo->currentIndex()].second)(xx));
+		}
 
 		if (_default_axis_ranges) {
 			_default_axis_ranges = false;
@@ -399,12 +439,15 @@ private:
 	QCheckBox* _linear_spline_checkbox;
 	QCheckBox* _quadratic_spline_checkbox;
 	QCheckBox* _cubic_spline_checkbox;
+	QCheckBox* _hermite_spline_checkbox;
 	QComboBox* _distribution_combo;
 	QComboBox* _poly_combo;
 	QComboBox* _barycentric_combo;
 	QComboBox* _step_spline_combo;
 	QComboBox* _quadratic_spline_combo;
 	QComboBox* _cubic_spline_combo;
+	QComboBox* _hermite_spline_combo;
+	QComboBox* _hermite_spline_boundaries_combo;
 	QPushButton* _view_reset_button;
 };
 
