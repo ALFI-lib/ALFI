@@ -1,12 +1,31 @@
 set(CMAKE_CXX_STANDARD 23)
 
-set(ORIGINAL_CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
-set(CMAKE_BUILD_TYPE Release)
-set(BENCHMARK_ENABLE_INSTALL OFF)
-set(BENCHMARK_ENABLE_TESTING OFF)
-set(BENCHMARK_ENABLE_LTO ON)
-add_subdirectory(deps/benchmark)
-set(CMAKE_BUILD_TYPE "${ORIGINAL_CMAKE_BUILD_TYPE}")
+include(ExternalProject)
+
+set(BENCHMARK_BUILD_DIR "${CMAKE_BINARY_DIR}/benches/deps/benchmark")
+
+ExternalProject_Add(benchmark
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps/benchmark"
+	BINARY_DIR "${BENCHMARK_BUILD_DIR}"
+	CMAKE_ARGS
+		-DCMAKE_BUILD_TYPE=Release
+		"-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+		-DBENCHMARK_ENABLE_INSTALL=OFF
+		-DBENCHMARK_ENABLE_TESTING=OFF
+		-DBENCHMARK_ENABLE_LTO=ON
+	INSTALL_COMMAND ""
+)
+
+add_library(benchmark::benchmark STATIC IMPORTED)
+
+set_target_properties(benchmark::benchmark PROPERTIES
+	IMPORTED_LOCATION
+		"${BENCHMARK_BUILD_DIR}/src/libbenchmark.a"
+	INTERFACE_INCLUDE_DIRECTORIES
+		"${CMAKE_CURRENT_SOURCE_DIR}/deps/benchmark/include"
+)
+
+add_dependencies(benchmark::benchmark benchmark)
 
 macro(add_bench_executable bench_name)
 	add_executable(${bench_name} ${ARGN} bench_utils.h bench_data.h)
