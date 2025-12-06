@@ -1,0 +1,37 @@
+{
+	"version": 10,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 22
+	},
+	"configurePresets": [
+		{ "name": "Debug", "binaryDir": "${sourceDir}/build/debug", "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" } },
+		{ "name": "Sanitize", "binaryDir": "${sourceDir}/build/sanitize", "cacheVariables": { "CMAKE_BUILD_TYPE": "Sanitize" } },
+		{ "name": "FastBuild", "binaryDir": "${sourceDir}/build/fastbuild", "cacheVariables": { "CMAKE_BUILD_TYPE": "FastBuild" } },
+		{ "name": "Release", "binaryDir": "${sourceDir}/build/release", "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" } },
+		{ "name": "RelWithDebInfo", "binaryDir": "${sourceDir}/build/relwithdebinfo", "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" } },
+		{ "name": "MinSizeRel", "binaryDir": "${sourceDir}/build/minsizerel", "cacheVariables": { "CMAKE_BUILD_TYPE": "MinSizeRel" } },
+		{ "name": "Fast", "binaryDir": "${sourceDir}/build/fast", "cacheVariables": { "CMAKE_BUILD_TYPE": "Fast" } },
+		{ "name": "FastParallel", "binaryDir": "${sourceDir}/build/fastparallel", "cacheVariables": { "CMAKE_BUILD_TYPE": "FastParallel" } }
+	],
+	"buildPresets": [
+		{ "name": "Debug", "configurePreset": "Debug" },
+		{ "name": "Sanitize", "configurePreset": "Sanitize" },
+		{ "name": "FastBuild", "configurePreset": "FastBuild" },
+		{ "name": "Release", "configurePreset": "Release" },
+		{ "name": "RelWithDebInfo", "configurePreset": "RelWithDebInfo" },
+		{ "name": "MinSizeRel", "configurePreset": "MinSizeRel" },
+		{ "name": "Fast", "configurePreset": "Fast" },
+		{ "name": "FastParallel", "configurePreset": "FastParallel" }
+	],
+	"testPresets": [
+		{ "name": "Debug", "configurePreset": "Debug", "output": { "verbosity": "extra" } },
+		{ "name": "Sanitize", "configurePreset": "Sanitize", "output": { "verbosity": "extra" } },
+		{ "name": "FastBuild", "configurePreset": "FastBuild", "output": { "verbosity": "extra" } },
+		{ "name": "Release", "configurePreset": "Release", "output": { "verbosity": "extra" } },
+		{ "name": "RelWithDebInfo", "configurePreset": "RelWithDebInfo", "output": { "verbosity": "extra" } },
+		{ "name": "MinSizeRel", "configurePreset": "MinSizeRel", "output": { "verbosity": "extra" } },
+		{ "name": "Fast", "configurePreset": "Fast", "output": { "verbosity": "extra" } },
+		{ "name": "FastParallel", "configurePreset": "FastParallel", "output": { "verbosity": "extra" } }
+	]
+}

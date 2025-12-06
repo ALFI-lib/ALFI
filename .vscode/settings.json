@@ -51,4 +51,8 @@
 	// Final new line
 	"files.insertFinalNewline": false,
 	"files.trimFinalNewlines": true,
+
+	// PROJECT
+	// clangd
+	"clangd.arguments": ["--compile-commands-dir=build/debug"],
 }
