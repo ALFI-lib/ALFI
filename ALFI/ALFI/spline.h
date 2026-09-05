@@ -4,4 +4,5 @@
 #include "spline/linear.h"
 #include "spline/quadratic.h"
 #include "spline/cubic.h"
+#include "spline/hermite.h"
 #include "spline/polyeqv.h"
