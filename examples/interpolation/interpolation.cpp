@@ -9,25 +9,37 @@ QVector<T> to_qvector(const std::vector<T>& v) {
 	return QVector<T>(v.begin(), v.end());
 }
 
-double f(double x) {
-	// return -3 * std::sin(10 * x) + std::abs(x) + 0.5 * x - x * x; // example 1
-	return -3 * std::sin(10 * x) + 10 * std::sin(std::abs(x) + 0.5 * x); // example 2
-	// return std::sin(3 * M_PI * x) + std::cos(M_PI * x / 5); // periodic
-	// return 1/(1+std::exp(-10000*(x-1))) - 1/(1+std::exp(-10000*(x+1))); // high local second derivative
-}
-
-template <typename Container>
-Container f(const Container& X) {
-	Container Y;
-	Y.reserve(X.size());
-	for (const auto& x : X) {
-		Y.push_back(f(x));
-	}
-	return Y;
+template <typename F, typename Container>
+Container eval_function(const F& function, const Container& xx) {
+	const auto transformed = xx | std::views::transform(function);
+	return Container(transformed.begin(), transformed.end());
 }
 
 class PlotWindow final : public QWidget {
 public:
+	static const inline std::vector<std::pair<QString,std::function<std::vector<double>(std::vector<double>)>>>
+	functions = {
+		{"sin(x)", [](const auto& xx) {
+			return eval_function([](auto x) { return std::sin(x); }, xx);
+		}},
+		{"exp(x)", [](const auto& xx) {
+			return eval_function([](auto x) { return std::exp(x); }, xx);
+		}},
+		{"sin(3πx) + cos(πx/5)", [](const auto& xx) {
+			return eval_function([](auto x) { return std::sin(3 * M_PI * x) + std::cos(M_PI * x / 5); }, xx);
+		}},
+		{"-3sin(10x) + abs(x) + x/2 - x^2", [](const auto& xx) {
+			return eval_function([](auto x) { return -3 * std::sin(10 * x) + std::abs(x) + 0.5 * x - x * x; }, xx);
+		}},
+		{"-3sin(10x) + 10sin(abs(x) + x/2)", [](const auto& xx) {
+			return eval_function([](auto x) { return -3 * std::sin(10 * x) + 10 * std::sin(std::abs(x) + 0.5 * x); }, xx);
+		}},
+		{"1/(1 + exp(-10000(x-1))) - 1/(1 + exp(-10000(x+1)))", [](const auto& xx) {
+			return eval_function([](auto x) { return 1/(1+std::exp(-10000*(x-1))) - 1/(1+std::exp(-10000*(x+1))); }, xx);
+		}},
+	};
+	static const inline size_t function_default_index = 0;
+
 	static const inline std::vector<std::pair<QString,std::function<std::vector<double>(std::vector<double>,std::vector<double>,std::vector<double>)>>>
 	poly_types = {
 		{"Lagrange", [](const auto& X, const auto& Y, const auto& xx) { return alfi::poly::val(alfi::poly::lagrange(X, Y), xx); }},
@@ -148,6 +160,12 @@ public:
 		_hermite_spline_checkbox = new QCheckBox("Hermite Spline");
 
 		_function_checkbox->setChecked(true);
+		_function_combo = new QComboBox();
+		for (const auto& name : functions | std::views::keys) {
+			_function_combo->addItem(name);
+		}
+		_function_combo->setCurrentIndex(function_default_index);
+
 		_points_checkbox->setChecked(true);
 
 		_poly_combo = new QComboBox();
@@ -203,10 +221,14 @@ public:
 			connect(checkbox, &QCheckBox::toggled, this, &PlotWindow::update_plot);
 		}
 
-		for (const auto combo : {_distribution_combo, _poly_combo, _barycentric_combo, _step_spline_combo, _quadratic_spline_combo, _cubic_spline_combo, _hermite_spline_combo, _hermite_spline_boundaries_combo}) {
+		for (const auto combo : {_distribution_combo, _function_combo, _poly_combo, _barycentric_combo, _step_spline_combo, _quadratic_spline_combo, _cubic_spline_combo, _hermite_spline_combo, _hermite_spline_boundaries_combo}) {
 			connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PlotWindow::update_plot);
 		}
 
+		connect(_function_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int) {
+			_default_axis_ranges = true;
+			update_plot();
+		});
 		connect(_view_reset_button, &QPushButton::clicked, this, [this]() {
 			_default_axis_ranges = true;
 			update_plot();
@@ -243,6 +265,7 @@ public:
 		// ReSharper disable once CppDFAMemoryLeak
 		QVBoxLayout* interpolation_layout = new QVBoxLayout();
 		interpolation_layout->addWidget(_function_checkbox);
+		interpolation_layout->addWidget(_function_combo);
 		interpolation_layout->addWidget(_points_checkbox);
 		interpolation_layout->addWidget(_poly_checkbox);
 		interpolation_layout->addWidget(_poly_combo);
@@ -340,7 +363,7 @@ private:
 			default: return;
 		}
 
-		const auto Y = f(X);
+		const auto Y = functions[_function_combo->currentIndex()].second(X);
 
 		const std::vector<double> xx = alfi::dist::uniform(nn, a, b);
 
@@ -368,7 +391,7 @@ private:
 		};
 
 		if (_function_checkbox->isChecked()) {
-			const auto yy = f(xx);
+			const auto yy = functions[_function_combo->currentIndex()].second(xx);
 			y_min = std::min(y_min, *std::ranges::min_element(yy));
 			y_max = std::max(y_max, *std::ranges::max_element(yy));
 			add_graph("Function", xx, yy);
@@ -441,6 +464,7 @@ private:
 	QCheckBox* _cubic_spline_checkbox;
 	QCheckBox* _hermite_spline_checkbox;
 	QComboBox* _distribution_combo;
+	QComboBox* _function_combo;
 	QComboBox* _poly_combo;
 	QComboBox* _barycentric_combo;
 	QComboBox* _step_spline_combo;
