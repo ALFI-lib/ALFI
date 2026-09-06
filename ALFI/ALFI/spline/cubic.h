@@ -129,7 +129,7 @@ namespace alfi::spline {
 				return {};
 			}
 
-			const SizeT n = X.size();
+			const auto n = X.size();
 
 			if (n <= 1) {
 				return util::spline::simple_spline<Number,Container>(X, Y, 3);
@@ -537,7 +537,7 @@ namespace alfi::spline {
 				return _coeffs[0];
 			}
 			segment = std::clamp(segment, static_cast<SizeT>(0), static_cast<SizeT>(_X.size() - 2));
-			const Number x_seg = x - _X[segment];
+			const auto x_seg = x - _X[segment];
 			return ((_coeffs[4*segment] * x_seg + _coeffs[4*segment+1]) * x_seg + _coeffs[4*segment+2]) * x_seg + _coeffs[4*segment+3];
 		}
 

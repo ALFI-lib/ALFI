@@ -68,8 +68,8 @@ namespace alfi::dist {
 			return {(a+b)/2};
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
-			const Number value = x <= 0 ? x * (x + 2) : -x * (x - 2);
+			const auto x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
+			const auto value = x <= 0 ? x * (x + 2) : -x * (x - 2);
 			points[i] = a + (b - a) * (1 + value) / 2;
 		}
 		return points;
@@ -96,8 +96,8 @@ namespace alfi::dist {
 			return {(a+b)/2};
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
-			const Number value = (3 - x*x) * x / 2;
+			const auto x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
+			const auto value = (3 - x*x) * x / 2;
 			points[i] = a + (b - a) * (1 + value) / 2;
 		}
 		return points;
@@ -109,7 +109,7 @@ namespace alfi::dist {
 			return {(a+b)/2};
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = std::cos(M_PI * (2 * (static_cast<Number>(n) - static_cast<Number>(i)) - 1) / (2 * static_cast<Number>(n)));
+			const auto x = std::cos(M_PI * (2 * (static_cast<Number>(n) - static_cast<Number>(i)) - 1) / (2 * static_cast<Number>(n)));
 			points[i] = a + (x + 1) * (b - a) / 2;
 		}
 		return points;
@@ -142,7 +142,7 @@ namespace alfi::dist {
 			return {(a+b)/2};
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = 1 - std::cos(M_PI * static_cast<Number>(i) / (static_cast<Number>(n) - 1));
+			const auto x = 1 - std::cos(M_PI * static_cast<Number>(i) / (static_cast<Number>(n) - 1));
 			points[i] = a + (b - a) * x / 2;
 		}
 		return points;
@@ -152,7 +152,7 @@ namespace alfi::dist {
 	Container<Number> chebyshev_3(SizeT n, const Number& a, const Number& b) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = 1 - std::cos(M_PI * static_cast<Number>(2*i) / static_cast<Number>(2*n - 1));
+			const auto x = 1 - std::cos(M_PI * static_cast<Number>(2*i) / static_cast<Number>(2*n - 1));
 			points[i] = a + (b - a) * x / 2;
 		}
 		return points;
@@ -167,7 +167,7 @@ namespace alfi::dist {
 	Container<Number> chebyshev_4(SizeT n, const Number& a, const Number& b) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = 1 - std::cos(M_PI * static_cast<Number>(2*i + 1) / static_cast<Number>(2*n - 1));
+			const auto x = 1 - std::cos(M_PI * static_cast<Number>(2*i + 1) / static_cast<Number>(2*n - 1));
 			points[i] = a + (b - a) * x / 2;
 		}
 		return points;
@@ -182,8 +182,8 @@ namespace alfi::dist {
 	Container<Number> chebyshev_ellipse(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n / 2; ++i) {
-			const Number theta = M_PI * (2 * static_cast<Number>(i) + 1) / (2 * static_cast<Number>(n));
-			const Number x = 1 / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
+			const auto theta = M_PI * (2 * static_cast<Number>(i) + 1) / (2 * static_cast<Number>(n));
+			const auto x = 1 / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
 			points[i] = a + (1 - x) * (b - a) / 2;
 			points[n-1-i] = a + (1 + x) * (b - a) / 2;
 		}
@@ -217,8 +217,8 @@ namespace alfi::dist {
 	Container<Number> chebyshev_ellipse_2(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n / 2; ++i) {
-			const Number theta = M_PI * static_cast<Number>(i) / (static_cast<Number>(n) - 1);
-			const Number x = 1 / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
+			const auto theta = M_PI * static_cast<Number>(i) / (static_cast<Number>(n) - 1);
+			const auto x = 1 / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
 			points[i] = (1 - x) * (b - a) / 2 + a;
 			points[n-1-i] = (1 + x) * (b - a) / 2 + a;
 		}
@@ -231,8 +231,8 @@ namespace alfi::dist {
 	Container<Number> chebyshev_ellipse_3(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number theta = M_PI * static_cast<Number>(2*i) / static_cast<Number>(2*n - 1);
-			const Number x = (theta < M_PI/2 ? 1 : -1) / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
+			const auto theta = M_PI * static_cast<Number>(2*i) / static_cast<Number>(2*n - 1);
+			const auto x = (theta < M_PI/2 ? 1 : -1) / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
 			points[i] = (1 - x) * (b - a) / 2 + a;
 		}
 		return points;
@@ -247,8 +247,8 @@ namespace alfi::dist {
 	Container<Number> chebyshev_ellipse_4(SizeT n, const Number& a, const Number& b, const Number& ratio) {
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number theta = M_PI * static_cast<Number>(2*i + 1) / static_cast<Number>(2*n - 1);
-			const Number x = (theta < M_PI/2 ? 1 : -1) / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
+			const auto theta = M_PI * static_cast<Number>(2*i + 1) / static_cast<Number>(2*n - 1);
+			const auto x = (theta < M_PI/2 ? 1 : -1) / std::sqrt(1 + std::pow(std::tan(theta) / ratio, 2));
 			points[i] = (1 - x) * (b - a) / 2 + a;
 		}
 		return points;
@@ -288,8 +288,8 @@ namespace alfi::dist {
 			return {(a+b)/2};
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
-			const Number logisticValue = 1 / (1 + std::exp(-steepness * x));
+			const auto x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
+			const auto logisticValue = 1 / (1 + std::exp(-steepness * x));
 			points[i] = a + (b - a) * logisticValue;
 		}
 		return points;
@@ -302,11 +302,11 @@ namespace alfi::dist {
 		if (n == 1)
 			return {(a+b)/2};
 		Container<Number> points(n);
-		const Number stretch_factor = 1 - 2 / (1 + std::exp(steepness));
+		const auto stretch_factor = 1 - 2 / (1 + std::exp(steepness));
 		for (SizeT i = 1; i < n - 1; ++i) {
-			const Number x = 2 * static_cast<double>(i) / (static_cast<Number>(n) - 1) - 1;
-			const Number logisticValue = 1 / (1 + std::exp(-steepness * x));
-			const Number stretched = (logisticValue - 1 / (1 + std::exp(steepness))) / stretch_factor;
+			const auto x = 2 * static_cast<double>(i) / (static_cast<Number>(n) - 1) - 1;
+			const auto logisticValue = 1 / (1 + std::exp(-steepness * x));
+			const auto stretched = (logisticValue - 1 / (1 + std::exp(steepness))) / stretch_factor;
 			points[i] = a + (b - a) * stretched;
 		}
 		points[0] = a;
@@ -345,8 +345,8 @@ namespace alfi::dist {
 			return {(a+b)/2};
 		Container<Number> points(n);
 		for (SizeT i = 0; i < n; ++i) {
-			const Number x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
-			const Number erf_value = std::erf(steepness * x);
+			const auto x = 2 * static_cast<Number>(i) / (static_cast<Number>(n) - 1) - 1;
+			const auto erf_value = std::erf(steepness * x);
 			points[i] = a + (b - a) * (1 + erf_value) / 2;
 		}
 		return points;

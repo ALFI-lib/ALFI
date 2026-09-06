@@ -137,11 +137,9 @@ namespace alfi::spline {
 				return util::spline::simple_spline<Number,Container>(X, Y, 3);
 			}
 
-			const SizeT interval_count = n - 1;
+			Container<Number> delta(n - 1);
 
-			Container<Number> delta(interval_count);
-
-			for (SizeT i = 0; i < interval_count; ++i) {
+			for (SizeT i = 0; i < n - 1; ++i) {
 				delta[i] = (Y[i+1] - Y[i]) / (X[i+1] - X[i]);
 			}
 
@@ -183,8 +181,8 @@ namespace alfi::spline {
 			} else if (std::holds_alternative<typename Types::Akima>(type) || std::holds_alternative<typename Types::ModifiedAkima>(type)) {
 				// Akima / ModifiedAkima
 				const auto akima = [&](Number d_im2, Number d_im1, Number d_i, Number d_ip1) {
-					Number w1 = std::abs(d_ip1 - d_i);
-					Number w2 = std::abs(d_im1 - d_im2);
+					auto w1 = std::abs(d_ip1 - d_i);
+					auto w2 = std::abs(d_im1 - d_im2);
 					if (std::holds_alternative<typename Types::ModifiedAkima>(type)) {
 						w1 += std::abs(d_ip1 + d_i) / 2;
 						w2 += std::abs(d_im1 + d_im2) / 2;
@@ -200,10 +198,10 @@ namespace alfi::spline {
 					if (n == 2) {
 						derivatives[0] = derivatives[1] = delta[0];
 					} else {
-						const Number delta_n_2 = 3 * delta[0] - 2 * delta[1];
-						const Number delta_n_1 = 2 * delta[0] - delta[1];
-						const Number delta_0 = 2 * delta[n-2] - delta[n-3];
-						const Number delta_1 = 3 * delta[n-2] - 2 * delta[n-3];
+						const auto delta_n_2 = 3 * delta[0] - 2 * delta[1];
+						const auto delta_n_1 = 2 * delta[0] - delta[1];
+						const auto delta_0 = 2 * delta[n-2] - delta[n-3];
+						const auto delta_1 = 3 * delta[n-2] - 2 * delta[n-3];
 						derivatives[0] = akima(delta_n_2, delta_n_1, delta[0], delta[1]);
 						if (n == 3) {
 							derivatives[1] = akima(delta_n_1, delta[0], delta[1], delta_0);
@@ -229,23 +227,23 @@ namespace alfi::spline {
 				// Steffen
 				for (SizeT i = 1; i < n - 1; ++i) {
 					const auto s1 = (delta[i-1] > 0) - (delta[i-1] < 0), s2 = (delta[i] > 0) - (delta[i] < 0);
-					const Number hi_1 = X[i] - X[i-1], hi = X[i+1] - X[i];
+					const auto hi_1 = X[i] - X[i-1], hi = X[i+1] - X[i];
 					derivatives[i] = (s1 + s2) * std::min({std::abs(delta[i-1]), std::abs(delta[i]), std::abs((delta[i-1] * hi_1 + delta[i] * hi) / (hi_1 + hi) / 2)});
 				}
 				if (std::holds_alternative<typename Boundaries::Inherit>(boundaries_type)) {
 					if (n == 2) {
 						derivatives[0] = derivatives[1] = delta[0];
 					} else {
-						const Number p1 = delta[0] * (1 + (X[1] - X[0]) / (X[2] - X[0])) - delta[1] * ((X[1] - X[0]) / (X[2] - X[0]));
+						const auto p1 = delta[0] * (1 + (X[1] - X[0]) / (X[2] - X[0])) - delta[1] * ((X[1] - X[0]) / (X[2] - X[0]));
 						const auto s1 = (delta[0] > 0) - (delta[0] < 0), s2 = (p1 > 0) - (p1 < 0);
 						derivatives[0] = (s1 + s2) * std::min(std::abs(delta[0]), std::abs(p1 / 2));
-						const Number pn = delta[n-2] * (1 + (X[n-1] - X[n-2]) / (X[n-1] - X[n-3])) - delta[n-3] * ((X[n-1] - X[n-2]) / (X[n-1] - X[n-3]));
+						const auto pn = delta[n-2] * (1 + (X[n-1] - X[n-2]) / (X[n-1] - X[n-3])) - delta[n-3] * ((X[n-1] - X[n-2]) / (X[n-1] - X[n-3]));
 						const auto s3 = (delta[n-2] > 0) - (delta[n-2] < 0), s4 = (pn > 0) - (pn < 0);
 						derivatives[n-1] = (s3 + s4) * std::min(std::abs(delta[n-2]), std::abs(pn / 2));
 					}
 				} else if (std::holds_alternative<typename Boundaries::Periodic>(boundaries_type)) {
 					const auto sn_2 = (delta[n-2] > 0) - (delta[n-2] < 0), s0 = (delta[0] > 0) - (delta[0] < 0);
-					const Number hn_2 = X[n-1] - X[n-2], h0 = X[1] - X[0];
+					const auto hn_2 = X[n-1] - X[n-2], h0 = X[1] - X[0];
 					derivatives[0] = derivatives[n-1] = (sn_2 + s0) * std::min({std::abs(delta[n-2]), std::abs(delta[0]), std::abs((delta[n-2] * hn_2 + delta[0] * h0) / (hn_2 + h0) / 2)});
 				}
 			} else if (std::holds_alternative<typename Types::Zero>(type)) {
@@ -269,20 +267,20 @@ namespace alfi::spline {
 					if (degree == 0) {
 						return 0;
 					}
-					const SizeT count = std::min(degree + 1, n);
+					const auto count = std::min(degree + 1, n);
 					if (count < 2) {
 						return 0;
 					}
-					const SizeT first = left ? 0 : n - count;
-					const SizeT last = first + count - 1;
-					const SizeT r = left ? first : last;
+					const auto first = left ? 0 : n - count;
+					const auto last = first + count - 1;
+					const auto r = left ? first : last;
 					Number result = 0;
-					for (SizeT j = first; j <= last; ++j) {
+					for (auto j = first; j <= last; ++j) {
 						if (j == r) {
 							continue;
 						}
-						Number basis_derivative = 1 / (X[j] - X[r]);
-						for (SizeT k = first; k <= last; ++k) {
+						auto basis_derivative = 1 / (X[j] - X[r]);
+						for (auto k = first; k <= last; ++k) {
 							if (k == j || k == r) {
 								continue;
 							}
@@ -323,19 +321,19 @@ namespace alfi::spline {
 			}, boundaries_type);
 
 			Container<Number> coeffs;
-			coeffs.resize(4 * interval_count);
+			coeffs.resize(4 * (n - 1));
 
-			for (SizeT i = 0; i < interval_count; ++i) {
-				const Number h = X[i+1] - X[i];
-				const Number h2 = h * h;
+			for (SizeT i = 0; i < n - 1; ++i) {
+				const auto h = X[i+1] - X[i];
+				const auto h2 = h * h;
 
-				const Number m0 = derivatives[i];
-				const Number m1 = derivatives[i+1];
+				const auto m0 = derivatives[i];
+				const auto m1 = derivatives[i+1];
 
-				const Number y0 = Y[i];
-				const Number y1 = Y[i+1];
+				const auto y0 = Y[i];
+				const auto y1 = Y[i+1];
 
-				const Number s = (y1 - y0) / h;
+				const auto s = (y1 - y0) / h;
 
 				coeffs[4*i+0] = (m0 + m1 - 2 * s) / h2;
 				coeffs[4*i+1] = (3 * s - 2 * m0 - m1) / h;
@@ -400,7 +398,7 @@ namespace alfi::spline {
 				return _coeffs[0];
 			}
 			segment = std::clamp(segment, static_cast<SizeT>(0), static_cast<SizeT>(_X.size() - 2));
-			const Number x_seg = x - _X[segment];
+			const auto x_seg = x - _X[segment];
 			return ((_coeffs[4*segment] * x_seg + _coeffs[4*segment+1]) * x_seg + _coeffs[4*segment+2]) * x_seg + _coeffs[4*segment+3];
 		}
 
