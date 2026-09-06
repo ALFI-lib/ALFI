@@ -429,7 +429,7 @@ namespace alfi::spline {
 		Type type() const {
 			return _type;
 		}
-		Type boundaries_type() const {
+		BoundariesType boundaries_type() const {
 			return _boundaries_type;
 		}
 
