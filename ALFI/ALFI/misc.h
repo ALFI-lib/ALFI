@@ -49,7 +49,7 @@ namespace alfi::misc {
 			// Normalization is needed because the middle weights grow as O(2^n),
 			// while the edges grow as O(1). Dividing by 2^(N/2) balances the exponents,
 			// reducing numerical instability.
-			// const Number norm_factor = std::pow(static_cast<Number>(2), static_cast<Number>(N / 2));
+			// const auto norm_factor = std::pow(static_cast<Number>(2), static_cast<Number>(N / 2));
 			// for (SizeT j = 0; j < N; ++j) {
 			// 	W[j] /= norm_factor;
 			// }
@@ -87,7 +87,7 @@ namespace alfi::misc {
 		} else {
 			// The factor scales the weights to prevent excessive growth or shrinkage, reducing numerical instability.
 			// TODO: Investigate if normalization is needed and refine the scaling factor.
-			// const Number norm_factor = (X[N-1] - X[0]) / static_cast<Number>(2);
+			// const auto norm_factor = (X[N-1] - X[0]) / static_cast<Number>(2);
 			for (SizeT j = 0; j < N; ++j) {
 				W[j] = 1;
 				for (SizeT k = 0; k < N; ++k) {
@@ -108,7 +108,7 @@ namespace alfi::misc {
 #endif
 		for (SizeT k = 0; k < nn; ++k) {
 			Number numerator = 0, denominator = 0;
-			SizeT exact_idx = N;
+			auto exact_idx = N;
 
 			for (SizeT i = 0; i < N; ++i) {
 				if (util::numeric::are_equal(xx[k], X[i], epsilon)) {

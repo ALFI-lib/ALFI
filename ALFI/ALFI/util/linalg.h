@@ -36,8 +36,8 @@ namespace alfi::util::linalg {
 		assert(n == A.size());
 		for (SizeT i = 0; i < n; ++i) {
 			assert(n == A[i].size());
-			Number max_a = std::abs(A[i][i]);
-			SizeT i_max = i;
+			auto max_a = std::abs(A[i][i]);
+			auto i_max = i;
 			for (SizeT k = i + 1; k < n; ++k) {
 				const auto cur = std::abs(A[k][i]);
 				if (cur > max_a) {

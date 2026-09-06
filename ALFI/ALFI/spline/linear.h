@@ -86,7 +86,7 @@ namespace alfi::spline {
 				return _coeffs[0];
 			}
 			segment = std::clamp(segment, static_cast<SizeT>(0), static_cast<SizeT>(_X.size() - 2));
-			const Number x_seg = x - _X[segment];
+			const auto x_seg = x - _X[segment];
 			return _coeffs[2*segment] * x_seg + _coeffs[2*segment+1];
 		}
 

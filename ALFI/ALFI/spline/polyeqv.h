@@ -50,7 +50,7 @@ namespace alfi::spline {
 				return {};
 			}
 
-			const SizeT n = X.size();
+			const auto n = X.size();
 
 			if (n == 0) {
 				return {};
@@ -162,11 +162,11 @@ namespace alfi::spline {
 
 			segment = std::clamp(segment, static_cast<SizeT>(0), static_cast<SizeT>(_X.size() - 2));
 
-			const Number x_seg = x - _X[segment];
+			const auto x_seg = x - _X[segment];
 
-			const SizeT n = _X.size();
+			const auto n = _X.size();
 
-			Number result = _coeffs[segment*n];
+			auto result = _coeffs[segment*n];
 
 			if (std::isnan(result)) {
 				switch (_evaluation_type) {
@@ -181,7 +181,7 @@ namespace alfi::spline {
 
 			for (SizeT i = 1; i < n; ++i) {
 				result *= x_seg;
-				Number current = _coeffs[segment*n+i];
+				auto current = _coeffs[segment*n+i];
 				if (std::isnan(current)) {
 					switch (_evaluation_type) {
 						case EvaluationType::IGNORE_NANS_AND_PREVIOUS:

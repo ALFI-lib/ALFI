@@ -103,7 +103,7 @@ namespace alfi::util::poly {
 		Container<Number> remainder = dividend;
 
 		for (SizeT i = 0; i <= n - m; ++i) {
-			const Number factor = remainder[i] / divisor[divisor_start_idx];
+			const auto factor = remainder[i] / divisor[divisor_start_idx];
 			quotient[i] = factor;
 			for (SizeT j = 0; j < m; ++j) {
 				remainder[i+j] -= factor * divisor[divisor_start_idx+j];
