@@ -1,4 +1,4 @@
-#include <ALFI/misc.h>
+#include <ALFI/poly/barycentric.h>
 
 #include "../test_utils.h"
 
@@ -21,7 +21,7 @@ void test_barycentric(const toml::parse_result& test_data, double epsilon) {
 				alfi::dist::Type::CHEBYSHEV_2
 			: alfi::dist::Type::GENERAL;
 
-		expect_eq(alfi::misc::barycentric(X, Y, xx, dist_type), yy, epsilon);
+		expect_eq(alfi::poly::barycentric(X, Y, xx, dist_type), yy, epsilon);
 	});
 }
 
@@ -33,7 +33,7 @@ TEST(BarycentricTest, PolynomialData) {
 }
 
 TEST(BarycentricTest, BarycentricData) {
-	const auto barycentric_test_data_path = TEST_DATA_DIR "/misc/barycentric.toml";
+	const auto barycentric_test_data_path = TEST_DATA_DIR "/poly/barycentric.toml";
 	const auto barycentric_test_data = toml::parse_file(barycentric_test_data_path);
 	test_barycentric(barycentric_test_data, 1e-13);
 }

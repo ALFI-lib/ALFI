@@ -410,7 +410,7 @@ private:
 			if (barycentric_dist_type == 0) {
 				barycentric_dist_type = dist_type;
 			}
-			add_graph("Barycentric", xx, alfi::misc::barycentric(X, Y, xx, static_cast<alfi::dist::Type>(barycentric_dist_type)));
+			add_graph("Barycentric", xx, alfi::poly::barycentric(X, Y, xx, static_cast<alfi::dist::Type>(barycentric_dist_type)));
 		}
 		if (_poly_eqv_spline_checkbox->isChecked()) {
 			add_graph("Poly. Eqv. Spline", xx, alfi::spline::PolyEqvSpline<>(X, Y)(xx));

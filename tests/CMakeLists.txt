@@ -18,10 +18,9 @@ endmacro()
 add_test_executable(test_dist dist/test_dist.cpp)
 
 add_test_executable(test_poly poly/test_poly.cpp)
+add_test_executable(test_barycentric poly/test_barycentric.cpp)
 
 add_test_executable(test_ratf ratf/test_ratf.cpp)
-
-add_test_executable(test_barycentric misc/test_barycentric.cpp)
 
 add_test_executable(test_polyeqv spline/test_polyeqv.cpp)
 
