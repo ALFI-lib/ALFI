@@ -1,6 +1,6 @@
 #include <benchmark/benchmark.h>
 
-#include <ALFI/misc.h>
+#include <ALFI/poly/barycentric.h>
 
 #include "../bench_utils.h"
 #include "../bench_data.h"
@@ -16,7 +16,7 @@ static void BM_barycentric(benchmark::State& state) {
 	const std::vector<double> xx = of_type<double>(alfi::dist::Type::UNIFORM, nn, interval.first, interval.second);
 	std::vector<double> result;
 	for (auto _ : state) {
-		result = alfi::misc::barycentric(X, Y, xx, dist_type);
+		result = alfi::poly::barycentric(X, Y, xx, dist_type);
 		benchmark::DoNotOptimize(result);
 		benchmark::ClobberMemory();
 	}

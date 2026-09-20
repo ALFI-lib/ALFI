@@ -2,11 +2,11 @@
 
 #include <iostream>
 
-#include "config.h"
-#include "dist.h"
-#include "util/numeric.h"
+#include "../config.h"
+#include "../dist.h"
+#include "../util/numeric.h"
 
-namespace alfi::misc {
+namespace alfi::poly {
 	template <typename Number = DefaultNumber, template <typename, typename...> class Container = DefaultContainer>
 	Container<Number> barycentric(
 			const Container<Number>& X,
